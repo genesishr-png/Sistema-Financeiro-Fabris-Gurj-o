@@ -424,14 +424,20 @@
 
         // --- INICIALIZAÇÃO E AUTENTICAÇÃO ---
         async function initializeAndAuth() {
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "...", authDomain: "...", projectId: "..." };
-            
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            const auth = getAuth();
-
             try {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                
+                if (typeof __firebase_config === 'undefined' || __firebase_config === '') {
+                     document.getElementById('loading-overlay').textContent = "Configuração do banco de dados não encontrada.";
+                     console.error("Firebase config is missing.");
+                     return; 
+                }
+                const firebaseConfig = JSON.parse(__firebase_config);
+                
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                const auth = getAuth();
+
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
@@ -442,8 +448,8 @@
                 setupSnapshotListener();
 
             } catch (error) {
-                console.error("Erro na autenticação:", error);
-                document.getElementById('loading-overlay').textContent = "Erro ao conectar. Tente recarregar a página.";
+                console.error("Erro na inicialização ou autenticação:", error);
+                document.getElementById('loading-overlay').textContent = "Erro ao conectar ao banco de dados. Tente recarregar a página.";
             }
         }
         
@@ -475,10 +481,8 @@
         }
 
         function render() {
-            if(document.getElementById('page-dashboard') && !document.getElementById('page-dashboard').classList.contains('hidden')) {
-                renderKanban();
-                renderContractList();
-            }
+            renderKanban();
+            renderContractList();
             if(document.getElementById('page-inadimplentes') && !document.getElementById('page-inadimplentes').classList.contains('hidden')) renderInadimplentesPage();
             if(document.getElementById('page-servicos') && !document.getElementById('page-servicos').classList.contains('hidden')) renderServicosPage();
             renderSortButtons();
@@ -891,13 +895,13 @@
         }
 
 
-        window.updateServiceStatus = function(contractId, serviceIndex, newStatus) {
+        window.updateServiceStatus = async function(contractId, serviceIndex, newStatus) {
             const contractRef = doc(contractsCollection, contractId);
             const contract = database.contracts.find(c => c.id === contractId);
             if (contract && contract.serviceTypes[serviceIndex]) {
                 const updatedServiceTypes = [...contract.serviceTypes];
                 updatedServiceTypes[serviceIndex].status = newStatus;
-                updateDoc(contractRef, { serviceTypes: updatedServiceTypes });
+                await updateDoc(contractRef, { serviceTypes: updatedServiceTypes });
             }
         }
 
@@ -1113,34 +1117,7 @@
         }
 
         function loadInitialData() {
-            const hoje = new Date();
-            database.contracts = [
-                {
-                    id: '1', clientName: 'ALBERTINO LAMEIRA CABRAL', advogadoResponsavel: 'Dra. Renata Fabris', serviceTypes: [{name:'Ação Judicial', status:'Pendente'}, {name:'Consultoria', status:'Concluído'}], paymentType: 'Parcelado', totalValue: 8000, successFee: '', observations: 'Cliente indicou que pode atrasar a última parcela. Ficar de olho.', parcels: [
-                        { number: 1, value: 4000, dueDate: new Date('2025-09-30T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 4000, paymentDate: new Date('2025-09-28T12:00:00Z').toISOString() },
-                        { number: 2, value: 4000, dueDate: new Date(new Date().setDate(hoje.getDate() - 15)).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null }
-                    ],
-                    successFeeValueReceived: 0, successFeePaymentDate: null
-                },
-                {
-                    id: '2', clientName: 'ANGELITA LIMA DANTAS', advogadoResponsavel: 'Dr. Felipe Gurjão', serviceTypes: [{name:'NOVO ACORDO (14x)', status:'Pendente'}], paymentType: 'Parcelado', totalValue: 21840, successFee: '', observations: '', parcels: [
-                        { number: 1, value: 1560, dueDate: new Date('2025-06-05T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 1560, paymentDate: new Date('2025-06-05T12:00:00Z').toISOString() },
-                        { number: 2, value: 1560, dueDate: new Date('2025-07-05T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 1560, paymentDate: new Date('2025-07-05T12:00:00Z').toISOString() },
-                        { number: 3, value: 1560, dueDate: new Date('2025-08-05T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 1560, paymentDate: new Date('2025-08-05T12:00:00Z').toISOString() },
-                        { number: 4, value: 1560, dueDate: new Date('2025-09-05T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 1560, paymentDate: new Date('2025-09-05T12:00:00Z').toISOString() },
-                        { number: 5, value: 1560, dueDate: new Date(new Date().setDate(hoje.getDate() + 15)).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null }
-                    ],
-                    successFeeValueReceived: 0, successFeePaymentDate: null
-                },
-                 { id: '3', clientName: 'ANDREU SOARES DE OLIVEIRA', advogadoResponsavel: 'Dra. Renata Fabris', serviceTypes: [{name:'Contrato de Risco', status:'Pendente'}], paymentType: 'Pró-Abono', totalValue: 0, successFee: '30%', observations: '', parcels: [], successFeeValueReceived: 0, successFeePaymentDate: null },
-                 {
-                    id: '4', clientName: 'A&A VISTORIA', advogadoResponsavel: 'Dr. Felipe Gurjão', serviceTypes: [{name:'Consultoria', status:'Concluído'}], paymentType: 'Entrada única', totalValue: 6000, successFee: '10MIL', observations: 'Pagamento de êxito atrelado ao processo X.', parcels: [
-                        { number: 1, value: 6000, dueDate: new Date(new Date().setDate(hoje.getDate() - 40)).toISOString(), status: 'Paga', valuePaid: 6000, paymentDate: new Date(new Date().setDate(hoje.getDate() - 40)).toISOString() }
-                    ],
-                    successFeeValueReceived: 0, successFeePaymentDate: null
-                }
-            ];
-            render();
+            // Esta função será substituída pelo listener do Firebase
         }
 
         document.addEventListener('DOMContentLoaded', () => {
