@@ -412,7 +412,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // --- VARIÁVEIS GLOBAIS ---
         let db;
@@ -425,18 +425,25 @@
         // --- INICIALIZAÇÃO E AUTENTICAÇÃO ---
         async function initializeAndAuth() {
             try {
+                // PASSO IMPORTANTE: Cole aqui a configuração do seu Firebase!
+                const firebaseConfig =const firebaseConfig = 
+                {
+               apiKey: "AIzaSyA0TWb7DgZAHNl3TuoK3xQD-ANvCcQIDK4",
+               authDomain: "fabrisgurjao.firebaseapp.com",
+               projectId: "fabrisgurjao",
+               storageBucket: "fabrisgurjao.firebasestorage.app",
+               messagingSenderId: "466702265991",
+               appId: "1:466702265991:web:78c4d98b47cab537921222",
+               measurementId: "G-E99R5TFMQK"
+         };
+
                 const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const finalConfig = (typeof __firebase_config !== 'undefined' && __firebase_config !== '') ? JSON.parse(__firebase_config) : firebaseConfig;
                 
-                if (typeof __firebase_config === 'undefined' || __firebase_config === '') {
-                     document.getElementById('loading-overlay').textContent = "Configuração do banco de dados não encontrada.";
-                     console.error("Firebase config is missing.");
-                     return; 
-                }
-                const firebaseConfig = JSON.parse(__firebase_config);
-                
-                const app = initializeApp(firebaseConfig);
+                const app = initializeApp(finalConfig);
                 db = getFirestore(app);
                 const auth = getAuth();
+                setLogLevel('debug');
 
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
@@ -481,8 +488,10 @@
         }
 
         function render() {
-            renderKanban();
-            renderContractList();
+            if(document.getElementById('page-dashboard') && !document.getElementById('page-dashboard').classList.contains('hidden')) {
+                renderKanban();
+                renderContractList();
+            }
             if(document.getElementById('page-inadimplentes') && !document.getElementById('page-inadimplentes').classList.contains('hidden')) renderInadimplentesPage();
             if(document.getElementById('page-servicos') && !document.getElementById('page-servicos').classList.contains('hidden')) renderServicosPage();
             renderSortButtons();
@@ -1114,10 +1123,6 @@
             tag.className = 'service-tag';
             tag.innerHTML = `<span>${serviceName}</span><span class="remove-tag" onclick="this.parentElement.remove()">&times;</span>`;
             container.appendChild(tag);
-        }
-
-        function loadInitialData() {
-            // Esta função será substituída pelo listener do Firebase
         }
 
         document.addEventListener('DOMContentLoaded', () => {
