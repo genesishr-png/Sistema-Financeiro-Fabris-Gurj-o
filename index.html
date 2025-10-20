@@ -149,7 +149,7 @@
 <body class="text-gray-300">
 
     <div id="loading-overlay">
-        <i class="fas fa-spinner fa-spin mr-3"></i> Carregando dados...
+        <i class="fas fa-spinner fa-spin mr-3"></i> Conectando ao banco de dados...
     </div>
 
     <div class="container mx-auto p-4 md:p-8">
@@ -426,16 +426,14 @@
         async function initializeAndAuth() {
             try {
                 // PASSO IMPORTANTE: Cole aqui a configuração do seu Firebase!
-                const firebaseConfig =const firebaseConfig = 
-                {
-               apiKey: "AIzaSyA0TWb7DgZAHNl3TuoK3xQD-ANvCcQIDK4",
-               authDomain: "fabrisgurjao.firebaseapp.com",
-               projectId: "fabrisgurjao",
-               storageBucket: "fabrisgurjao.firebasestorage.app",
-               messagingSenderId: "466702265991",
-               appId: "1:466702265991:web:78c4d98b47cab537921222",
-               measurementId: "G-E99R5TFMQK"
-         };
+                const firebaseConfig = {
+                    apiKey: "COLE-SUA-CHAVE-AQUI",
+                    authDomain: "SEU-PROJETO.firebaseapp.com",
+                    projectId: "SEU-PROJETO",
+                    storageBucket: "SEU-PROJETO.appspot.com",
+                    messagingSenderId: "SEU-ID",
+                    appId: "SEU-APP-ID"
+                };
 
                 const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
                 const finalConfig = (typeof __firebase_config !== 'undefined' && __firebase_config !== '') ? JSON.parse(__firebase_config) : firebaseConfig;
@@ -1231,4 +1229,3 @@
     </script>
 </body>
 </html>
-
