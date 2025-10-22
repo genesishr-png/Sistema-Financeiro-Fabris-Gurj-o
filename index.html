@@ -130,27 +130,9 @@
             border-radius: 6px;
             font-size: 14px;
         }
-        #loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(17, 24, 39, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            color: white;
-            font-size: 1.2rem;
-        }
     </style>
 </head>
 <body class="text-gray-300">
-
-    <div id="loading-overlay">
-        <i class="fas fa-spinner fa-spin mr-3"></i> Conectando ao banco de dados...
-    </div>
 
     <div class="container mx-auto p-4 md:p-8">
         <header class="mb-6 header-with-logo">
@@ -409,67 +391,13 @@
 
     <div id="modal-backdrop" class="modal-backdrop"></div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        // --- VARIÁVEIS GLOBAIS ---
-        let db;
-        let contractsCollection;
+    <script>
         let database = { contracts: [] };
         let currentContractSort = 'name-asc';
         let currentInadimplentesSort = 'days-desc';
         let currentServicosSort = 'name-asc';
 
-        // --- INICIALIZAÇÃO E AUTENTICAÇÃO ---
-        async function initializeAndAuth() {
-            try {
-                // PASSO IMPORTANTE: Cole aqui a configuração do seu Firebase!
-                const firebaseConfig = {
-                    apiKey: "COLE-SUA-CHAVE-AQUI",
-                    authDomain: "SEU-PROJETO.firebaseapp.com",
-                    projectId: "SEU-PROJETO",
-                    storageBucket: "SEU-PROJETO.appspot.com",
-                    messagingSenderId: "SEU-ID",
-                    appId: "SEU-APP-ID"
-                };
-
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                const finalConfig = (typeof __firebase_config !== 'undefined' && __firebase_config !== '') ? JSON.parse(__firebase_config) : firebaseConfig;
-                
-                const app = initializeApp(finalConfig);
-                db = getFirestore(app);
-                const auth = getAuth();
-                setLogLevel('debug');
-
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                contractsCollection = collection(db, `artifacts/${appId}/public/data/contracts`);
-                setupSnapshotListener();
-
-            } catch (error) {
-                console.error("Erro na inicialização ou autenticação:", error);
-                document.getElementById('loading-overlay').textContent = "Erro ao conectar ao banco de dados. Tente recarregar a página.";
-            }
-        }
-        
-        function setupSnapshotListener() {
-            onSnapshot(contractsCollection, (snapshot) => {
-                database.contracts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                render();
-                document.getElementById('loading-overlay').style.display = 'none';
-            }, (error) => {
-                console.error("Erro ao buscar dados:", error);
-                document.getElementById('loading-overlay').textContent = "Erro ao carregar dados.";
-            });
-        }
-        
-        window.showPage = function(pageId) {
+        function showPage(pageId) {
             ['page-dashboard', 'page-inadimplentes', 'page-servicos'].forEach(id => {
                 if(document.getElementById(id)) document.getElementById(id).classList.add('hidden');
             });
@@ -486,10 +414,8 @@
         }
 
         function render() {
-            if(document.getElementById('page-dashboard') && !document.getElementById('page-dashboard').classList.contains('hidden')) {
-                renderKanban();
-                renderContractList();
-            }
+            renderKanban();
+            renderContractList();
             if(document.getElementById('page-inadimplentes') && !document.getElementById('page-inadimplentes').classList.contains('hidden')) renderInadimplentesPage();
             if(document.getElementById('page-servicos') && !document.getElementById('page-servicos').classList.contains('hidden')) renderServicosPage();
             renderSortButtons();
@@ -615,7 +541,7 @@
                 <div class="dark-card p-6 rounded-lg shadow-lg"><h3 class="text-lg font-semibold text-gray-400">Contratos Ativos</h3><p class="text-3xl font-bold text-white">${totalContratos}</p></div>`;
         }
         
-        window.renderContractList = function() {
+        function renderContractList() {
             const listContainer = document.getElementById('contractListContainer');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const advogadoFilter = document.getElementById('advogadoFilter').value;
@@ -843,7 +769,7 @@
             });
         }
         
-        window.renderAdvogadoFilters = function() {
+        function renderAdvogadoFilters() {
             const advogadoFilters = [document.getElementById('advogadoFilter'), document.getElementById('servicosAdvogadoFilter')];
             const advogados = [...new Set(database.contracts.map(c => c.advogadoResponsavel))];
             advogados.sort();
@@ -862,7 +788,7 @@
             });
         }
 
-        window.renderSortButtons = function() {
+        function renderSortButtons() {
             const contractSortContainer = document.getElementById('contractSortButtons');
             const inadimplentesSortContainer = document.getElementById('inadimplentesSortButtons');
             const servicosSortContainer = document.getElementById('servicosSortButtons');
@@ -902,34 +828,33 @@
         }
 
 
-        window.updateServiceStatus = async function(contractId, serviceIndex, newStatus) {
-            const contractRef = doc(contractsCollection, contractId);
+        function updateServiceStatus(contractId, serviceIndex, newStatus) {
             const contract = database.contracts.find(c => c.id === contractId);
             if (contract && contract.serviceTypes[serviceIndex]) {
-                const updatedServiceTypes = [...contract.serviceTypes];
-                updatedServiceTypes[serviceIndex].status = newStatus;
-                await updateDoc(contractRef, { serviceTypes: updatedServiceTypes });
+                contract.serviceTypes[serviceIndex].status = newStatus;
+                render();
             }
         }
 
-        window.deleteContract = async function(contractId) {
+        function deleteContract(contractId) {
             const contract = database.contracts.find(c => c.id === contractId);
             if(confirm(`Tem certeza que deseja excluir o contrato de "${contract.clientName}"? Esta ação não pode ser desfeita.`)){
-                await deleteDoc(doc(contractsCollection, contractId));
+                database.contracts = database.contracts.filter(c => c.id !== contractId);
+                render();
             }
         }
 
         const backdrop = document.getElementById('modal-backdrop');
-        window.openModal = function(modalId) {
+        function openModal(modalId) {
             if(document.getElementById(modalId)) document.getElementById(modalId).style.display = 'block';
             if(backdrop) backdrop.style.display = 'block';
         }
-        window.closeModal = function(modalId) {
+        function closeModal(modalId) {
             if(document.getElementById(modalId)) document.getElementById(modalId).style.display = 'none';
             if(backdrop) backdrop.style.display = 'none';
         }
 
-        window.openContractModal = function(contractId = null) {
+        function openContractModal(contractId = null) {
             const form = document.getElementById('formContrato');
             form.reset();
             const title = document.getElementById('modalContratoTitle');
@@ -958,7 +883,7 @@
             openModal('modalContrato');
         }
 
-        window.openPaymentModal = function(contractId, parcelIndex) {
+        function openPaymentModal(contractId, parcelIndex) {
             const contract = database.contracts.find(c => c.id === contractId);
             const parcel = contract.parcels[parcelIndex];
             
@@ -974,7 +899,7 @@
             openModal('modalPagamento');
         }
 
-        window.openClientHistoryModal = function(clientName) {
+        function openClientHistoryModal(clientName) {
             const clientContracts = database.contracts.filter(c => c.clientName === clientName);
             const title = document.getElementById('clienteModalTitle');
             const content = document.getElementById('clienteModalContent');
@@ -1024,7 +949,7 @@
             openModal('modalCliente');
         }
 
-        window.openReportModal = function() {
+        function openReportModal() {
             populateDateSelectors();
             generateAndShowReport(); 
             openModal('modalRelatorio');
@@ -1079,7 +1004,7 @@
             return { totalParcelas, totalExito, totalGeral: totalParcelas + totalExito, detailedPayments };
         }
 
-        window.generateAndShowReport = function() {
+        function generateAndShowReport() {
             const month = parseInt(document.getElementById('reportMonth').value);
             const year = parseInt(document.getElementById('reportYear').value);
             const resultDiv = document.getElementById('reportResult');
@@ -1107,7 +1032,7 @@
             resultDiv.innerHTML = `<div class="dark-card p-4 rounded-lg"><p class="text-gray-400">Total Recebido (Parcelas):</p><p class="text-2xl font-bold text-white">${income.totalParcelas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div><div class="dark-card p-4 rounded-lg"><p class="text-gray-400">Total Recebido (Êxito):</p><p class="text-2xl font-bold text-indigo-400">${income.totalExito.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div><div class="bg-gray-900 p-4 rounded-lg border border-gray-700"><p class="text-white font-bold">TOTAL GERAL RECEBIDO:</p><p class="text-3xl font-extrabold text-green-400">${income.totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>` + detailsHtml;
         }
 
-        window.openExitoModal = function(contractId) {
+        function openExitoModal(contractId) {
             const contract = database.contracts.find(c => c.id === contractId);
             if (!contract) return;
             document.getElementById('exitoContractId').value = contractId;
@@ -1115,7 +1040,7 @@
             openModal('modalExito');
         }
         
-        window.createServiceTag = function(serviceName) {
+        function createServiceTag(serviceName) {
             const container = document.getElementById('servicosContainer');
             const tag = document.createElement('div');
             tag.className = 'service-tag';
@@ -1123,10 +1048,41 @@
             container.appendChild(tag);
         }
 
+        function loadInitialData() {
+            const hoje = new Date();
+            database.contracts = [
+                {
+                    id: '1', clientName: 'ALBERTINO LAMEIRA CABRAL', advogadoResponsavel: 'Dra. Renata Fabris', serviceTypes: [{name:'Ação Judicial', status:'Pendente'}, {name:'Consultoria', status:'Concluído'}], paymentType: 'Parcelado', totalValue: 8000, successFee: '', observations: 'Cliente indicou que pode atrasar a última parcela. Ficar de olho.', parcels: [
+                        { number: 1, value: 4000, dueDate: new Date('2025-09-30T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 4000, paymentDate: new Date('2025-09-28T12:00:00Z').toISOString() },
+                        { number: 2, value: 4000, dueDate: new Date(new Date().setDate(hoje.getDate() - 15)).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null }
+                    ],
+                    successFeeValueReceived: 0, successFeePaymentDate: null
+                },
+                {
+                    id: '2', clientName: 'ANGELITA LIMA DANTAS', advogadoResponsavel: 'Dr. Felipe Gurjão', serviceTypes: [{name:'NOVO ACORDO (14x)', status:'Pendente'}], paymentType: 'Parcelado', totalValue: 21840, successFee: '', observations: '', parcels: [
+                        { number: 1, value: 1560, dueDate: new Date('2025-06-05T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 1560, paymentDate: new Date('2025-06-05T12:00:00Z').toISOString() },
+                        { number: 2, value: 1560, dueDate: new Date('2025-07-05T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 1560, paymentDate: new Date('2025-07-05T12:00:00Z').toISOString() },
+                        { number: 3, value: 1560, dueDate: new Date('2025-08-05T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 1560, paymentDate: new Date('2025-08-05T12:00:00Z').toISOString() },
+                        { number: 4, value: 1560, dueDate: new Date('2025-09-05T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 1560, paymentDate: new Date('2025-09-05T12:00:00Z').toISOString() },
+                        { number: 5, value: 1560, dueDate: new Date(new Date().setDate(hoje.getDate() + 15)).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null }
+                    ],
+                    successFeeValueReceived: 0, successFeePaymentDate: null
+                },
+                 { id: '3', clientName: 'ANDREU SOARES DE OLIVEIRA', advogadoResponsavel: 'Dra. Renata Fabris', serviceTypes: [{name:'Contrato de Risco', status:'Pendente'}], paymentType: 'Pró-Abono', totalValue: 0, successFee: '30%', observations: '', parcels: [], successFeeValueReceived: 0, successFeePaymentDate: null },
+                 {
+                    id: '4', clientName: 'A&A VISTORIA', advogadoResponsavel: 'Dr. Felipe Gurjão', serviceTypes: [{name:'Consultoria', status:'Concluído'}], paymentType: 'Entrada única', totalValue: 6000, successFee: '10MIL', observations: 'Pagamento de êxito atrelado ao processo X.', parcels: [
+                        { number: 1, value: 6000, dueDate: new Date(new Date().setDate(hoje.getDate() - 40)).toISOString(), status: 'Paga', valuePaid: 6000, paymentDate: new Date(new Date().setDate(hoje.getDate() - 40)).toISOString() }
+                    ],
+                    successFeeValueReceived: 0, successFeePaymentDate: null
+                }
+            ];
+            render();
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            initializeAndAuth();
+            loadInitialData();
             
-            document.getElementById('formContrato').addEventListener('submit', async (e) => {
+            document.getElementById('formContrato').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const contractId = document.getElementById('contractId').value;
                 const clientName = document.getElementById('clienteNome').value;
@@ -1144,58 +1100,74 @@
                     alert('Adicione pelo menos um tipo de serviço.');
                     return;
                 }
-                
-                const contractData = { clientName, advogadoResponsavel, serviceTypes, paymentType, totalValue, successFee, observations, parcels: [], successFeeValueReceived: 0, successFeePaymentDate: null };
-
-                if (numParcels > 0 && totalValue > 0) {
-                    if (!firstDueDate) { alert('Informe a data de vencimento da primeira parcela.'); return; }
-                    const parcelValue = totalValue / numParcels;
-                    let currentDueDate = new Date(firstDueDate + 'T12:00:00Z');
-                    for (let i = 0; i < numParcels; i++) {
-                        contractData.parcels.push({ number: i + 1, value: parcelValue, dueDate: new Date(currentDueDate).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null });
-                        currentDueDate.setMonth(currentDueDate.getMonth() + 1);
-                    }
-                }
 
                 if (contractId) {
-                    await updateDoc(doc(contractsCollection, contractId), contractData);
+                    const contract = database.contracts.find(c => c.id === contractId);
+                    contract.clientName = clientName;
+                    contract.advogadoResponsavel = advogadoResponsavel;
+                    contract.serviceTypes = serviceTypes;
+                    contract.paymentType = paymentType;
+                    contract.totalValue = totalValue;
+                    contract.successFee = successFee;
+                    contract.observations = observations;
+                    const firstDueDateChanged = contract.parcels.length > 0 ? firstDueDate !== contract.parcels[0].dueDate.split('T')[0] : true;
+                    if (contract.parcels.length !== numParcels || firstDueDateChanged) {
+                        contract.parcels = [];
+                        if (numParcels > 0 && totalValue > 0) {
+                            if (!firstDueDate) { alert('Informe a data de vencimento da primeira parcela para recriar as parcelas.'); return; }
+                            const parcelValue = totalValue / numParcels;
+                            let currentDueDate = new Date(firstDueDate + 'T12:00:00Z');
+                            for (let i = 0; i < numParcels; i++) {
+                                contract.parcels.push({ number: i + 1, value: parcelValue, dueDate: new Date(currentDueDate).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null });
+                                currentDueDate.setMonth(currentDueDate.getMonth() + 1);
+                            }
+                        }
+                    }
                 } else {
-                    await addDoc(contractsCollection, contractData);
+                    const newContract = { id: Date.now().toString(), clientName, advogadoResponsavel, serviceTypes, paymentType, totalValue, successFee, observations, parcels: [], successFeeValueReceived: 0, successFeePaymentDate: null };
+                     if (numParcels > 0 && totalValue > 0) {
+                        if (!firstDueDate) { alert('Informe a data de vencimento da primeira parcela.'); return; }
+                        const parcelValue = totalValue / numParcels;
+                        let currentDueDate = new Date(firstDueDate + 'T12:00:00Z');
+                        for (let i = 0; i < numParcels; i++) {
+                            newContract.parcels.push({ number: i + 1, value: parcelValue, dueDate: new Date(currentDueDate).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null });
+                            currentDueDate.setMonth(currentDueDate.getMonth() + 1);
+                        }
+                    }
+                    database.contracts.push(newContract);
                 }
+                render();
                 closeModal('modalContrato');
             });
 
-            document.getElementById('formPagamento').addEventListener('submit', async (e) => {
+            document.getElementById('formPagamento').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const contractId = document.getElementById('pagamentoContractId').value;
                 const parcelIndex = parseInt(document.getElementById('pagamentoParcelIndex').value);
                 const valuePaid = parseFloat(document.getElementById('pagamentoValor').value);
                 const paymentDate = document.getElementById('pagamentoData').value;
-                
-                const contractRef = doc(contractsCollection, contractId);
-                const contract = database.contracts.find(c => c.id === contractId);
 
+                const contract = database.contracts.find(c => c.id === contractId);
                 if (contract) {
-                    const updatedParcels = [...contract.parcels];
-                    updatedParcels[parcelIndex].status = 'Paga';
-                    updatedParcels[parcelIndex].valuePaid = valuePaid;
-                    updatedParcels[parcelIndex].paymentDate = new Date(paymentDate + 'T12:00:00Z').toISOString();
-                    await updateDoc(contractRef, { parcels: updatedParcels });
+                    contract.parcels[parcelIndex].status = 'Paga';
+                    contract.parcels[parcelIndex].valuePaid = valuePaid;
+                    contract.parcels[parcelIndex].paymentDate = new Date(paymentDate + 'T12:00:00Z').toISOString();
+                    render();
                     closeModal('modalPagamento');
                 }
             });
 
-            document.getElementById('formExito').addEventListener('submit', async (e) => {
+            document.getElementById('formExito').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const contractId = document.getElementById('exitoContractId').value;
                 const valueReceived = parseFloat(document.getElementById('exitoValorRecebido').value);
                 const contract = database.contracts.find(c => c.id === contractId);
                 if (contract && !isNaN(valueReceived) && valueReceived > 0) {
-                    await updateDoc(doc(contractsCollection, contractId), {
-                        successFeeValueReceived: valueReceived,
-                        successFeePaymentDate: new Date().toISOString()
-                    });
+                    contract.successFeeValueReceived = valueReceived;
+                    contract.successFeePaymentDate = new Date().toISOString();
+                    render();
                     closeModal('modalExito');
+                    e.target.reset();
                 } else {
                     alert('Valor inválido.');
                 }
@@ -1229,3 +1201,4 @@
     </script>
 </body>
 </html>
+
