@@ -1178,7 +1178,9 @@
             
             // API do Banco Central para o índice IPCA (código 433)
             const proxyUrl = 'https://api.allorigins.win/get?url='; // Proxy CORS
-            const apiBase = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados';
+            // Código 16121: IPCA - (N.índice) (Base: dez 1993 = 100)
+            // Este é o índice acumulado, correto para correção monetária.
+            const apiBase = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.16121/dados';
             
             try {
                 // Busca o valor do índice no mês de vencimento
@@ -1243,7 +1245,7 @@
             const loadingOverlay = document.getElementById('loading-overlay');
             if (loadingOverlay) loadingOverlay.style.display = 'flex';
             
-            // Remove dados de exemplo
+            // Dados de exemplo para modo local - REMOVIDOS
             database.contracts = [];
             
             render();
@@ -1376,4 +1378,5 @@
     </script>
 </body>
 </html>
+
 
