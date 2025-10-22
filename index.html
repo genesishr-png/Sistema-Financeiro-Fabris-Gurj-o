@@ -40,7 +40,7 @@
             align-items: center;
             background-color: #374151; /* gray-700 */
             color: #d1d5db; /* gray-300 */
-            padding: 4px 8px;
+            padding: 4px 10px;
             border-radius: 12px;
             font-size: 14px;
             margin-right: 4px;
@@ -133,6 +133,10 @@
     </style>
 </head>
 <body class="text-gray-300">
+
+    <div id="loading-overlay" style="display: none;">
+        <i class="fas fa-spinner fa-spin mr-3"></i> Carregando...
+    </div>
 
     <div class="container mx-auto p-4 md:p-8">
         <header class="mb-6 header-with-logo">
@@ -266,10 +270,14 @@
                     </div>
                 </div>
                  <div class="mb-4">
-                    <label for="contratoServicoInput" class="block text-sm font-medium text-gray-400">Tipo de Serviço/Contrato (pressione Enter para adicionar)</label>
-                    <div id="servicosContainerWrapper" class="mt-1 flex flex-wrap items-center gap-2 p-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm">
-                        <div id="servicosContainer" class="flex flex-wrap items-center gap-1"></div>
-                        <input type="text" id="contratoServicoInput" class="flex-grow outline-none bg-transparent text-white" placeholder="Adicione um serviço...">
+                    <label class="block text-sm font-medium text-gray-400">Adicionar Serviços</label>
+                    <div id="servicosContainerWrapper" class="mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm">
+                        <div id="servicosContainer" class="flex flex-wrap items-center gap-1 w-full mb-2"></div>
+                        <div class="flex gap-2">
+                            <input type="text" id="contratoServicoInput" class="flex-grow outline-none bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white" placeholder="Nome do Serviço...">
+                            <input type="date" id="contratoPrazoInput" class="bg-gray-800 border border-gray-600 rounded-md shadow-sm text-gray-400 px-3 py-2" style="color-scheme: dark;">
+                            <button type="button" id="addServiceButton" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 px-3 rounded-lg">Adicionar</button>
+                        </div>
                     </div>
                 </div>
                 <div class="mb-4">
@@ -392,12 +400,15 @@
     <div id="modal-backdrop" class="modal-backdrop"></div>
 
     <script>
+        // --- VARIÁVEIS GLOBAIS ---
         let database = { contracts: [] };
         let currentContractSort = 'name-asc';
         let currentInadimplentesSort = 'days-desc';
         let currentServicosSort = 'name-asc';
+        let ipcaCache = new Map(); // Cache para os valores do IPCA
 
-        function showPage(pageId) {
+        // --- FUNÇÕES DE NAVEGAÇÃO E RENDERIZAÇÃO ---
+        window.showPage = function(pageId) {
             ['page-dashboard', 'page-inadimplentes', 'page-servicos'].forEach(id => {
                 if(document.getElementById(id)) document.getElementById(id).classList.add('hidden');
             });
@@ -413,16 +424,18 @@
             if (pageId === 'page-servicos') renderServicosPage();
         }
 
-        function render() {
-            renderKanban();
-            renderContractList();
-            if(document.getElementById('page-inadimplentes') && !document.getElementById('page-inadimplentes').classList.contains('hidden')) renderInadimplentesPage();
+        async function render() {
+            if(document.getElementById('page-dashboard') && !document.getElementById('page-dashboard').classList.contains('hidden')) {
+                await renderKanban();
+                renderContractList();
+            }
+            if(document.getElementById('page-inadimplentes') && !document.getElementById('page-inadimplentes').classList.contains('hidden')) await renderInadimplentesPage();
             if(document.getElementById('page-servicos') && !document.getElementById('page-servicos').classList.contains('hidden')) renderServicosPage();
             renderSortButtons();
             renderAdvogadoFilters();
         }
         
-        function renderKanban() {
+        async function renderKanban() {
             const kanbanVencidas = document.getElementById('kanban-vencidas');
             const kanbanAVencer = document.getElementById('kanban-a-vencer');
             const kanbanPagas = document.getElementById('kanban-pagas');
@@ -442,38 +455,40 @@
             let totalAVencer30dias = 0;
             let totalVencido = 0;
 
-            database.contracts.forEach(contract => {
+            for (const contract of database.contracts) {
                 let remainingValue = contract.parcels.reduce((sum, p) => p.status === 'Pendente' ? sum + p.value : sum, 0);
 
-                contract.parcels.forEach((parcel, index) => {
+                for (let i = 0; i < contract.parcels.length; i++) {
+                    const parcel = contract.parcels[i];
                     const vencimento = new Date(parcel.dueDate);
                     
                     if (parcel.status === 'Paga') {
                          const dataPagamento = new Date(parcel.paymentDate);
-                         if(dataPagamento >= primeiroDiaMes && dataPagamento <= new Date()) {
-                            kanbanPagas.innerHTML += createParcelCard(contract, parcel, index, 'paga', remainingValue);
+                         if(dataPagamento >= primeiroDiaMes && dataPagamento <= hoje) {
+                            kanbanPagas.innerHTML += createParcelCard(contract, parcel, i, 'paga', remainingValue);
                          }
                     } else { 
                         if (vencimento < hoje) {
-                            kanbanVencidas.innerHTML += createParcelCard(contract, parcel, index, 'vencida', remainingValue);
-                            totalVencido += parcel.value;
+                            const valorCorrigido = await calcularValorCorrigido(parcel.value, parcel.dueDate);
+                            kanbanVencidas.innerHTML += createParcelCard(contract, parcel, i, 'vencida', remainingValue, valorCorrigido);
+                            totalVencido += valorCorrigido; // Soma o valor corrigido
                         } else if (vencimento >= hoje && vencimento <= trintaDiasFrente) {
-                            kanbanAVencer.innerHTML += createParcelCard(contract, parcel, index, 'a-vencer', remainingValue);
+                            kanbanAVencer.innerHTML += createParcelCard(contract, parcel, i, 'a-vencer', remainingValue);
                             totalAVencer30dias += parcel.value;
                         }
                     }
-                });
+                }
 
                 if (contract.successFee && !contract.successFeePaymentDate && contract.parcels.every(p => p.status === 'Paga')) {
                     kanbanExito.innerHTML += createExitoCard(contract);
                 }
-            });
+            }
             
             const totalPagoMes = calculateMonthlyIncome(hoje.getFullYear(), hoje.getMonth()).totalGeral;
             renderDashboard(totalAVencer30dias, totalVencido, totalPagoMes, database.contracts.length);
         }
         
-        function createParcelCard(contract, parcel, index, type, remainingValue) {
+        function createParcelCard(contract, parcel, index, type, remainingValue, valorCorrigido = null) {
             const vencimento = new Date(parcel.dueDate);
             const formattedDate = vencimento.toLocaleDateString('pt-BR', {timeZone: 'UTC'});
             const formattedValue = parcel.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -481,12 +496,35 @@
             
             let actionButton = '';
             let statusClass = '';
+            let valorHtml = '';
+            
             if (type === 'vencida') {
                 statusClass = 'border-red-400';
+                valorHtml = `
+                    <div class="flex items-center text-gray-400 text-xs">
+                        <strong>Original:</strong>
+                        <span class="ml-auto font-medium line-through">${formattedValue}</span>
+                    </div>
+                    <div class="flex items-center text-red-400">
+                        <strong>Corrigido:</strong>
+                        <span class="ml-auto font-semibold text-lg">${valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                    </div>`;
             } else if (type === 'a-vencer') {
                  statusClass = 'border-yellow-400';
-            } else {
+                 valorHtml = `
+                    <div class="flex items-center text-gray-300">
+                        <i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-500"></i>
+                        <strong>Valor:</strong>
+                        <span class="ml-auto font-semibold text-lg text-white">${formattedValue}</span>
+                    </div>`;
+            } else { // Paga
                  statusClass = 'border-gray-600';
+                 valorHtml = `
+                    <div class="flex items-center text-gray-300">
+                        <i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-500"></i>
+                        <strong>Valor:</strong>
+                        <span class="ml-auto font-semibold text-lg text-white">${formattedValue}</span>
+                    </div>`;
             }
 
             if (type !== 'paga') {
@@ -504,11 +542,7 @@
                     <p class="font-bold text-white">${contract.clientName}</p>
                     <p class="text-sm text-gray-400 mb-3">${contract.serviceTypes.map(s => s.name).join(', ')} - Parcela ${parcel.number}/${contract.parcels.length || 1}</p>
                     <div class="space-y-2 text-sm">
-                        <div class="flex items-center text-gray-300">
-                            <i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-500"></i>
-                            <strong>Valor:</strong>
-                            <span class="ml-auto font-semibold text-lg text-white">${formattedValue}</span>
-                        </div>
+                        ${valorHtml}
                         <div class="flex items-center text-gray-300">
                             <i class="fas fa-calendar-alt w-5 text-center mr-2 text-gray-500"></i>
                             <strong>Vencimento:</strong>
@@ -536,12 +570,12 @@
         function renderDashboard(aVencer, vencido, pago, totalContratos) {
             document.getElementById('dashboard').innerHTML = `
                 <div class="dark-card p-6 rounded-lg shadow-lg"><h3 class="text-lg font-semibold text-gray-400">A Receber (Próx. 30 dias)</h3><p class="text-3xl font-bold text-green-400">${aVencer.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
-                <div class="dark-card p-6 rounded-lg shadow-lg"><h3 class="text-lg font-semibold text-gray-400">Vencido (Inadimplente)</h3><p class="text-3xl font-bold text-red-400">${vencido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+                <div class="dark-card p-6 rounded-lg shadow-lg"><h3 class="text-lg font-semibold text-gray-400">Vencido (Corrigido)</h3><p class="text-3xl font-bold text-red-400">${vencido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
                 <div class="dark-card p-6 rounded-lg shadow-lg"><h3 class="text-lg font-semibold text-gray-400">Recebido (Este Mês)</h3><p class="text-3xl font-bold text-indigo-400">${pago.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
                 <div class="dark-card p-6 rounded-lg shadow-lg"><h3 class="text-lg font-semibold text-gray-400">Contratos Ativos</h3><p class="text-3xl font-bold text-white">${totalContratos}</p></div>`;
         }
         
-        function renderContractList() {
+        window.renderContractList = function() {
             const listContainer = document.getElementById('contractListContainer');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const advogadoFilter = document.getElementById('advogadoFilter').value;
@@ -617,28 +651,30 @@
             return { statusText: 'Concluído', statusColor: 'bg-gray-700 text-gray-300', borderColor: 'border-gray-600' };
         }
 
-        function renderInadimplentesPage() {
+        async function renderInadimplentesPage() {
             const container = document.getElementById('inadimplentesListContainer');
-            container.innerHTML = '';
+            container.innerHTML = `<div class="col-span-1 md:col-span-3 text-center py-10"><i class="fas fa-spinner fa-spin fa-2x text-indigo-400"></i><p class="mt-2 text-sm text-gray-400">Calculando juros e correção monetária...</p></div>`;
             const hoje = new Date();
             hoje.setHours(0, 0, 0, 0);
 
             let inadimplentesList = [];
-            database.contracts.forEach(contract => {
-                contract.parcels.forEach((parcel, index) => {
+            for (const contract of database.contracts) {
+                for (let i = 0; i < contract.parcels.length; i++) {
+                    const parcel = contract.parcels[i];
                     const vencimento = new Date(parcel.dueDate);
                     if (parcel.status === 'Pendente' && vencimento < hoje) {
                         const diffTime = Math.abs(hoje - vencimento);
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        inadimplentesList.push({ contract, parcel, index, diffDays });
+                        const valorCorrigido = await calcularValorCorrigido(parcel.value, parcel.dueDate);
+                        inadimplentesList.push({ contract, parcel, index: i, diffDays, valorCorrigido });
                     }
-                });
-            });
+                }
+            }
 
             if (currentInadimplentesSort === 'days-desc') {
                 inadimplentesList.sort((a, b) => b.diffDays - a.diffDays);
             } else if (currentInadimplentesSort === 'value-desc') {
-                inadimplentesList.sort((a, b) => b.parcel.value - a.parcel.value);
+                inadimplentesList.sort((a, b) => b.valorCorrigido - a.valorCorrigido);
             } else if (currentInadimplentesSort === 'name-asc') {
                 inadimplentesList.sort((a, b) => a.contract.clientName.localeCompare(b.contract.clientName));
             }
@@ -649,7 +685,7 @@
             }
 
             let inadimplentesHtml = '';
-            inadimplentesList.forEach(({ contract, parcel, index, diffDays }) => {
+            inadimplentesList.forEach(({ contract, parcel, index, diffDays, valorCorrigido }) => {
                 const vencimento = new Date(parcel.dueDate);
                 inadimplentesHtml += `
                     <div class="dark-card p-5 rounded-lg shadow-lg border-l-4 border-red-500">
@@ -657,9 +693,13 @@
                         <p class="text-sm text-gray-400 mb-3">${contract.serviceTypes.map(s => s.name).join(', ')}</p>
                         
                         <div class="border-t border-gray-700 pt-3 mt-3 space-y-2">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-400">Valor Original:</span>
+                                <span class="font-medium text-gray-400 line-through">${parcel.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                            </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-400">Parcela ${parcel.number}:</span>
-                                <span class="font-semibold text-lg text-white">${parcel.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                <span class="text-sm text-white">Valor Corrigido:</span>
+                                <span class="font-semibold text-lg text-red-400">${valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                             </div>
                             <div class="flex justify-between items-center text-sm">
                                 <span class="text-gray-400">Venceu em:</span>
@@ -769,7 +809,7 @@
             });
         }
         
-        function renderAdvogadoFilters() {
+        window.renderAdvogadoFilters = function() {
             const advogadoFilters = [document.getElementById('advogadoFilter'), document.getElementById('servicosAdvogadoFilter')];
             const advogados = [...new Set(database.contracts.map(c => c.advogadoResponsavel))];
             advogados.sort();
@@ -788,7 +828,7 @@
             });
         }
 
-        function renderSortButtons() {
+        window.renderSortButtons = function() {
             const contractSortContainer = document.getElementById('contractSortButtons');
             const inadimplentesSortContainer = document.getElementById('inadimplentesSortButtons');
             const servicosSortContainer = document.getElementById('servicosSortButtons');
@@ -828,15 +868,15 @@
         }
 
 
-        function updateServiceStatus(contractId, serviceIndex, newStatus) {
+        window.updateServiceStatus = function(contractId, serviceIndex, newStatus) {
             const contract = database.contracts.find(c => c.id === contractId);
             if (contract && contract.serviceTypes[serviceIndex]) {
                 contract.serviceTypes[serviceIndex].status = newStatus;
-                render();
+                render(); // Re-renderiza a UI
             }
         }
 
-        function deleteContract(contractId) {
+        window.deleteContract = function(contractId) {
             const contract = database.contracts.find(c => c.id === contractId);
             if(confirm(`Tem certeza que deseja excluir o contrato de "${contract.clientName}"? Esta ação não pode ser desfeita.`)){
                 database.contracts = database.contracts.filter(c => c.id !== contractId);
@@ -845,16 +885,16 @@
         }
 
         const backdrop = document.getElementById('modal-backdrop');
-        function openModal(modalId) {
+        window.openModal = function(modalId) {
             if(document.getElementById(modalId)) document.getElementById(modalId).style.display = 'block';
             if(backdrop) backdrop.style.display = 'block';
         }
-        function closeModal(modalId) {
+        window.closeModal = function(modalId) {
             if(document.getElementById(modalId)) document.getElementById(modalId).style.display = 'none';
             if(backdrop) backdrop.style.display = 'none';
         }
 
-        function openContractModal(contractId = null) {
+        window.openContractModal = function(contractId = null) {
             const form = document.getElementById('formContrato');
             form.reset();
             const title = document.getElementById('modalContratoTitle');
@@ -883,23 +923,31 @@
             openModal('modalContrato');
         }
 
-        function openPaymentModal(contractId, parcelIndex) {
+        window.openPaymentModal = async function(contractId, parcelIndex) {
             const contract = database.contracts.find(c => c.id === contractId);
             const parcel = contract.parcels[parcelIndex];
+            
+            let valorCorrigido = parcel.value;
+            if (new Date(parcel.dueDate) < new Date()) {
+                 valorCorrigido = await calcularValorCorrigido(parcel.value, parcel.dueDate);
+            }
             
             document.getElementById('pagamentoContractId').value = contractId;
             document.getElementById('pagamentoParcelIndex').value = parcelIndex;
             
             const infoDiv = document.getElementById('pagamentoInfo');
-            infoDiv.innerHTML = `<p><strong>Cliente:</strong> ${contract.clientName}</p><p><strong>Parcela ${parcel.number}:</strong> ${parcel.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>`;
+            infoDiv.innerHTML = `
+                <p><strong>Cliente:</strong> ${contract.clientName}</p>
+                <p><strong>Valor Original:</strong> ${parcel.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+                <p class="text-red-400"><strong>Valor Corrigido:</strong> ${valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>`;
             
-            document.getElementById('pagamentoValor').value = parcel.value.toFixed(2);
+            document.getElementById('pagamentoValor').value = valorCorrigido.toFixed(2);
             document.getElementById('pagamentoData').value = new Date().toISOString().split('T')[0];
             
             openModal('modalPagamento');
         }
 
-        function openClientHistoryModal(clientName) {
+        window.openClientHistoryModal = function(clientName) {
             const clientContracts = database.contracts.filter(c => c.clientName === clientName);
             const title = document.getElementById('clienteModalTitle');
             const content = document.getElementById('clienteModalContent');
@@ -949,7 +997,7 @@
             openModal('modalCliente');
         }
 
-        function openReportModal() {
+        window.openReportModal = function() {
             populateDateSelectors();
             generateAndShowReport(); 
             openModal('modalRelatorio');
@@ -1004,7 +1052,7 @@
             return { totalParcelas, totalExito, totalGeral: totalParcelas + totalExito, detailedPayments };
         }
 
-        function generateAndShowReport() {
+        window.generateAndShowReport = function() {
             const month = parseInt(document.getElementById('reportMonth').value);
             const year = parseInt(document.getElementById('reportYear').value);
             const resultDiv = document.getElementById('reportResult');
@@ -1032,7 +1080,7 @@
             resultDiv.innerHTML = `<div class="dark-card p-4 rounded-lg"><p class="text-gray-400">Total Recebido (Parcelas):</p><p class="text-2xl font-bold text-white">${income.totalParcelas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div><div class="dark-card p-4 rounded-lg"><p class="text-gray-400">Total Recebido (Êxito):</p><p class="text-2xl font-bold text-indigo-400">${income.totalExito.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div><div class="bg-gray-900 p-4 rounded-lg border border-gray-700"><p class="text-white font-bold">TOTAL GERAL RECEBIDO:</p><p class="text-3xl font-extrabold text-green-400">${income.totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>` + detailsHtml;
         }
 
-        function openExitoModal(contractId) {
+        window.openExitoModal = function(contractId) {
             const contract = database.contracts.find(c => c.id === contractId);
             if (!contract) return;
             document.getElementById('exitoContractId').value = contractId;
@@ -1040,7 +1088,7 @@
             openModal('modalExito');
         }
         
-        function createServiceTag(serviceName) {
+        window.createServiceTag = function(serviceName) {
             const container = document.getElementById('servicosContainer');
             const tag = document.createElement('div');
             tag.className = 'service-tag';
@@ -1048,27 +1096,115 @@
             container.appendChild(tag);
         }
 
-        function loadInitialData() {
+        // --- FUNÇÕES DE CÁLCULO DE JUROS (COM API REAL) ---
+        
+        async function fetchIPCA(startDate, endDate) {
+            // Formata as datas para dd/MM/YYYY
+            const formatApiDate = (date) => {
+                const d = new Date(date);
+                const day = String(d.getUTCDate()).padStart(2, '0');
+                const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+                const year = d.getUTCFullYear();
+                return `${day}/${month}/${year}`;
+            };
+
+            const startFormatted = formatApiDate(startDate);
+            const endFormatted = formatApiDate(endDate);
+
+            // Chave de cache para evitar múltiplas chamadas
+            const cacheKey = `${startFormatted}-${endFormatted}`;
+            if (ipcaCache.has(cacheKey)) {
+                return ipcaCache.get(cacheKey);
+            }
+            
+            // API do Banco Central para o índice IPCA (código 433)
+            const proxyUrl = 'https://api.allorigins.win/get?url='; // Proxy CORS
+            const apiBase = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados';
+            
+            try {
+                // Busca o valor do índice no mês de vencimento
+                const urlStart = `${proxyUrl}${encodeURIComponent(`${apiBase}?formato=json&dataInicial=${startFormatted}&dataFinal=${startFormatted}`)}`;
+                const responseStart = await fetch(urlStart);
+                if (!responseStart.ok) throw new Error('Falha ao buscar índice inicial do IPCA');
+                let dataStart = await responseStart.json();
+                dataStart = JSON.parse(dataStart.contents); // O proxy allorigins aninha a resposta
+                const indexStart = parseFloat(dataStart[0]?.valor);
+
+                // Busca o valor do índice mais recente
+                const urlEnd = `${proxyUrl}${encodeURIComponent(`${apiBase}/ultimos/1?formato=json`)}`;
+                const responseEnd = await fetch(urlEnd);
+                if (!responseEnd.ok) throw new Error('Falha ao buscar índice final do IPCA');
+                let dataEnd = await responseEnd.json();
+                dataEnd = JSON.parse(dataEnd.contents);
+                const indexEnd = parseFloat(dataEnd[0]?.valor);
+
+                if (!indexStart || !indexEnd) {
+                    console.warn("Não foi possível obter os índices IPCA, usando fator 1.");
+                    return 1; // Retorna 1 se falhar
+                }
+
+                // Calcula o fator de correção
+                const multiplicador = indexEnd / indexStart;
+                ipcaCache.set(cacheKey, multiplicador); // Salva no cache
+                return multiplicador;
+
+            } catch (error) {
+                console.error("Erro ao buscar dados do IPCA:", error);
+                return 1; // Retorna 1 (sem correção) em caso de erro
+            }
+        }
+
+        async function calcularValorCorrigido(valorOriginal, dataVencimento) {
             const hoje = new Date();
+            const vencimento = new Date(dataVencimento);
+            
+            if (hoje <= vencimento) {
+                return valorOriginal; // Não aplica juros se não venceu
+            }
+
+            // 1. Cálculo de Correção Monetária (IPCA Real)
+            const multiplicadorIPCA = await fetchIPCA(vencimento, hoje);
+            let valorCorrigido = valorOriginal * multiplicadorIPCA;
+
+            // 2. Cálculo de Juros de Mora (1% ao mês)
+            const diffInMs = hoje - vencimento;
+            const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+            const mesesAtraso = diffInDays / 30.44; // Média de dias no mês
+            
+            // Juros de 1% ao mês (0.01)
+            const fatorJuros = Math.pow((1 + 0.01), mesesAtraso);
+            let valorFinal = valorCorrigido * fatorJuros;
+            
+            return valorFinal;
+        }
+
+
+        // --- INICIALIZAÇÃO DA PÁGINA ---
+        function loadInitialData() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            if (loadingOverlay) loadingOverlay.style.display = 'flex';
+            const hoje = new Date();
+            
+            // Dados de exemplo para modo local
             database.contracts = [
                 {
-                    id: '1', clientName: 'ALBERTINO LAMEIRA CABRAL', advogadoResponsavel: 'Dra. Renata Fabris', serviceTypes: [{name:'Ação Judicial', status:'Pendente'}, {name:'Consultoria', status:'Concluído'}], paymentType: 'Parcelado', totalValue: 8000, successFee: '', observations: 'Cliente indicou que pode atrasar a última parcela. Ficar de olho.', parcels: [
-                        { number: 1, value: 4000, dueDate: new Date('2025-09-30T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 4000, paymentDate: new Date('2025-09-28T12:00:00Z').toISOString() },
-                        { number: 2, value: 4000, dueDate: new Date(new Date().setDate(hoje.getDate() - 15)).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null }
+                    id: '1', clientName: 'ALBERTINO LAMEIRA CABRAL', advogadoResponsavel: 'Dra. Renata Fabris', serviceTypes: [{name:'Ação Judicial', status:'Em Andamento'}, {name:'Consultoria', status:'Concluído'}], paymentType: 'Parcelado', totalValue: 8000, successFee: '', observations: 'Cliente indicou que pode atrasar a última parcela. Ficar de olho.', parcels: [
+                        { number: 1, value: 4000, dueDate: new Date('2023-09-30T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 4000, paymentDate: new Date('2023-09-28T12:00:00Z').toISOString() },
+                        { number: 2, value: 4000, dueDate: new Date(new Date().setDate(hoje.getDate() - 45)).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null } // Parcela vencida
                     ],
                     successFeeValueReceived: 0, successFeePaymentDate: null
                 },
                 {
                     id: '2', clientName: 'ANGELITA LIMA DANTAS', advogadoResponsavel: 'Dr. Felipe Gurjão', serviceTypes: [{name:'NOVO ACORDO (14x)', status:'Pendente'}], paymentType: 'Parcelado', totalValue: 21840, successFee: '', observations: '', parcels: [
-                        { number: 1, value: 1560, dueDate: new Date('2025-06-05T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 1560, paymentDate: new Date('2025-06-05T12:00:00Z').toISOString() },
-                        { number: 2, value: 1560, dueDate: new Date('2025-07-05T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 1560, paymentDate: new Date('2025-07-05T12:00:00Z').toISOString() },
-                        { number: 3, value: 1560, dueDate: new Date('2025-08-05T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 1560, paymentDate: new Date('2025-08-05T12:00:00Z').toISOString() },
-                        { number: 4, value: 1560, dueDate: new Date('2025-09-05T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 1560, paymentDate: new Date('2025-09-05T12:00:00Z').toISOString() },
-                        { number: 5, value: 1560, dueDate: new Date(new Date().setDate(hoje.getDate() + 15)).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null }
+                        { number: 1, value: 1560, dueDate: new Date('2023-06-05T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 1560, paymentDate: new Date('2023-06-05T12:00:00Z').toISOString() },
+                        { number: 2, value: 1560, dueDate: new Date('2023-07-05T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 1560, paymentDate: new Date('2023-07-05T12:00:00Z').toISOString() },
+                        { number: 3, value: 1560, dueDate: new Date('2023-08-05T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 1560, paymentDate: new Date('2023-08-05T12:00:00Z').toISOString() },
+                        { number: 4, value: 1560, dueDate: new Date('2023-09-05T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 1560, paymentDate: new Date('2023-09-05T12:00:00Z').toISOString() },
+                        { number: 5, value: 1560, dueDate: new Date(new Date().setDate(hoje.getDate() + 15)).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null } // A vencer
                     ],
                     successFeeValueReceived: 0, successFeePaymentDate: null
                 },
-                 { id: '3', clientName: 'ANDREU SOARES DE OLIVEIRA', advogadoResponsavel: 'Dra. Renata Fabris', serviceTypes: [{name:'Contrato de Risco', status:'Pendente'}], paymentType: 'Pró-Abono', totalValue: 0, successFee: '30%', observations: '', parcels: [], successFeeValueReceived: 0, successFeePaymentDate: null },
+                 { id: '3', clientName: 'ANDREU SOARES DE OLIVEIRA', advogadoResponsavel: 'Dra. Renata Fabris', serviceTypes: [{name:'Contrato de Risco', status:'50% Concluído'}], paymentType: 'Pró-Abono', totalValue: 0, successFee: '30%', observations: '', parcels: [], successFeeValueReceived: 0, successFeePaymentDate: null },
                  {
                     id: '4', clientName: 'A&A VISTORIA', advogadoResponsavel: 'Dr. Felipe Gurjão', serviceTypes: [{name:'Consultoria', status:'Concluído'}], paymentType: 'Entrada única', totalValue: 6000, successFee: '10MIL', observations: 'Pagamento de êxito atrelado ao processo X.', parcels: [
                         { number: 1, value: 6000, dueDate: new Date(new Date().setDate(hoje.getDate() - 40)).toISOString(), status: 'Paga', valuePaid: 6000, paymentDate: new Date(new Date().setDate(hoje.getDate() - 40)).toISOString() }
@@ -1077,10 +1213,11 @@
                 }
             ];
             render();
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            loadInitialData();
+            loadInitialData(); // Carrega os dados de exemplo
             
             document.getElementById('formContrato').addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -1088,7 +1225,7 @@
                 const clientName = document.getElementById('clienteNome').value;
                 const advogadoResponsavel = document.getElementById('advogadoResponsavel').value;
                 const serviceTags = document.querySelectorAll('#servicosContainer .service-tag');
-                const serviceTypes = Array.from(serviceTags).map(tag => ({ name: tag.firstChild.textContent, status: 'Pendente' }));
+                const serviceTypes = Array.from(serviceTags).map(tag => ({ name: tag.dataset.name, status: 'Pendente', deadline: tag.dataset.deadline || null }));
                 const paymentType = document.getElementById('contratoTipoPagamento').value;
                 const totalValue = parseFloat(document.getElementById('valorTotal').value) || 0;
                 const numParcels = parseInt(document.getElementById('numParcelas').value) || 1;
@@ -1100,41 +1237,36 @@
                     alert('Adicione pelo menos um tipo de serviço.');
                     return;
                 }
+                
+                const contractData = { 
+                    clientName, 
+                    advogadoResponsavel, 
+                    serviceTypes, 
+                    paymentType, 
+                    totalValue, 
+                    successFee, 
+                    observations, 
+                    parcels: [], 
+                    successFeeValueReceived: 0, 
+                    successFeePaymentDate: null 
+                };
+
+                if (numParcels > 0 && totalValue > 0) {
+                    if (!firstDueDate) { alert('Informe a data de vencimento da primeira parcela.'); return; }
+                    const parcelValue = totalValue / numParcels;
+                    let currentDueDate = new Date(firstDueDate + 'T12:00:00Z');
+                    for (let i = 0; i < numParcels; i++) {
+                        contractData.parcels.push({ number: i + 1, value: parcelValue, dueDate: new Date(currentDueDate).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null });
+                        currentDueDate.setMonth(currentDueDate.getMonth() + 1);
+                    }
+                }
 
                 if (contractId) {
-                    const contract = database.contracts.find(c => c.id === contractId);
-                    contract.clientName = clientName;
-                    contract.advogadoResponsavel = advogadoResponsavel;
-                    contract.serviceTypes = serviceTypes;
-                    contract.paymentType = paymentType;
-                    contract.totalValue = totalValue;
-                    contract.successFee = successFee;
-                    contract.observations = observations;
-                    const firstDueDateChanged = contract.parcels.length > 0 ? firstDueDate !== contract.parcels[0].dueDate.split('T')[0] : true;
-                    if (contract.parcels.length !== numParcels || firstDueDateChanged) {
-                        contract.parcels = [];
-                        if (numParcels > 0 && totalValue > 0) {
-                            if (!firstDueDate) { alert('Informe a data de vencimento da primeira parcela para recriar as parcelas.'); return; }
-                            const parcelValue = totalValue / numParcels;
-                            let currentDueDate = new Date(firstDueDate + 'T12:00:00Z');
-                            for (let i = 0; i < numParcels; i++) {
-                                contract.parcels.push({ number: i + 1, value: parcelValue, dueDate: new Date(currentDueDate).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null });
-                                currentDueDate.setMonth(currentDueDate.getMonth() + 1);
-                            }
-                        }
-                    }
+                    const index = database.contracts.findIndex(c => c.id === contractId);
+                    database.contracts[index] = { ...database.contracts[index], ...contractData, id: contractId };
                 } else {
-                    const newContract = { id: Date.now().toString(), clientName, advogadoResponsavel, serviceTypes, paymentType, totalValue, successFee, observations, parcels: [], successFeeValueReceived: 0, successFeePaymentDate: null };
-                     if (numParcels > 0 && totalValue > 0) {
-                        if (!firstDueDate) { alert('Informe a data de vencimento da primeira parcela.'); return; }
-                        const parcelValue = totalValue / numParcels;
-                        let currentDueDate = new Date(firstDueDate + 'T12:00:00Z');
-                        for (let i = 0; i < numParcels; i++) {
-                            newContract.parcels.push({ number: i + 1, value: parcelValue, dueDate: new Date(currentDueDate).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null });
-                            currentDueDate.setMonth(currentDueDate.getMonth() + 1);
-                        }
-                    }
-                    database.contracts.push(newContract);
+                    contractData.id = Date.now().toString();
+                    database.contracts.push(contractData);
                 }
                 render();
                 closeModal('modalContrato');
@@ -1146,8 +1278,9 @@
                 const parcelIndex = parseInt(document.getElementById('pagamentoParcelIndex').value);
                 const valuePaid = parseFloat(document.getElementById('pagamentoValor').value);
                 const paymentDate = document.getElementById('pagamentoData').value;
-
+                
                 const contract = database.contracts.find(c => c.id === contractId);
+
                 if (contract) {
                     contract.parcels[parcelIndex].status = 'Paga';
                     contract.parcels[parcelIndex].valuePaid = valuePaid;
@@ -1167,7 +1300,6 @@
                     contract.successFeePaymentDate = new Date().toISOString();
                     render();
                     closeModal('modalExito');
-                    e.target.reset();
                 } else {
                     alert('Valor inválido.');
                 }
@@ -1184,16 +1316,21 @@
                 });
             }
 
-            const servicoInput = document.getElementById('contratoServicoInput');
-            if(servicoInput) {
-                servicoInput.addEventListener('keydown', function(event) {
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        const serviceName = this.value.trim();
-                        if (serviceName) {
-                            createServiceTag(serviceName);
-                            this.value = '';
-                        }
+            // Listener para o novo botão "Adicionar Serviço"
+            const addServiceButton = document.getElementById('addServiceButton');
+            if(addServiceButton) {
+                addServiceButton.addEventListener('click', () => {
+                    const serviceInput = document.getElementById('contratoServicoInput');
+                    const deadlineInput = document.getElementById('contratoPrazoInput');
+                    const serviceName = serviceInput.value.trim();
+                    const deadline = deadlineInput.value;
+                    
+                    if (serviceName) {
+                        createServiceTag(serviceName, deadline);
+                        serviceInput.value = '';
+                        deadlineInput.value = '';
+                    } else {
+                        alert('Por favor, insira um nome para o serviço.');
                     }
                 });
             }
