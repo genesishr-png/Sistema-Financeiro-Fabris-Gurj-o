@@ -37,6 +37,7 @@
         ::-webkit-scrollbar-thumb:hover { background: #6b7280; } /* gray-500 */
         .service-tag {
             display: inline-flex;
+            justify-content: space-between;
             align-items: center;
             background-color: #374151; /* gray-700 */
             color: #d1d5db; /* gray-300 */
@@ -45,6 +46,7 @@
             font-size: 14px;
             margin-right: 4px;
             margin-bottom: 4px;
+            width: 100%; /* Ocupa a largura toda */
         }
         .service-tag-small {
             display: inline-block;
@@ -130,11 +132,27 @@
             border-radius: 6px;
             font-size: 14px;
         }
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(17, 24, 39, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            color: white;
+            font-size: 1.2rem;
+            transition: opacity 0.3s;
+            display: none; /* Escondido por padrão */
+        }
     </style>
 </head>
 <body class="text-gray-300">
 
-    <div id="loading-overlay" style="display: none;">
+    <div id="loading-overlay">
         <i class="fas fa-spinner fa-spin mr-3"></i> Carregando...
     </div>
 
@@ -425,14 +443,26 @@
         }
 
         async function render() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            if (loadingOverlay && !document.getElementById('page-inadimplentes').classList.contains('hidden')) {
+                 loadingOverlay.style.display = 'flex';
+            }
+
             if(document.getElementById('page-dashboard') && !document.getElementById('page-dashboard').classList.contains('hidden')) {
                 await renderKanban();
                 renderContractList();
             }
-            if(document.getElementById('page-inadimplentes') && !document.getElementById('page-inadimplentes').classList.contains('hidden')) await renderInadimplentesPage();
-            if(document.getElementById('page-servicos') && !document.getElementById('page-servicos').classList.contains('hidden')) renderServicosPage();
+            if(document.getElementById('page-inadimplentes') && !document.getElementById('page-inadimplentes').classList.contains('hidden')) {
+                await renderInadimplentesPage();
+            }
+            if(document.getElementById('page-servicos') && !document.getElementById('page-servicos').classList.contains('hidden')) {
+                renderServicosPage();
+            }
+            
             renderSortButtons();
             renderAdvogadoFilters();
+            
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
         }
         
         async function renderKanban() {
@@ -763,22 +793,40 @@
 
                 let servicesHtml = contract.serviceTypes.map((service, index) => {
                     let statusHtml, actionsHtml;
+                    let deadlineHtml = '';
+                    
+                    if (service.deadline) {
+                        const hoje = new Date();
+                        const prazo = new Date(service.deadline + "T12:00:00Z"); // Adiciona T12:00:00Z para evitar problemas de fuso
+                        const diffTime = prazo - hoje;
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        const formattedPrazo = prazo.toLocaleDateString('pt-BR', {timeZone: 'UTC'});
+
+                        if (diffDays < 0 && service.status !== 'Concluído') {
+                            deadlineHtml = `<span class="text-xs font-medium text-red-400"><i class="fas fa-exclamation-triangle"></i> Vencido: ${formattedPrazo}</span>`;
+                        } else if (diffDays <= 7 && service.status !== 'Concluído') {
+                            deadlineHtml = `<span class="text-xs font-medium text-yellow-400"><i class="fas fa-clock"></i> Vence: ${formattedPrazo}</span>`;
+                        } else {
+                            deadlineHtml = `<span class="text-xs text-gray-500"><i class="far fa-calendar-alt"></i> ${formattedPrazo}</span>`;
+                        }
+                    }
+
                     switch(service.status) {
                         case 'Concluído':
                             statusHtml = `<span class="text-xs font-bold text-teal-400">CONCLUÍDO</span>`;
-                            return `<li class="flex items-center justify-between p-2 bg-gray-900/50 rounded-md"><span class="text-gray-500 line-through"><i class="fas fa-check-circle text-teal-500 mr-2"></i>${service.name}</span>${statusHtml}</li>`;
+                            return `<li class="flex items-center justify-between p-2 bg-gray-900/50 rounded-md"><span class="text-gray-500 line-through"><i class="fas fa-check-circle text-teal-500 mr-2"></i>${service.name}</span><div class="flex items-center gap-2">${deadlineHtml}${statusHtml}</div></li>`;
                         case '50% Concluído':
                             statusHtml = `<span class="text-xs font-bold text-purple-400">50%</span>`;
                             actionsHtml = `<button onclick="updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`;
-                             return `<li class="flex items-center justify-between p-2 hover:bg-gray-700/50 rounded-md text-gray-300"><span><i class="fas fa-adjust text-purple-500 mr-2"></i>${service.name}</span><div class="flex items-center gap-2">${statusHtml}${actionsHtml}</div></li>`;
+                             return `<li class="flex items-center justify-between p-2 hover:bg-gray-700/50 rounded-md text-gray-300"><span><i class="fas fa-adjust text-purple-500 mr-2"></i>${service.name}</span><div class="flex items-center gap-2">${deadlineHtml}${statusHtml}${actionsHtml}</div></li>`;
                         case 'Em Andamento':
                              statusHtml = `<span class="text-xs font-bold text-yellow-400">EM ANDAMENTO</span>`;
                              actionsHtml = `<button onclick="updateServiceStatus('${contract.id}', ${index}, '50% Concluído')" class="text-xs bg-purple-600 text-white hover:bg-purple-500 font-semibold py-1 px-2 rounded-md transition-colors">50%</button><button onclick="updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`;
-                             return `<li class="flex items-center justify-between p-2 hover:bg-gray-700/50 rounded-md text-gray-300"><span><i class="fas fa-spinner fa-spin text-yellow-500 mr-2"></i>${service.name}</span><div class="flex items-center gap-2">${statusHtml}${actionsHtml}</div></li>`;
+                             return `<li class="flex items-center justify-between p-2 hover:bg-gray-700/50 rounded-md text-gray-300"><span><i class="fas fa-spinner fa-spin text-yellow-500 mr-2"></i>${service.name}</span><div class="flex items-center gap-2">${deadlineHtml}${statusHtml}${actionsHtml}</div></li>`;
                         default: // Pendente
                             statusHtml = `<span class="text-xs font-bold text-gray-400">PENDENTE</span>`;
                             actionsHtml = `<button onclick="updateServiceStatus('${contract.id}', ${index}, 'Em Andamento')" class="text-xs bg-yellow-600 text-white hover:bg-yellow-500 font-semibold py-1 px-2 rounded-md transition-colors">Iniciar</button>`;
-                            return `<li class="flex items-center justify-between p-2 hover:bg-gray-700/50 rounded-md text-gray-300"><span><i class="far fa-circle text-gray-500 mr-2"></i>${service.name}</span><div class="flex items-center gap-2">${statusHtml}${actionsHtml}</div></li>`;
+                            return `<li class="flex items-center justify-between p-2 hover:bg-gray-700/50 rounded-md text-gray-300"><span><i class="far fa-circle text-gray-500 mr-2"></i>${service.name}</span><div class="flex items-center gap-2">${deadlineHtml}${statusHtml}${actionsHtml}</div></li>`;
                     }
                 }).join('');
 
@@ -907,7 +955,7 @@
                 document.getElementById('contractId').value = contract.id;
                 document.getElementById('clienteNome').value = contract.clientName;
                 document.getElementById('advogadoResponsavel').value = contract.advogadoResponsavel;
-                contract.serviceTypes.forEach(service => createServiceTag(service.name));
+                contract.serviceTypes.forEach(service => createServiceTag(service.name, service.deadline));
                 document.getElementById('contratoTipoPagamento').value = contract.paymentType;
                 document.getElementById('valorTotal').value = contract.totalValue;
                 document.getElementById('numParcelas').value = contract.parcels.length || 1;
@@ -1088,11 +1136,22 @@
             openModal('modalExito');
         }
         
-        window.createServiceTag = function(serviceName) {
+        window.createServiceTag = function(serviceName, deadline) {
             const container = document.getElementById('servicosContainer');
             const tag = document.createElement('div');
             tag.className = 'service-tag';
-            tag.innerHTML = `<span>${serviceName}</span><span class="remove-tag" onclick="this.parentElement.remove()">&times;</span>`;
+            tag.dataset.name = serviceName;
+            tag.dataset.deadline = deadline || '';
+
+            let deadlineHtml = '';
+            if (deadline) {
+                const prazo = new Date(deadline + "T12:00:00Z");
+                deadlineHtml = `<span class="text-xs text-gray-400 ml-2">(${prazo.toLocaleDateString('pt-BR', {timeZone: 'UTC'})})</span>`;
+            }
+
+            tag.innerHTML = `
+                <span>${serviceName}${deadlineHtml}</span>
+                <span class="remove-tag" onclick="this.parentElement.remove()">&times;</span>`;
             container.appendChild(tag);
         }
 
@@ -1183,35 +1242,10 @@
         function loadInitialData() {
             const loadingOverlay = document.getElementById('loading-overlay');
             if (loadingOverlay) loadingOverlay.style.display = 'flex';
-            const hoje = new Date();
             
-            // Dados de exemplo para modo local
-            database.contracts = [
-                {
-                    id: '1', clientName: 'ALBERTINO LAMEIRA CABRAL', advogadoResponsavel: 'Dra. Renata Fabris', serviceTypes: [{name:'Ação Judicial', status:'Em Andamento'}, {name:'Consultoria', status:'Concluído'}], paymentType: 'Parcelado', totalValue: 8000, successFee: '', observations: 'Cliente indicou que pode atrasar a última parcela. Ficar de olho.', parcels: [
-                        { number: 1, value: 4000, dueDate: new Date('2023-09-30T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 4000, paymentDate: new Date('2023-09-28T12:00:00Z').toISOString() },
-                        { number: 2, value: 4000, dueDate: new Date(new Date().setDate(hoje.getDate() - 45)).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null } // Parcela vencida
-                    ],
-                    successFeeValueReceived: 0, successFeePaymentDate: null
-                },
-                {
-                    id: '2', clientName: 'ANGELITA LIMA DANTAS', advogadoResponsavel: 'Dr. Felipe Gurjão', serviceTypes: [{name:'NOVO ACORDO (14x)', status:'Pendente'}], paymentType: 'Parcelado', totalValue: 21840, successFee: '', observations: '', parcels: [
-                        { number: 1, value: 1560, dueDate: new Date('2023-06-05T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 1560, paymentDate: new Date('2023-06-05T12:00:00Z').toISOString() },
-                        { number: 2, value: 1560, dueDate: new Date('2023-07-05T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 1560, paymentDate: new Date('2023-07-05T12:00:00Z').toISOString() },
-                        { number: 3, value: 1560, dueDate: new Date('2023-08-05T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 1560, paymentDate: new Date('2023-08-05T12:00:00Z').toISOString() },
-                        { number: 4, value: 1560, dueDate: new Date('2023-09-05T12:00:00Z').toISOString(), status: 'Paga', valuePaid: 1560, paymentDate: new Date('2023-09-05T12:00:00Z').toISOString() },
-                        { number: 5, value: 1560, dueDate: new Date(new Date().setDate(hoje.getDate() + 15)).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null } // A vencer
-                    ],
-                    successFeeValueReceived: 0, successFeePaymentDate: null
-                },
-                 { id: '3', clientName: 'ANDREU SOARES DE OLIVEIRA', advogadoResponsavel: 'Dra. Renata Fabris', serviceTypes: [{name:'Contrato de Risco', status:'50% Concluído'}], paymentType: 'Pró-Abono', totalValue: 0, successFee: '30%', observations: '', parcels: [], successFeeValueReceived: 0, successFeePaymentDate: null },
-                 {
-                    id: '4', clientName: 'A&A VISTORIA', advogadoResponsavel: 'Dr. Felipe Gurjão', serviceTypes: [{name:'Consultoria', status:'Concluído'}], paymentType: 'Entrada única', totalValue: 6000, successFee: '10MIL', observations: 'Pagamento de êxito atrelado ao processo X.', parcels: [
-                        { number: 1, value: 6000, dueDate: new Date(new Date().setDate(hoje.getDate() - 40)).toISOString(), status: 'Paga', valuePaid: 6000, paymentDate: new Date(new Date().setDate(hoje.getDate() - 40)).toISOString() }
-                    ],
-                    successFeeValueReceived: 0, successFeePaymentDate: null
-                }
-            ];
+            // Remove dados de exemplo
+            database.contracts = [];
+            
             render();
             if (loadingOverlay) loadingOverlay.style.display = 'none';
         }
@@ -1225,7 +1259,11 @@
                 const clientName = document.getElementById('clienteNome').value;
                 const advogadoResponsavel = document.getElementById('advogadoResponsavel').value;
                 const serviceTags = document.querySelectorAll('#servicosContainer .service-tag');
-                const serviceTypes = Array.from(serviceTags).map(tag => ({ name: tag.dataset.name, status: 'Pendente', deadline: tag.dataset.deadline || null }));
+                const serviceTypes = Array.from(serviceTags).map(tag => ({ 
+                    name: tag.dataset.name, 
+                    status: 'Pendente', 
+                    deadline: tag.dataset.deadline || null 
+                }));
                 const paymentType = document.getElementById('contratoTipoPagamento').value;
                 const totalValue = parseFloat(document.getElementById('valorTotal').value) || 0;
                 const numParcels = parseInt(document.getElementById('numParcelas').value) || 1;
