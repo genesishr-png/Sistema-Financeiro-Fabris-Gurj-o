@@ -219,6 +219,9 @@
                 <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-4">
                     <h2 class="text-2xl font-semibold text-white">Todos os Contratos</h2>
                     <div class="flex items-center gap-4">
+                        <button onclick="exportContractsCSV()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2 text-sm">
+                            <i class="fas fa-file-csv"></i> Exportar (CSV)
+                        </button>
                         <select id="advogadoFilter" onchange="renderContractList()" class="filter-select"></select>
                         <div class="flex items-center gap-2">
                            <span class="text-sm text-gray-400">Ordenar por:</span>
@@ -389,7 +392,10 @@
                     <select id="reportYear" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white"></select>
                 </div>
             </div>
-             <button onclick="generateAndShowReport()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg mb-6">Gerar Relatório</button>
+             <div class="flex gap-4 mb-6">
+                <button onclick="generateAndShowReport()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg">Gerar Relatório</button>
+                <button onclick="exportReportCSV()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Exportar (CSV)</button>
+             </div>
             <div id="reportResult" class="space-y-3"></div>
         </div>
     </div>
@@ -1176,11 +1182,9 @@
                 return ipcaCache.get(cacheKey);
             }
             
-            // API do Banco Central para o índice IPCA (código 433)
+            // API do Banco Central para o índice IPCA (código 16121)
             const proxyUrl = 'https://api.allorigins.win/get?url='; // Proxy CORS
-            // Código 16121: IPCA - (N.índice) (Base: dez 1993 = 100)
-            // Este é o índice acumulado, correto para correção monetária.
-            const apiBase = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.16121/dados';
+            const apiBase = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.16121/dados'; // Cód 16121 = Índice de preços
             
             try {
                 // Busca o valor do índice no mês de vencimento
@@ -1232,8 +1236,8 @@
             const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
             const mesesAtraso = diffInDays / 30.44; // Média de dias no mês
             
-            // Juros de 1% ao mês (0.01)
-            const fatorJuros = Math.pow((1 + 0.01), mesesAtraso);
+            // Juros SIMPLES de 1% ao mês (0.01)
+            const fatorJuros = (1 + (0.01 * mesesAtraso));
             let valorFinal = valorCorrigido * fatorJuros;
             
             return valorFinal;
