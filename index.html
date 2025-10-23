@@ -441,13 +441,15 @@
             try {
                 // PASSO IMPORTANTE: Cole aqui a configuração do seu Firebase!
                 const firebaseConfig = {
-                    apiKey: "AIzaSyA0TWb7DgZAHNl3TuoK3xQD-ANvCcQIDK4",
-                    authDomain: "fabrisgurjao.firebaseapp.com",
-                    projectId: "fabrisgurjao",
-                    storageBucket: "fabrisgurjao.appspot.com",
-                    messagingSenderId: "466702265991",
-                    appId: "1:466702265991:web:78c4d98b47cab537921222",
-                    measurementId: "G-E99R5TFMQK"
+                  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  apiKey: "AIzaSyA0TWb7DgZAHNl3TuoK3xQD-ANvCcQIDK4",
+  authDomain: "fabrisgurjao.firebaseapp.com",
+  projectId: "fabrisgurjao",
+  storageBucket: "fabrisgurjao.firebasestorage.app",
+  messagingSenderId: "466702265991",
+  appId: "1:466702265991:web:78c4d98b47cab537921222",
+  measurementId: "G-E99R5TFMQK"
+
                 };
 
                 const appId = typeof __app_id !== 'undefined' ? __app_id : 'fabrisgurjao-app'; // Use um ID padrão
