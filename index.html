@@ -1243,6 +1243,81 @@
             return valorFinal;
         }
 
+        // --- FUNÇÕES DE EXPORTAÇÃO CSV ---
+
+        function formatCSVCell(data) {
+            if (data == null) return '';
+            let str = String(data);
+            if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                str = str.replace(/"/g, '""');
+                return `"${str}"`;
+            }
+            return str;
+        }
+
+        function downloadCSV(csvContent, filename) {
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        window.exportContractsCSV = function() {
+            const headers = ["ID", "Cliente", "Advogado", "Tipo Pagamento", "Valor Total", "Taxa Êxito", "Status", "Serviços", "Observações"];
+            let csvRows = [headers.join(',')];
+
+            database.contracts.forEach(c => {
+                const status = getContractStatus(c).statusText;
+                const services = c.serviceTypes.map(s => s.name).join('; '); // Usar ; para não conflitar
+                const row = [
+                    c.id,
+                    c.clientName,
+                    c.advogadoResponsavel,
+                    c.paymentType,
+                    c.totalValue,
+                    c.successFee,
+                    status,
+                    services,
+                    c.observations
+                ].map(formatCSVCell).join(',');
+                csvRows.push(row);
+            });
+
+            downloadCSV(csvRows.join('\n'), 'contratos_export.csv');
+        }
+
+        window.exportReportCSV = function() {
+            const month = parseInt(document.getElementById('reportMonth').value);
+            const year = parseInt(document.getElementById('reportYear').value);
+            const income = calculateMonthlyIncome(year, month);
+
+            if (income.detailedPayments.length === 0) {
+                alert("Não há dados para exportar neste relatório.");
+                return;
+            }
+
+            const headers = ["Cliente", "Tipo", "Data", "Valor"];
+            let csvRows = [headers.join(',')];
+
+            income.detailedPayments.forEach(p => {
+                const row = [
+                    p.clientName,
+                    p.type,
+                    p.date,
+                    p.value
+                ].map(formatCSVCell).join(',');
+                csvRows.push(row);
+            });
+            
+            const monthName = document.getElementById('reportMonth').options[month].text;
+            downloadCSV(csvRows.join('\n'), `relatorio_${monthName}_${year}.csv`);
+        }
+
 
         // --- INICIALIZAÇÃO DA PÁGINA ---
         function loadInitialData() {
@@ -1382,5 +1457,4 @@
     </script>
 </body>
 </html>
-
 
