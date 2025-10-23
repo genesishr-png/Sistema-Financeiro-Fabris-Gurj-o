@@ -146,14 +146,13 @@
             color: white;
             font-size: 1.2rem;
             transition: opacity 0.3s;
-            display: none; /* Escondido por padrão */
         }
     </style>
 </head>
 <body class="text-gray-300">
 
     <div id="loading-overlay">
-        <i class="fas fa-spinner fa-spin mr-3"></i> Carregando...
+        <i class="fas fa-spinner fa-spin mr-3"></i> Conectando ao banco de dados...
     </div>
 
     <div class="container mx-auto p-4 md:p-8">
@@ -423,15 +422,69 @@
 
     <div id="modal-backdrop" class="modal-backdrop"></div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
         // --- VARIÁVEIS GLOBAIS ---
+        let db;
+        let contractsCollection;
         let database = { contracts: [] };
         let currentContractSort = 'name-asc';
         let currentInadimplentesSort = 'days-desc';
         let currentServicosSort = 'name-asc';
         let ipcaCache = new Map(); // Cache para os valores do IPCA
 
-        // --- FUNÇÕES DE NAVEGAÇÃO E RENDERIZAÇÃO ---
+        // --- INICIALIZAÇÃO E AUTENTICAÇÃO ---
+        async function initializeAndAuth() {
+            try {
+                // PASSO IMPORTANTE: Cole aqui a configuração do seu Firebase!
+                const firebaseConfig = {
+                    apiKey: "AIzaSyA0TWb7DgZAHNl3TuoK3xQD-ANvCcQIDK4",
+                    authDomain: "fabrisgurjao.firebaseapp.com",
+                    projectId: "fabrisgurjao",
+                    storageBucket: "fabrisgurjao.appspot.com",
+                    messagingSenderId: "466702265991",
+                    appId: "1:466702265991:web:78c4d98b47cab537921222",
+                    measurementId: "G-E99R5TFMQK"
+                };
+
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'fabrisgurjao-app'; // Use um ID padrão
+                const finalConfig = (typeof __firebase_config !== 'undefined' && __firebase_config !== '') ? JSON.parse(__firebase_config) : firebaseConfig;
+                
+                const app = initializeApp(finalConfig);
+                db = getFirestore(app);
+                const auth = getAuth();
+                setLogLevel('debug');
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                // Caminho da coleção ajustado
+                contractsCollection = collection(db, `contracts`);
+                setupSnapshotListener();
+
+            } catch (error) {
+                console.error("Erro na inicialização ou autenticação:", error);
+                document.getElementById('loading-overlay').textContent = "Erro ao conectar. Verifique as credenciais e regras de segurança.";
+            }
+        }
+        
+        function setupSnapshotListener() {
+            onSnapshot(contractsCollection, (snapshot) => {
+                database.contracts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                render();
+                document.getElementById('loading-overlay').style.display = 'none';
+            }, (error) => {
+                console.error("Erro ao buscar dados:", error);
+                document.getElementById('loading-overlay').textContent = "Erro ao carregar dados. Verifique as regras de segurança do Firestore.";
+            });
+        }
+        
         window.showPage = function(pageId) {
             ['page-dashboard', 'page-inadimplentes', 'page-servicos'].forEach(id => {
                 if(document.getElementById(id)) document.getElementById(id).classList.add('hidden');
@@ -450,7 +503,7 @@
 
         async function render() {
             const loadingOverlay = document.getElementById('loading-overlay');
-            if (loadingOverlay && !document.getElementById('page-inadimplentes').classList.contains('hidden')) {
+            if (loadingOverlay && (!document.getElementById('page-dashboard').classList.contains('hidden') || !document.getElementById('page-inadimplentes').classList.contains('hidden'))) {
                  loadingOverlay.style.display = 'flex';
             }
 
