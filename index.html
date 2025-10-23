@@ -132,13 +132,13 @@
             border-radius: 6px;
             font-size: 14px;
         }
-        #loading-overlay {
+        #loading-overlay, #auth-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(17, 24, 39, 0.8);
+            background-color: rgba(17, 24, 39, 0.9);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -147,32 +147,74 @@
             font-size: 1.2rem;
             transition: opacity 0.3s;
         }
+        #auth-overlay {
+            z-index: 99; /* Fica abaixo do loading, mas acima do app */
+        }
+        #app-container {
+            display: none; /* Começa escondido */
+        }
     </style>
 </head>
 <body class="text-gray-300">
 
     <div id="loading-overlay">
-        <i class="fas fa-spinner fa-spin mr-3"></i> Conectando ao banco de dados...
+        <i class="fas fa-spinner fa-spin mr-3"></i> Conectando...
     </div>
 
-    <div class="container mx-auto p-4 md:p-8">
+    <!-- Tela de Login -->
+    <div id="auth-overlay">
+        <!-- **** ALTERAÇÃO DE COR AQUI **** -->
+        <div class="w-full max-w-md p-8 space-y-6 bg-[#1a173a] rounded-lg shadow-xl border border-indigo-800">
+            <img src="https://www.fabrisegurjao.adv.br/netpage/data/uploads/2019/12/logo-fabris-e-gurjao-491x325px.png" alt="Logo" class="w-48 mx-auto">
+            <h2 class="text-2xl font-bold text-center text-white">Login</h2>
+            
+            <div id="auth-error" class="hidden p-3 text-sm text-red-300 bg-red-800/50 border border-red-700 rounded-lg"></div>
+
+            <!-- Formulário de Login -->
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label for="login-email" class="block text-sm font-medium text-gray-400">Email</label>
+                    <input type="email" id="login-email" required class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white">
+                </div>
+                <div>
+                    <label for="login-password" class="block text-sm font-medium text-gray-400">Senha</label>
+                    <input type="password" id="login-password" required class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white">
+                </div>
+                <!-- **** ALTERAÇÃO DE ESPAÇAMENTO AQUI (mt-8) **** -->
+                <button type="submit" class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mt-8">Entrar</button>
+            </form>
+            
+            <!-- Formulário de Cadastro (REMOVIDO) -->
+            
+            <!-- Link de alternância (REMOVIDO) -->
+        </div>
+    </div>
+
+    <!-- Conteúdo Principal do App (Começa escondido) -->
+    <div id="app-container" class="container mx-auto p-4 md:p-8">
         <header class="mb-6 header-with-logo">
             <div>
                 <h1 class="text-3xl font-bold text-white">Painel de Gestão</h1>
                 <p class="text-gray-400">Controle Financeiro e de Produção do Escritório</p>
             </div>
-            <img src="https://www.fabrisegurjao.adv.br/netpage/data/uploads/2019/12/logo-fabris-e-gurjao-491x325px.png" alt="Fabris e Gurjão Logo" class="header-logo">
+            <div class="flex items-center">
+                <span id="user-email" class="text-sm text-gray-400 mr-4"></span>
+                <button id="logout-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded-lg shadow-md text-sm flex items-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </button>
+                <img src="https://www.fabrisegurjao.adv.br/netpage/data/uploads/2019/12/logo-fabris-e-gurjao-491x325px.png" alt="Fabris e Gurjão Logo" class="header-logo" style="position: relative; right: auto; top: auto; transform: none; margin-left: 20px;">
+            </div>
         </header>
 
         <div class="border-b border-gray-700 mb-8">
             <nav class="flex -mb-px">
-                <a onclick="showPage('page-dashboard')" id="tab-dashboard" class="nav-tab active">
+                <a onclick="window.App.showPage('page-dashboard')" id="tab-dashboard" class="nav-tab active">
                     <i class="fas fa-tachometer-alt mr-2"></i>Painel Principal
                 </a>
-                <a onclick="showPage('page-inadimplentes')" id="tab-inadimplentes" class="nav-tab">
+                <a onclick="window.App.showPage('page-inadimplentes')" id="tab-inadimplentes" class="nav-tab">
                     <i class="fas fa-exclamation-triangle mr-2"></i>Inadimplentes
                 </a>
-                <a onclick="showPage('page-servicos')" id="tab-servicos" class="nav-tab">
+                <a onclick="window.App.showPage('page-servicos')" id="tab-servicos" class="nav-tab">
                     <i class="fas fa-tasks mr-2"></i>Serviços
                 </a>
             </nav>
@@ -181,10 +223,10 @@
         <!-- Conteúdo da Página: Painel Principal -->
         <div id="page-dashboard">
             <div class="flex flex-wrap gap-4 mb-8">
-                <button onclick="openContractModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
+                <button onclick="window.App.openContractModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
                     <i class="fas fa-plus-circle"></i> Novo Contrato
                 </button>
-                <button onclick="openReportModal()" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
+                <button onclick="window.App.openReportModal()" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
                     <i class="fas fa-chart-line"></i> Relatório Mensal
                 </button>
             </div>
@@ -218,10 +260,10 @@
                 <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-4">
                     <h2 class="text-2xl font-semibold text-white">Todos os Contratos</h2>
                     <div class="flex items-center gap-4">
-                        <button onclick="exportContractsCSV()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2 text-sm">
+                        <button onclick="window.App.exportContractsCSV()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2 text-sm">
                             <i class="fas fa-file-csv"></i> Exportar (CSV)
                         </button>
-                        <select id="advogadoFilter" onchange="renderContractList()" class="filter-select"></select>
+                        <select id="advogadoFilter" onchange="window.App.renderContractList()" class="filter-select"></select>
                         <div class="flex items-center gap-2">
                            <span class="text-sm text-gray-400">Ordenar por:</span>
                            <div id="contractSortButtons" class="flex gap-1"></div>
@@ -229,7 +271,7 @@
                     </div>
                 </div>
                 <div class="mb-4">
-                    <input type="text" id="searchInput" onkeyup="renderContractList()" placeholder="🔎 Pesquisar por cliente ou tipo de serviço..." class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white">
+                    <input type="text" id="searchInput" onkeyup="window.App.renderContractList()" placeholder="🔎 Pesquisar por cliente ou tipo de serviço..." class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white">
                 </div>
                 <div id="contractListContainer"></div>
             </div>
@@ -252,12 +294,12 @@
             <div class="flex justify-between items-center mb-4">
                  <h2 class="text-2xl font-semibold text-white">Controle de Produção de Serviços</h2>
                  <div class="flex items-center gap-4">
-                    <select id="servicosAdvogadoFilter" onchange="renderServicosPage()" class="filter-select"></select>
+                    <select id="servicosAdvogadoFilter" onchange="window.App.renderServicosPage()" class="filter-select"></select>
                     <div class="flex items-center gap-2">
                         <span class="text-sm text-gray-400">Ordenar por:</span>
                         <div id="servicosSortButtons" class="flex gap-1"></div>
                     </div>
-                    <input type="text" id="servicosSearchInput" onkeyup="renderServicosPage()" placeholder="🔎 Pesquisar..." class="w-full md:w-auto p-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white">
+                    <input type="text" id="servicosSearchInput" onkeyup="window.App.renderServicosPage()" placeholder="🔎 Pesquisar..." class="w-full md:w-auto p-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white">
                  </div>
             </div>
              <div id="servicosListContainer" class="space-y-6"></div>
@@ -269,7 +311,7 @@
         <div class="p-6">
             <div class="flex justify-between items-center mb-4">
                 <h2 id="modalContratoTitle" class="text-2xl font-bold text-white">Cadastrar Novo Contrato</h2>
-                <button onclick="closeModal('modalContrato')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+                <button onclick="window.App.closeModal('modalContrato')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
             </div>
             <form id="formContrato">
                 <input type="hidden" id="contractId">
@@ -332,7 +374,7 @@
                     <input type="text" id="taxaExito" placeholder="Ex: 20%, 10000, 5 SALARIOS" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white">
                 </div>
                 <div class="flex justify-end mt-6">
-                    <button type="button" onclick="closeModal('modalContrato')" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg mr-2">Cancelar</button>
+                    <button type="button" onclick="window.App.closeModal('modalContrato')" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg mr-2">Cancelar</button>
                     <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Salvar</button>
                 </div>
             </form>
@@ -343,7 +385,7 @@
          <div class="p-6">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-2xl font-bold text-white">Registrar Pagamento</h2>
-                <button onclick="closeModal('modalPagamento')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+                <button onclick="window.App.closeModal('modalPagamento')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
             </div>
             <form id="formPagamento">
                 <div id="pagamentoInfo" class="mb-4 bg-gray-700 p-3 rounded-md text-white"></div>
@@ -358,7 +400,7 @@
                 <input type="hidden" id="pagamentoContractId">
                 <input type="hidden" id="pagamentoParcelIndex">
                 <div class="flex justify-end mt-6">
-                    <button type="button" onclick="closeModal('modalPagamento')" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg mr-2">Cancelar</button>
+                    <button type="button" onclick="window.App.closeModal('modalPagamento')" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg mr-2">Cancelar</button>
                     <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Confirmar Pagamento</button>
                 </div>
             </form>
@@ -369,7 +411,7 @@
          <div class="p-6">
             <div class="flex justify-between items-center mb-4">
                 <h2 id="clienteModalTitle" class="text-2xl font-bold text-white"></h2>
-                <button onclick="closeModal('modalCliente')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+                <button onclick="window.App.closeModal('modalCliente')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
             </div>
             <div id="clienteModalContent" class="space-y-6"></div>
         </div>
@@ -379,7 +421,7 @@
         <div class="p-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-white">Relatório Financeiro Mensal</h2>
-                <button onclick="closeModal('modalRelatorio')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+                <button onclick="window.App.closeModal('modalRelatorio')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
             </div>
             <div class="flex gap-4 mb-4">
                 <div class="flex-1">
@@ -392,8 +434,8 @@
                 </div>
             </div>
              <div class="flex gap-4 mb-6">
-                <button onclick="generateAndShowReport()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg">Gerar Relatório</button>
-                <button onclick="exportReportCSV()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Exportar (CSV)</button>
+                <button onclick="window.App.generateAndShowReport()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg">Gerar Relatório</button>
+                <button onclick="window.App.exportReportCSV()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Exportar (CSV)</button>
              </div>
             <div id="reportResult" class="space-y-3"></div>
         </div>
@@ -403,7 +445,7 @@
         <div class="p-6">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-2xl font-bold text-white">Registrar Recebimento de Êxito</h2>
-                <button onclick="closeModal('modalExito')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+                <button onclick="window.App.closeModal('modalExito')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
             </div>
             <form id="formExito">
                 <div id="exitoInfo" class="mb-4 bg-gray-700 p-3 rounded-md"></div>
@@ -413,7 +455,7 @@
                 </div>
                 <input type="hidden" id="exitoContractId">
                 <div class="flex justify-end mt-6">
-                    <button type="button" onclick="closeModal('modalExito')" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg mr-2">Cancelar</button>
+                    <button type="button" onclick="window.App.closeModal('modalExito')" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg mr-2">Cancelar</button>
                     <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Salvar Recebimento</button>
                 </div>
             </form>
@@ -425,12 +467,33 @@
     <script type="module">
         // --- INÍCIO: Importações do Firebase ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { 
+            getAuth, 
+            signInAnonymously, 
+            signInWithCustomToken, 
+            onAuthStateChanged,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            onSnapshot, 
+            doc, 
+            addDoc, 
+            updateDoc, 
+            deleteDoc, 
+            setLogLevel 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         // --- FIM: Importações do Firebase ---
+
+        // --- OBJETO GLOBAL PARA EXPOR FUNÇÕES ---
+        window.App = {}; // Objeto global para "pendurar" nossas funções
 
         // --- VARIÁVEIS GLOBAIS ---
         let db;
+        let auth;
         let contractsCollection;
         let database = { contracts: [] };
         let currentContractSort = 'name-asc';
@@ -452,27 +515,44 @@
                     measurementId: "G-E99R5TFMQK"
                 };
 
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'fabrisgurjao-app'; // Use um ID padrão
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'fabrisgurjao-app';
                 const finalConfig = (typeof __firebase_config !== 'undefined' && __firebase_config !== '') ? JSON.parse(__firebase_config) : firebaseConfig;
                 
                 const app = initializeApp(finalConfig);
                 db = getFirestore(app);
-                const auth = getAuth();
+                auth = getAuth(app); // Obter a instância do Auth
                 setLogLevel('debug');
 
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
+                // Listener do estado de autenticação
+                onAuthStateChanged(auth, (user) => {
+                    const loadingOverlay = document.getElementById('loading-overlay');
+                    const authOverlay = document.getElementById('auth-overlay');
+                    const appContainer = document.getElementById('app-container');
 
-                // Caminho da coleção ajustado
-                contractsCollection = collection(db, `contracts`);
-                setupSnapshotListener();
+                    if (user) {
+                        // Usuário está logado
+                        console.log("Usuário logado:", user.email);
+                        document.getElementById('user-email').textContent = user.email;
+                        authOverlay.style.display = 'none';
+                        appContainer.style.display = 'block';
+                        
+                        // Configura o listener do banco de dados SÓ DEPOIS de logar
+                        contractsCollection = collection(db, `contracts`);
+                        setupSnapshotListener();
+                        
+                        loadingOverlay.style.display = 'none';
+                    } else {
+                        // Usuário está deslogado
+                        console.log("Nenhum usuário logado.");
+                        authOverlay.style.display = 'flex';
+                        appContainer.style.display = 'none';
+                        loadingOverlay.style.display = 'none';
+                    }
+                });
 
             } catch (error) {
                 console.error("Erro na inicialização ou autenticação:", error);
-                document.getElementById('loading-overlay').textContent = "Erro ao conectar. Verifique as credenciais e regras de segurança.";
+                document.getElementById('loading-overlay').textContent = "Erro ao conectar. Verifique as credenciais.";
             }
         }
         
@@ -480,7 +560,6 @@
             onSnapshot(contractsCollection, (snapshot) => {
                 database.contracts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 render();
-                document.getElementById('loading-overlay').style.display = 'none';
             }, (error) => {
                 console.error("Erro ao buscar dados:", error);
                 document.getElementById('loading-overlay').textContent = "Erro ao carregar dados. Verifique as regras de segurança do Firestore.";
@@ -488,7 +567,7 @@
         }
         
         // --- FUNÇÕES DE NAVEGAÇÃO E RENDERIZAÇÃO ---
-        window.showPage = function(pageId) {
+        const showPage = (pageId) => {
             ['page-dashboard', 'page-inadimplentes', 'page-servicos'].forEach(id => {
                 if(document.getElementById(id)) document.getElementById(id).classList.add('hidden');
             });
@@ -503,6 +582,7 @@
             if (pageId === 'page-inadimplentes') renderInadimplentesPage();
             if (pageId === 'page-servicos') renderServicosPage();
         }
+        window.App.showPage = showPage;
 
         async function render() {
             const loadingOverlay = document.getElementById('loading-overlay');
@@ -548,7 +628,7 @@
             let totalVencido = 0;
 
             for (const contract of database.contracts) {
-                if (!contract.parcels) contract.parcels = []; // Adiciona verificação
+                if (!contract.parcels) contract.parcels = []; 
                 let remainingValue = contract.parcels.reduce((sum, p) => p.status === 'Pendente' ? sum + p.value : sum, 0);
 
                 for (let i = 0; i < contract.parcels.length; i++) {
@@ -621,7 +701,7 @@
             }
 
             if (type !== 'paga') {
-                actionButton = `<button onclick="openPaymentModal('${contract.id}', ${index})" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2"><i class="fas fa-check"></i> Registrar Pagamento</button>`;
+                actionButton = `<button onclick="window.App.openPaymentModal('${contract.id}', ${index})" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2"><i class="fas fa-check"></i> Registrar Pagamento</button>`;
             } else {
                  const formattedPaidValue = parcel.valuePaid.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                  const paymentDate = new Date(parcel.paymentDate).toLocaleDateString('pt-BR', {timeZone: 'UTC'});
@@ -656,7 +736,7 @@
                         <p class="text-sm text-gray-400">Bonificação Pendente</p>
                         <p class="text-2xl font-semibold text-indigo-400">${contract.successFee}</p>
                     </div>
-                    <button onclick="openExitoModal('${contract.id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2"><i class="fas fa-gavel"></i> Registrar Recebimento</button>
+                    <button onclick="window.App.openExitoModal('${contract.id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2"><i class="fas fa-gavel"></i> Registrar Recebimento</button>
                 </div>`;
         }
 
@@ -668,7 +748,7 @@
                 <div class="dark-card p-6 rounded-lg shadow-lg"><h3 class="text-lg font-semibold text-gray-400">Contratos Ativos</h3><p class="text-3xl font-bold text-white">${totalContratos}</p></div>`;
         }
         
-        window.renderContractList = function() {
+        const renderContractList = function() {
             const listContainer = document.getElementById('contractListContainer');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const advogadoFilter = document.getElementById('advogadoFilter').value;
@@ -722,9 +802,9 @@
                             </div>
                         </div>
                         <div class="bg-gray-900/50 px-4 py-2 flex justify-end gap-2">
-                           <button onclick="openClientHistoryModal('${contract.clientName}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-indigo-400 hover:bg-indigo-900/20 py-1 px-3 rounded-md transition-colors" title="Ver Histórico do Cliente"><i class="fas fa-eye"></i> Histórico</button>
-                           <button onclick="openContractModal('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-green-400 hover:bg-green-900/20 py-1 px-3 rounded-md transition-colors" title="Editar Contrato"><i class="fas fa-pencil-alt"></i> Editar</button>
-                           <button onclick="deleteContract('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 py-1 px-3 rounded-md transition-colors" title="Excluir Contrato"><i class="fas fa-trash-alt"></i> Excluir</button>
+                           <button onclick="window.App.openClientHistoryModal('${contract.clientName}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-indigo-400 hover:bg-indigo-900/20 py-1 px-3 rounded-md transition-colors" title="Ver Histórico do Cliente"><i class="fas fa-eye"></i> Histórico</button>
+                           <button onclick="window.App.openContractModal('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-green-400 hover:bg-green-900/20 py-1 px-3 rounded-md transition-colors" title="Editar Contrato"><i class="fas fa-pencil-alt"></i> Editar</button>
+                           <button onclick="window.App.deleteContract('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 py-1 px-3 rounded-md transition-colors" title="Excluir Contrato"><i class="fas fa-trash-alt"></i> Excluir</button>
                         </div>
                     </div>
                 `;
@@ -732,6 +812,7 @@
             html += `</div>`;
             listContainer.innerHTML = html;
         }
+        window.App.renderContractList = renderContractList; // Expor ao HTML
 
         function getContractStatus(contract) {
             const hasPendingParcels = (contract.parcels || []).some(p => p.status === 'Pendente');
@@ -805,7 +886,7 @@
                             </div>
                         </div>
 
-                        <button onclick="openPaymentModal('${contract.id}', ${index})" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2">
+                        <button onclick="window.App.openPaymentModal('${contract.id}', ${index})" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2">
                             <i class="fas fa-check"></i> Registrar Pagamento
                         </button>
                     </div>
@@ -814,7 +895,7 @@
             container.innerHTML = inadimplentesHtml;
         }
 
-        function renderServicosPage() {
+        const renderServicosPage = () => {
             const container = document.getElementById('servicosListContainer');
             const searchTerm = document.getElementById('servicosSearchInput').value.toLowerCase();
             const advogadoFilter = document.getElementById('servicosAdvogadoFilter').value;
@@ -881,15 +962,15 @@
                             return `<li class="flex items-center justify-between p-2 bg-gray-900/50 rounded-md"><span class="text-gray-500 line-through"><i class="fas fa-check-circle text-teal-500 mr-2"></i>${service.name}</span><div class="flex items-center gap-2">${deadlineHtml}${statusHtml}</div></li>`;
                         case '50% Concluído':
                             statusHtml = `<span class="text-xs font-bold text-purple-400">50%</span>`;
-                            actionsHtml = `<button onclick="updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`;
+                            actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`;
                              return `<li class="flex items-center justify-between p-2 hover:bg-gray-700/50 rounded-md text-gray-300"><span><i class="fas fa-adjust text-purple-500 mr-2"></i>${service.name}</span><div class="flex items-center gap-2">${deadlineHtml}${statusHtml}${actionsHtml}</div></li>`;
                         case 'Em Andamento':
                              statusHtml = `<span class="text-xs font-bold text-yellow-400">EM ANDAMENTO</span>`;
-                             actionsHtml = `<button onclick="updateServiceStatus('${contract.id}', ${index}, '50% Concluído')" class="text-xs bg-purple-600 text-white hover:bg-purple-500 font-semibold py-1 px-2 rounded-md transition-colors">50%</button><button onclick="updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`;
+                             actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, '50% Concluído')" class="text-xs bg-purple-600 text-white hover:bg-purple-500 font-semibold py-1 px-2 rounded-md transition-colors">50%</button><button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`;
                              return `<li class="flex items-center justify-between p-2 hover:bg-gray-700/50 rounded-md text-gray-300"><span><i class="fas fa-spinner fa-spin text-yellow-500 mr-2"></i>${service.name}</span><div class="flex items-center gap-2">${deadlineHtml}${statusHtml}${actionsHtml}</div></li>`;
                         default: // Pendente
                             statusHtml = `<span class="text-xs font-bold text-gray-400">PENDENTE</span>`;
-                            actionsHtml = `<button onclick="updateServiceStatus('${contract.id}', ${index}, 'Em Andamento')" class="text-xs bg-yellow-600 text-white hover:bg-yellow-500 font-semibold py-1 px-2 rounded-md transition-colors">Iniciar</button>`;
+                            actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Em Andamento')" class="text-xs bg-yellow-600 text-white hover:bg-yellow-500 font-semibold py-1 px-2 rounded-md transition-colors">Iniciar</button>`;
                             return `<li class="flex items-center justify-between p-2 hover:bg-gray-700/50 rounded-md text-gray-300"><span><i class="far fa-circle text-gray-500 mr-2"></i>${service.name}</span><div class="flex items-center gap-2">${deadlineHtml}${statusHtml}${actionsHtml}</div></li>`;
                     }
                 }).join('');
@@ -920,8 +1001,9 @@
                 `;
             });
         }
+        window.App.renderServicosPage = renderServicosPage; // Expor ao HTML
         
-        window.renderAdvogadoFilters = function() {
+        function renderAdvogadoFilters() {
             const advogadoFilters = [document.getElementById('advogadoFilter'), document.getElementById('servicosAdvogadoFilter')];
             const advogados = [...new Set(database.contracts.map(c => c.advogadoResponsavel))];
             advogados.sort();
@@ -940,7 +1022,7 @@
             });
         }
 
-        window.renderSortButtons = function() {
+        function renderSortButtons() {
             const contractSortContainer = document.getElementById('contractSortButtons');
             const inadimplentesSortContainer = document.getElementById('inadimplentesSortButtons');
             const servicosSortContainer = document.getElementById('servicosSortButtons');
@@ -980,7 +1062,7 @@
         }
 
 
-        window.updateServiceStatus = async function(contractId, serviceIndex, newStatus) {
+        const updateServiceStatus = async function(contractId, serviceIndex, newStatus) {
             const contract = database.contracts.find(c => c.id === contractId);
             if (contract && (contract.serviceTypes || [])[serviceIndex]) {
                 const updatedServiceTypes = [...contract.serviceTypes];
@@ -990,26 +1072,31 @@
                 await updateDoc(contractRef, { serviceTypes: updatedServiceTypes });
             }
         }
+        window.App.updateServiceStatus = updateServiceStatus; // Expor ao HTML
 
-        window.deleteContract = async function(contractId) {
+        const deleteContract = async function(contractId) {
             const contract = database.contracts.find(c => c.id === contractId);
             if(confirm(`Tem certeza que deseja excluir o contrato de "${contract.clientName}"? Esta ação não pode ser desfeita.`)){
                 // Deleta do DB
                 await deleteDoc(doc(contractsCollection, contractId));
             }
         }
+        window.App.deleteContract = deleteContract; // Expor ao HTML
 
         const backdrop = document.getElementById('modal-backdrop');
-        window.openModal = function(modalId) {
+        const openModal = function(modalId) {
             if(document.getElementById(modalId)) document.getElementById(modalId).style.display = 'block';
             if(backdrop) backdrop.style.display = 'block';
         }
-        window.closeModal = function(modalId) {
+        window.App.openModal = openModal; // Expor ao HTML
+
+        const closeModal = function(modalId) {
             if(document.getElementById(modalId)) document.getElementById(modalId).style.display = 'none';
             if(backdrop) backdrop.style.display = 'none';
         }
+        window.App.closeModal = closeModal; // Expor ao HTML
 
-        window.openContractModal = function(contractId = null) {
+        const openContractModal = function(contractId = null) {
             const form = document.getElementById('formContrato');
             form.reset();
             const title = document.getElementById('modalContratoTitle');
@@ -1037,8 +1124,9 @@
             }
             openModal('modalContrato');
         }
+        window.App.openContractModal = openContractModal; // Expor ao HTML
 
-        window.openPaymentModal = async function(contractId, parcelIndex) {
+        const openPaymentModal = async function(contractId, parcelIndex) {
             const contract = database.contracts.find(c => c.id === contractId);
             const parcel = contract.parcels[parcelIndex];
             
@@ -1061,8 +1149,9 @@
             
             openModal('modalPagamento');
         }
+        window.App.openPaymentModal = openPaymentModal; // Expor ao HTML
 
-        window.openClientHistoryModal = function(clientName) {
+        const openClientHistoryModal = function(clientName) {
             const clientContracts = database.contracts.filter(c => c.clientName === clientName);
             const title = document.getElementById('clienteModalTitle');
             const content = document.getElementById('clienteModalContent');
@@ -1111,12 +1200,14 @@
             content.innerHTML = summaryHtml + '<hr class="my-4 border-gray-700">' + html;
             openModal('modalCliente');
         }
+        window.App.openClientHistoryModal = openClientHistoryModal; // Expor ao HTML
 
-        window.openReportModal = function() {
+        const openReportModal = function() {
             populateDateSelectors();
             generateAndShowReport(); 
             openModal('modalRelatorio');
         }
+        window.App.openReportModal = openReportModal; // Expor ao HTML
 
         function populateDateSelectors() {
             const monthSelect = document.getElementById('reportMonth');
@@ -1167,7 +1258,7 @@
             return { totalParcelas, totalExito, totalGeral: totalParcelas + totalExito, detailedPayments };
         }
 
-        window.generateAndShowReport = function() {
+        const generateAndShowReport = function() {
             const month = parseInt(document.getElementById('reportMonth').value);
             const year = parseInt(document.getElementById('reportYear').value);
             const resultDiv = document.getElementById('reportResult');
@@ -1194,16 +1285,18 @@
 
             resultDiv.innerHTML = `<div class="dark-card p-4 rounded-lg"><p class="text-gray-400">Total Recebido (Parcelas):</p><p class="text-2xl font-bold text-white">${income.totalParcelas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div><div class="dark-card p-4 rounded-lg"><p class="text-gray-400">Total Recebido (Êxito):</p><p class="text-2xl font-bold text-indigo-400">${income.totalExito.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div><div class="bg-gray-900 p-4 rounded-lg border border-gray-700"><p class="text-white font-bold">TOTAL GERAL RECEBIDO:</p><p class="text-3xl font-extrabold text-green-400">${income.totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>` + detailsHtml;
         }
+        window.App.generateAndShowReport = generateAndShowReport; // Expor ao HTML
 
-        window.openExitoModal = function(contractId) {
+        const openExitoModal = function(contractId) {
             const contract = database.contracts.find(c => c.id === contractId);
             if (!contract) return;
             document.getElementById('exitoContractId').value = contractId;
             document.getElementById('exitoInfo').innerHTML = `<p><strong>Cliente:</strong> ${contract.clientName}</p><p><strong>Serviço:</strong> ${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p><p><strong>Bonificação Prevista:</strong> <span class="font-bold text-indigo-400">${contract.successFee}</span></p>`;
             openModal('modalExito');
         }
+        window.App.openExitoModal = openExitoModal; // Expor ao HTML
         
-        window.createServiceTag = function(serviceName, deadline) {
+        const createServiceTag = function(serviceName, deadline) {
             const container = document.getElementById('servicosContainer');
             const tag = document.createElement('div');
             tag.className = 'service-tag';
@@ -1221,6 +1314,7 @@
                 <span class="remove-tag" onclick="this.parentElement.remove()">&times;</span>`;
             container.appendChild(tag);
         }
+        window.App.createServiceTag = createServiceTag; // Expor ao HTML
 
         // --- FUNÇÕES DE CÁLCULO DE JUROS (COM API REAL) ---
         
@@ -1328,7 +1422,7 @@
             document.body.removeChild(link);
         }
 
-        window.exportContractsCSV = function() {
+        const exportContractsCSV = function() {
             const headers = ["ID", "Cliente", "Advogado", "Tipo Pagamento", "Valor Total", "Taxa Êxito", "Status", "Serviços", "Observações"];
             let csvRows = [headers.join(',')];
 
@@ -1351,8 +1445,9 @@
 
             downloadCSV(csvRows.join('\n'), 'contratos_export.csv');
         }
+        window.App.exportContractsCSV = exportContractsCSV; // Expor ao HTML
 
-        window.exportReportCSV = function() {
+        const exportReportCSV = function() {
             const month = parseInt(document.getElementById('reportMonth').value);
             const year = parseInt(document.getElementById('reportYear').value);
             const income = calculateMonthlyIncome(year, month);
@@ -1378,12 +1473,46 @@
             const monthName = document.getElementById('reportMonth').options[month].text;
             downloadCSV(csvRows.join('\n'), `relatorio_${monthName}_${year}.csv`);
         }
+        window.App.exportReportCSV = exportReportCSV; // Expor ao HTML
 
 
         // --- INICIALIZAÇÃO DA PÁGINA ---
         document.addEventListener('DOMContentLoaded', () => {
             initializeAndAuth(); // Chama a inicialização do Firebase
             
+            // --- Handlers de Autenticação ---
+            const loginForm = document.getElementById('login-form');
+            const authError = document.getElementById('auth-error');
+            const logoutButton = document.getElementById('logout-button');
+
+            const showAuthError = (message) => {
+                authError.textContent = message;
+                authError.classList.remove('hidden');
+            }
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    // O listener onAuthStateChanged cuidará de mostrar o app
+                } catch (error) {
+                    console.error("Erro no login:", error.code);
+                    if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                        showAuthError('Email ou senha inválidos.');
+                    } else {
+                        showAuthError('Erro ao tentar fazer login.');
+                    }
+                }
+            });
+            
+            logoutButton.addEventListener('click', async () => {
+                await signOut(auth);
+                // O listener onAuthStateChanged cuidará de mostrar a tela de login
+            });
+            
+            // --- Handlers do Aplicativo ---
             document.getElementById('formContrato').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const contractId = document.getElementById('contractId').value;
@@ -1507,3 +1636,4 @@
     </script>
 </body>
 </html>
+
