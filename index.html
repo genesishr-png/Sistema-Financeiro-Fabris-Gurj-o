@@ -7,6 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Biblioteca de Gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -211,6 +213,10 @@
                 <a onclick="window.App.showPage('page-servicos')" id="tab-servicos" class="nav-tab">
                     <i class="fas fa-tasks mr-2"></i>Serviços
                 </a>
+                <!-- Nova Aba de Análise Gráfica -->
+                <a onclick="window.App.showPage('page-analytics')" id="tab-analytics" class="nav-tab">
+                    <i class="fas fa-chart-bar mr-2"></i>Análise Gráfica
+                </a>
             </nav>
         </div>
 
@@ -297,6 +303,19 @@
                  </div>
             </div>
              <div id="servicosListContainer" class="space-y-6"></div>
+        </div>
+
+        <!-- Conteúdo da Página: Análise Gráfica -->
+        <div id="page-analytics" class="hidden">
+            <h2 class="text-2xl font-semibold text-white mb-6">Análise Gráfica</h2>
+            <div class="grid grid-cols-1 gap-6">
+                <div class="dark-card p-6 rounded-lg shadow-lg">
+                    <h3 class="text-lg font-semibold text-white mb-4">Recebimentos Totais (Últimos 12 Meses)</h3>
+                    <div class="h-96">
+                        <canvas id="faturamentoChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -495,6 +514,7 @@
         let currentInadimplentesSort = 'days-desc';
         let currentServicosSort = 'name-asc';
         let ipcaCache = new Map(); // Cache para os valores do IPCA
+        let faturamentoChartInstance = null; // Variável para guardar a instância do gráfico
 
         // --- INICIALIZAÇÃO E AUTENTICAÇÃO ---
         async function initializeAndAuth() {
@@ -563,10 +583,10 @@
         
         // --- FUNÇÕES DE NAVEGAÇÃO E RENDERIZAÇÃO ---
         const showPage = (pageId) => {
-            ['page-dashboard', 'page-inadimplentes', 'page-servicos'].forEach(id => {
+            ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-analytics'].forEach(id => {
                 if(document.getElementById(id)) document.getElementById(id).classList.add('hidden');
             });
-            ['tab-dashboard', 'tab-inadimplentes', 'tab-servicos'].forEach(id => {
+            ['tab-dashboard', 'tab-inadimplentes', 'tab-servicos', 'tab-analytics'].forEach(id => {
                 if(document.getElementById(id)) document.getElementById(id).classList.remove('active');
             });
 
@@ -576,6 +596,7 @@
             
             if (pageId === 'page-inadimplentes') renderInadimplentesPage();
             if (pageId === 'page-servicos') renderServicosPage();
+            if (pageId === 'page-analytics') renderAnalyticsPage();
         }
         window.App.showPage = showPage;
 
@@ -594,6 +615,9 @@
             }
             if(document.getElementById('page-servicos') && !document.getElementById('page-servicos').classList.contains('hidden')) {
                 renderServicosPage();
+            }
+            if(document.getElementById('page-analytics') && !document.getElementById('page-analytics').classList.contains('hidden')) {
+                renderAnalyticsPage();
             }
             
             renderSortButtons();
@@ -997,6 +1021,85 @@
             });
         }
         window.App.renderServicosPage = renderServicosPage; // Expor ao HTML
+
+        // --- NOVA FUNÇÃO PARA GRÁFICOS ---
+        function getAnnualChartData() {
+            const labels = [];
+            const data = [];
+            const meses = ["Jan", "Fev", "Mar", "Abr", "Maio", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+            const hoje = new Date();
+
+            for (let i = 11; i >= 0; i--) {
+                const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+                const month = d.getMonth();
+                const year = d.getFullYear();
+                
+                labels.push(`${meses[month]}/${String(year).slice(-2)}`);
+                const income = calculateMonthlyIncome(year, month);
+                data.push(income.totalGeral);
+            }
+            return { labels, data };
+        }
+
+        function renderAnalyticsPage() {
+            const ctx = document.getElementById('faturamentoChart').getContext('2d');
+            const chartData = getAnnualChartData();
+            
+            // Destrói gráfico anterior se existir
+            if (faturamentoChartInstance) {
+                faturamentoChartInstance.destroy();
+            }
+
+            // Configurações globais do Chart.js para modo escuro
+            Chart.defaults.color = '#9ca3af';
+            Chart.defaults.borderColor = '#374151';
+
+            faturamentoChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: 'Faturamento Total Recebido',
+                        data: chartData.data,
+                        backgroundColor: 'rgba(79, 70, 229, 0.6)', // Cor indigo-600 com opacidade
+                        borderColor: 'rgba(99, 102, 241, 1)', // Cor indigo-500
+                        borderWidth: 1,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        window.App.renderAnalyticsPage = renderAnalyticsPage;
         
         function renderAdvogadoFilters() {
             const advogadoFilters = [document.getElementById('advogadoFilter'), document.getElementById('servicosAdvogadoFilter')];
@@ -1007,11 +1110,15 @@
                 if (!select) return;
                 const currentValue = select.value;
                 select.innerHTML = '<option>Todos</option>';
+                // Adiciona a opção "Não Informado"
+                select.add(new Option("Não Informado", "Não Informado"));
                 advogados.forEach(adv => {
-                    const option = document.createElement('option');
-                    option.value = adv;
-                    option.textContent = adv;
-                    select.appendChild(option);
+                    if (adv && adv !== "Não Informado") { // Garante que não duplique
+                        const option = document.createElement('option');
+                        option.value = adv;
+                        option.textContent = adv;
+                        select.appendChild(option);
+                    }
                 });
                 select.value = currentValue || 'Todos';
             });
