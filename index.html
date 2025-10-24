@@ -213,9 +213,9 @@
                 <a onclick="window.App.showPage('page-servicos')" id="tab-servicos" class="nav-tab">
                     <i class="fas fa-tasks mr-2"></i>Serviços
                 </a>
-                <!-- Nova Aba de Análise Gráfica -->
-                <a onclick="window.App.showPage('page-analytics')" id="tab-analytics" class="nav-tab">
-                    <i class="fas fa-chart-bar mr-2"></i>Análise Gráfica
+                <!-- Nova Aba de Lixeira -->
+                <a onclick="window.App.showPage('page-lixeira')" id="tab-lixeira" class="nav-tab">
+                    <i class="fas fa-trash-alt mr-2"></i>Lixeira
                 </a>
             </nav>
         </div>
@@ -228,6 +228,10 @@
                 </button>
                 <button onclick="window.App.openReportModal()" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
                     <i class="fas fa-chart-line"></i> Relatório Mensal
+                </button>
+                <!-- Botão para Gráficos -->
+                <button onclick="window.App.showPage('page-analytics')" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
+                    <i class="fas fa-chart-bar"></i> Ver Gráficos
                 </button>
             </div>
 
@@ -316,6 +320,15 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Conteúdo da Página: Lixeira (NOVO) -->
+        <div id="page-lixeira" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold text-white">Lixeira de Contratos</h2>
+            </div>
+            <p class="text-gray-400 mb-6">Contratos excluídos são mantidos aqui. Você pode restaurá-los ou excluí-los permanentemente.</p>
+            <div id="lixeiraListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
     </div>
 
@@ -498,7 +511,10 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { 
             getAuth, 
+            signInAnonymously, 
+            signInWithCustomToken, 
             onAuthStateChanged,
+            createUserWithEmailAndPassword,
             signInWithEmailAndPassword,
             signOut,
             updateProfile // Importar a função de atualizar perfil
@@ -605,11 +621,11 @@
         // --- FUNÇÕES DE NAVEGAÇÃO E RENDERIZAÇÃO ---
         const showPage = (pageId) => {
             // Esconde todas as páginas
-            ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-analytics'].forEach(id => {
+            ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-analytics', 'page-lixeira'].forEach(id => {
                 if(document.getElementById(id)) document.getElementById(id).classList.add('hidden');
             });
             // Desativa todas as abas principais
-            ['tab-dashboard', 'tab-inadimplentes', 'tab-servicos', 'tab-analytics'].forEach(id => {
+            ['tab-dashboard', 'tab-inadimplentes', 'tab-servicos', 'tab-lixeira'].forEach(id => {
                 if(document.getElementById(id)) document.getElementById(id).classList.remove('active');
             });
 
@@ -626,6 +642,7 @@
             if (pageId === 'page-inadimplentes') renderInadimplentesPage();
             if (pageId === 'page-servicos') renderServicosPage();
             if (pageId === 'page-analytics') renderAnalyticsPage();
+            if (pageId === 'page-lixeira') renderLixeiraPage(); // Nova
         }
         window.App.showPage = showPage;
 
@@ -647,6 +664,9 @@
             }
             if(document.getElementById('page-analytics') && !document.getElementById('page-analytics').classList.contains('hidden')) {
                 renderAnalyticsPage();
+            }
+            if(document.getElementById('page-lixeira') && !document.getElementById('page-lixeira').classList.contains('hidden')) {
+                renderLixeiraPage();
             }
             
             renderSortButtons();
@@ -675,7 +695,7 @@
             let totalAVencer30dias = 0;
             let totalVencido = 0;
 
-            for (const contract of database.contracts) {
+            for (const contract of database.contracts.filter(c => !c.isDeleted)) { // Filtra lixeira
                 if (!contract.parcels) contract.parcels = []; 
                 let remainingValue = contract.parcels.reduce((sum, p) => p.status === 'Pendente' ? sum + p.value : sum, 0);
 
@@ -706,7 +726,7 @@
             }
             
             const totalPagoMes = calculateMonthlyIncome(hoje.getFullYear(), hoje.getMonth()).totalGeral;
-            renderDashboard(totalAVencer30dias, totalVencido, totalPagoMes, database.contracts.length);
+            renderDashboard(totalAVencer30dias, totalVencido, totalPagoMes, database.contracts.filter(c => !c.isDeleted).length);
         }
         
         function createParcelCard(contract, parcel, index, type, remainingValue, valorCorrigido = null) {
@@ -802,10 +822,11 @@
             const advogadoFilter = document.getElementById('advogadoFilter').value;
 
             let filteredContracts = database.contracts.filter(c => {
+                const notDeleted = !c.isDeleted; // Filtra lixeira
                 const matchesAdvogado = advogadoFilter === 'Todos' || c.advogadoResponsavel === advogadoFilter;
                 const matchesSearch = c.clientName.toLowerCase().includes(searchTerm) || 
                                      (c.serviceTypes || []).some(s => s.name.toLowerCase().includes(searchTerm));
-                return matchesAdvogado && matchesSearch;
+                return notDeleted && matchesAdvogado && matchesSearch;
             });
 
             if (currentContractSort === 'name-asc') {
@@ -852,7 +873,7 @@
                         <div class="bg-gray-900/50 px-4 py-2 flex justify-end gap-2">
                            <button onclick="window.App.openClientHistoryModal('${contract.clientName}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-indigo-400 hover:bg-indigo-900/20 py-1 px-3 rounded-md transition-colors" title="Ver Histórico do Cliente"><i class="fas fa-eye"></i> Histórico</button>
                            <button onclick="window.App.openContractModal('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-green-400 hover:bg-green-900/20 py-1 px-3 rounded-md transition-colors" title="Editar Contrato"><i class="fas fa-pencil-alt"></i> Editar</button>
-                           <button onclick="window.App.deleteContract('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 py-1 px-3 rounded-md transition-colors" title="Excluir Contrato"><i class="fas fa-trash-alt"></i> Excluir</button>
+                           <button onclick="window.App.moveToLixeira('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 py-1 px-3 rounded-md transition-colors" title="Excluir Contrato"><i class="fas fa-trash-alt"></i> Excluir</button>
                         </div>
                     </div>
                 `;
@@ -880,7 +901,7 @@
             hoje.setHours(0, 0, 0, 0);
 
             let inadimplentesList = [];
-            for (const contract of database.contracts) {
+            for (const contract of database.contracts.filter(c => !c.isDeleted)) { // Filtra lixeira
                 if (!contract.parcels) continue; // Pula se não houver parcelas
                 for (let i = 0; i < contract.parcels.length; i++) {
                     const parcel = contract.parcels[i];
@@ -950,8 +971,9 @@
             container.innerHTML = '';
             
             let activeContracts = database.contracts.filter(c => {
+                const notDeleted = !c.isDeleted; // Filtra lixeira
                 const isNotConcluded = getContractStatus(c).statusText !== 'Concluído';
-                if (!isNotConcluded) return false;
+                if (!isNotConcluded || !notDeleted) return false;
 
                 const matchesAdvogado = advogadoFilter === 'Todos' || c.advogadoResponsavel === advogadoFilter;
                 const matchesSearch = c.clientName.toLowerCase().includes(searchTerm) || 
@@ -1130,6 +1152,36 @@
         }
         window.App.renderAnalyticsPage = renderAnalyticsPage;
         
+        // --- NOVA FUNÇÃO PARA LIXEIRA ---
+        function renderLixeiraPage() {
+            const container = document.getElementById('lixeiraListContainer');
+            container.innerHTML = '';
+            
+            const deletedContracts = database.contracts.filter(c => c.isDeleted === true);
+
+            if (deletedContracts.length === 0) {
+                 container.innerHTML = `<div class="col-span-1 md:col-span-3 text-center py-10"><div class="inline-block dark-card text-gray-400 p-6 rounded-lg shadow-md"><i class="fas fa-trash fa-3x mb-3"></i><p class="font-bold text-xl">Lixeira Vazia</p><p class="text-sm">Nenhum contrato foi excluído.</p></div></div>`;
+                 return;
+            }
+
+            deletedContracts.forEach(contract => {
+                container.innerHTML += `
+                    <div class="dark-card p-5 rounded-lg shadow-lg border-l-4 border-gray-600">
+                        <p class="font-bold text-lg text-white">${contract.clientName}</p>
+                        <p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
+                        <div class="border-t border-gray-700 pt-3 mt-3 flex gap-2">
+                            <button onclick="window.App.restoreContract('${contract.id}')" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2">
+                                <i class="fas fa-undo"></i> Restaurar
+                            </button>
+                            <button onclick="window.App.deleteContractPermanently('${contract.id}')" class="w-full bg-red-800 hover:bg-red-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2">
+                                <i class="fas fa-times-circle"></i> Excluir Prmt.
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
         function renderAdvogadoFilters() {
             const advogadoFilters = [document.getElementById('advogadoFilter'), document.getElementById('servicosAdvogadoFilter')];
             const advogados = [...new Set(database.contracts.map(c => c.advogadoResponsavel))];
@@ -1205,14 +1257,33 @@
         }
         window.App.updateServiceStatus = updateServiceStatus; // Expor ao HTML
 
-        const deleteContract = async function(contractId) {
+        // --- NOVAS FUNÇÕES DA LIXEIRA ---
+        const moveToLixeira = async function(contractId) {
             const contract = database.contracts.find(c => c.id === contractId);
-            if(confirm(`Tem certeza que deseja excluir o contrato de "${contract.clientName}"? Esta ação não pode ser desfeita.`)){
-                // Deleta do DB
+            if(confirm(`Tem certeza que deseja mover o contrato de "${contract.clientName}" para a lixeira?`)){
+                const contractRef = doc(contractsCollection, contractId);
+                await updateDoc(contractRef, { isDeleted: true });
+            }
+        }
+        window.App.moveToLixeira = moveToLixeira;
+
+        const restoreContract = async function(contractId) {
+            if(confirm(`Tem certeza que deseja restaurar este contrato?`)){
+                const contractRef = doc(contractsCollection, contractId);
+                await updateDoc(contractRef, { isDeleted: false });
+            }
+        }
+        window.App.restoreContract = restoreContract;
+
+        const deleteContractPermanently = async function(contractId) {
+            const contract = database.contracts.find(c => c.id === contractId);
+            if(confirm(`EXCLUSÃO PERMANENTE: Tem certeza que deseja apagar o contrato de "${contract.clientName}" para sempre? Esta ação não pode ser desfeita.`)){
                 await deleteDoc(doc(contractsCollection, contractId));
             }
         }
-        window.App.deleteContract = deleteContract; // Expor ao HTML
+        window.App.deleteContractPermanently = deleteContractPermanently;
+        // --- FIM DAS FUNÇÕES DA LIXEIRA ---
+
 
         const backdrop = document.getElementById('modal-backdrop');
         const openModal = function(modalId) {
@@ -1357,7 +1428,7 @@
             let totalExito = 0;
             let detailedPayments = [];
 
-            database.contracts.forEach(contract => {
+            database.contracts.filter(c => !c.isDeleted).forEach(contract => { // Filtra lixeira
                 (contract.parcels || []).forEach(parcel => {
                     if(parcel.status === 'Paga') {
                         const d = new Date(parcel.paymentDate);
@@ -1557,7 +1628,7 @@
             const headers = ["ID", "Cliente", "Advogado", "Tipo Pagamento", "Valor Total", "Taxa Êxito", "Status", "Serviços", "Observações"];
             let csvRows = [headers.join(',')];
 
-            database.contracts.forEach(c => {
+            database.contracts.filter(c => !c.isDeleted).forEach(c => { // Filtra lixeira
                 const status = getContractStatus(c).statusText;
                 const services = (c.serviceTypes || []).map(s => s.name).join('; '); // Usar ; para não conflitar
                 const row = [
@@ -1702,7 +1773,8 @@
                     observations, 
                     parcels: [], 
                     successFeeValueReceived: 0, 
-                    successFeePaymentDate: null 
+                    successFeePaymentDate: null,
+                    isDeleted: false // Garante que novos contratos não estejam na lixeira
                 };
 
                 if (numParcels > 0 && totalValue > 0) {
@@ -1716,7 +1788,9 @@
                 }
 
                 if (contractId) {
-                    await updateDoc(doc(contractsCollection, contractId), contractData);
+                    // Ao editar, não mexemos no status 'isDeleted'
+                    const { isDeleted, ...dataToUpdate } = contractData; // Remove 'isDeleted' para não sobrescrever
+                    await updateDoc(doc(contractsCollection, contractId), dataToUpdate);
                 } else {
                     await addDoc(contractsCollection, contractData);
                 }
