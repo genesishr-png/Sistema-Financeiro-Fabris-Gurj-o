@@ -7,8 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Biblioteca de Gráficos -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Biblioteca de Gráficos (REMOVIDA) -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -93,21 +92,6 @@
             background-color: #1f2937; /* bg-gray-800 */
             border: 1px solid #374151; /* border-gray-700 */
         }
-        .header-with-logo {
-            position: relative;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .header-logo {
-            position: absolute;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            max-height: 60px; 
-            opacity: 0.8; 
-        }
-        /* Estilos do Header removidos pois não são mais necessários com o flex */
         .sort-button {
             background-color: #374151;
             border: 1px solid #4b5563;
@@ -169,7 +153,7 @@
         <div class="w-full max-w-sm p-8 space-y-6 bg-[#1a173a] rounded-lg shadow-xl border border-indigo-800">
             <img src="https://www.fabrisegurjao.adv.br/netpage/data/uploads/2019/12/logo-fabris-e-gurjao-491x325px.png" alt="Logo" class="w-48 mx-auto">
             <h2 class="text-2xl font-bold text-center text-white">Login</h2>
-
+            
             <div id="auth-error" class="hidden p-3 text-sm text-red-300 bg-red-800/50 border border-red-700 rounded-lg"></div>
 
             <!-- Formulário de Login -->
@@ -189,18 +173,13 @@
 
     <!-- Conteúdo Principal do App (Começa escondido) -->
     <div id="app-container" class="container mx-auto p-4 md:p-8">
-        <header class="mb-6 header-with-logo">
-            <div>
-                <h1 class="text-3xl font-bold text-white">Painel de Gestão</h1>
-                <p class="text-gray-400">Controle Financeiro e de Produção do Escritório</p>
         
-        <!-- ***** HEADER MODIFICADO ***** -->
+        <!-- ***** HEADER CORRIGIDO ***** -->
         <header class="mb-6 flex justify-between items-center">
             <!-- Bloco Esquerdo: Logo e Título -->
             <div class="flex items-center gap-4">
                 <img src="https://www.fabrisegurjao.adv.br/netpage/data/uploads/2019/12/logo-fabris-e-gurjao-491x325px.png" alt="Fabris e Gurjão Logo" class="h-12">
                  <h1 class="text-3xl font-bold text-white">Painel de Gestão</h1>
-                 <!-- Descrição removida -->
             </div>
             
             <!-- Bloco Direito: Usuário e Logout -->
@@ -209,11 +188,9 @@
                 <button id="logout-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded-lg shadow-md text-sm flex items-center gap-2">
                     <i class="fas fa-sign-out-alt"></i> Sair
                 </button>
-                <img src="https://www.fabrisegurjao.adv.br/netpage/data/uploads/2019/12/logo-fabris-e-gurjao-491x325px.png" alt="Fabris e Gurjão Logo" class="header-logo" style="position: relative; right: auto; top: auto; transform: none; margin-left: 20px;">
-                <!-- Logo removida deste bloco -->
             </div>
         </header>
-        <!-- ***** FIM DO HEADER MODIFICADO ***** -->
+        <!-- ***** FIM DO HEADER CORRIGIDO ***** -->
 
 
         <div class="border-b border-gray-700 mb-8">
@@ -243,14 +220,14 @@
                 <button onclick="window.App.openReportModal()" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
                     <i class="fas fa-chart-line"></i> Relatório Mensal
                 </button>
-                <!-- Botão para Gráficos -->
+                <!-- Botão para Gráficos (movido) -->
                 <button onclick="window.App.showPage('page-analytics')" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
                     <i class="fas fa-chart-bar"></i> Ver Gráficos
                 </button>
             </div>
 
             <div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"></div>
-
+            
             <div class="mb-4 border-b border-gray-700">
                  <h2 class="text-2xl font-semibold mb-4 text-white">Situação das Parcelas</h2>
             </div>
@@ -436,7 +413,7 @@
             </form>
         </div>
     </div>
-
+    
     <div id="modalPagamento" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
          <div class="p-6">
             <div class="flex justify-between items-center mb-4">
@@ -525,10 +502,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { 
             getAuth, 
-            signInAnonymously, 
-            signInWithCustomToken, 
             onAuthStateChanged,
-            createUserWithEmailAndPassword,
             signInWithEmailAndPassword,
             signOut,
             updateProfile // Importar a função de atualizar perfil
@@ -575,7 +549,7 @@
 
                 const appId = typeof __app_id !== 'undefined' ? __app_id : 'fabrisgurjao-app';
                 const finalConfig = (typeof __firebase_config !== 'undefined' && __firebase_config !== '') ? JSON.parse(__firebase_config) : firebaseConfig;
-
+                
                 const app = initializeApp(finalConfig);
                 db = getFirestore(app);
                 auth = getAuth(app); // Obter a instância do Auth
@@ -601,10 +575,10 @@
                             document.getElementById('user-display-name').textContent = user.displayName;
                             authOverlay.style.display = 'none';
                             appContainer.style.display = 'block';
-
+                            
                             contractsCollection = collection(db, `contracts`);
                             setupSnapshotListener();
-
+                            
                             loadingOverlay.style.display = 'none';
                         }
                     } else {
@@ -621,7 +595,7 @@
                 document.getElementById('loading-overlay').textContent = "Erro ao conectar. Verifique as credenciais.";
             }
         }
-
+        
         function setupSnapshotListener() {
             onSnapshot(contractsCollection, (snapshot) => {
                 database.contracts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -631,7 +605,7 @@
                 document.getElementById('loading-overlay').textContent = "Erro ao carregar dados. Verifique as regras de segurança do Firestore.";
             });
         }
-
+        
         // --- FUNÇÕES DE NAVEGAÇÃO E RENDERIZAÇÃO ---
         const showPage = (pageId) => {
             // Esconde todas as páginas
@@ -645,13 +619,13 @@
 
             // Mostra a página clicada
             if(document.getElementById(pageId)) document.getElementById(pageId).classList.remove('hidden');
-
+            
             // Ativa a aba correspondente, se for uma aba principal
             const tabId = `tab-${pageId.split('-')[1]}`;
             if(document.getElementById(tabId)) {
                 document.getElementById(tabId).classList.add('active');
             }
-
+            
             // Roda a função específica da página
             if (pageId === 'page-inadimplentes') renderInadimplentesPage();
             if (pageId === 'page-servicos') renderServicosPage();
@@ -682,19 +656,19 @@
             if(document.getElementById('page-lixeira') && !document.getElementById('page-lixeira').classList.contains('hidden')) {
                 renderLixeiraPage();
             }
-
+            
             renderSortButtons();
             renderAdvogadoFilters();
-
+            
             if (loadingOverlay) loadingOverlay.style.display = 'none';
         }
-
+        
         async function renderKanban() {
             const kanbanVencidas = document.getElementById('kanban-vencidas');
             const kanbanAVencer = document.getElementById('kanban-a-vencer');
             const kanbanPagas = document.getElementById('kanban-pagas');
             const kanbanExito = document.getElementById('kanban-exito');
-
+            
             kanbanVencidas.innerHTML = '';
             kanbanAVencer.innerHTML = '';
             kanbanPagas.innerHTML = '';
@@ -705,7 +679,7 @@
             const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
             const trintaDiasFrente = new Date();
             trintaDiasFrente.setDate(hoje.getDate() + 30);
-
+            
             let totalAVencer30dias = 0;
             let totalVencido = 0;
 
@@ -716,7 +690,7 @@
                 for (let i = 0; i < contract.parcels.length; i++) {
                     const parcel = contract.parcels[i];
                     const vencimento = new Date(parcel.dueDate);
-
+                    
                     if (parcel.status === 'Paga') {
                          const dataPagamento = new Date(parcel.paymentDate);
                          if(dataPagamento >= primeiroDiaMes && dataPagamento <= hoje) {
@@ -738,21 +712,21 @@
                     kanbanExito.innerHTML += createExitoCard(contract);
                 }
             }
-
+            
             const totalPagoMes = calculateMonthlyIncome(hoje.getFullYear(), hoje.getMonth()).totalGeral;
             renderDashboard(totalAVencer30dias, totalVencido, totalPagoMes, database.contracts.filter(c => !c.isDeleted).length);
         }
-
+        
         function createParcelCard(contract, parcel, index, type, remainingValue, valorCorrigido = null) {
             const vencimento = new Date(parcel.dueDate);
             const formattedDate = vencimento.toLocaleDateString('pt-BR', {timeZone: 'UTC'});
             const formattedValue = parcel.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             const formattedRemaining = remainingValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
+            
             let actionButton = '';
             let statusClass = '';
             let valorHtml = '';
-
+            
             if (type === 'vencida') {
                 statusClass = 'border-red-400';
                 valorHtml = `
@@ -791,7 +765,7 @@
             }
 
             let extraInfoHtml = `<div class="text-xs text-gray-400 border-t border-gray-700 pt-2 mt-3 flex justify-between"><span>Contrato: <strong>${(contract.totalValue || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></span> <span>Restante: <strong>${formattedRemaining}</strong></span></div>`;
-
+            
             return `
                 <div class="dark-card p-4 rounded-lg shadow-md border-l-4 ${statusClass}">
                     <p class="font-bold text-white">${contract.clientName}</p>
@@ -829,7 +803,7 @@
                 <div class="dark-card p-6 rounded-lg shadow-lg"><h3 class="text-lg font-semibold text-gray-400">Recebido (Este Mês)</h3><p class="text-3xl font-bold text-indigo-400">${pago.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
                 <div class="dark-card p-6 rounded-lg shadow-lg"><h3 class="text-lg font-semibold text-gray-400">Contratos Ativos</h3><p class="text-3xl font-bold text-white">${totalContratos}</p></div>`;
         }
-
+        
         const renderContractList = function() {
             const listContainer = document.getElementById('contractListContainer');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
@@ -858,7 +832,7 @@
             filteredContracts.forEach(contract => {
                 const { statusText, statusColor, borderColor } = getContractStatus(contract);
                 let servicesHtml = (contract.serviceTypes || []).map(s => `<span class="service-tag-small">${s.name}</span>`).join('');
-
+                
                 html += `
                     <div class="dark-card rounded-lg shadow-lg overflow-hidden border-l-4 ${borderColor} flex flex-col justify-between transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl">
                         <div class="p-5">
@@ -887,7 +861,6 @@
                         <div class="bg-gray-900/50 px-4 py-2 flex justify-end gap-2">
                            <button onclick="window.App.openClientHistoryModal('${contract.clientName}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-indigo-400 hover:bg-indigo-900/20 py-1 px-3 rounded-md transition-colors" title="Ver Histórico do Cliente"><i class="fas fa-eye"></i> Histórico</button>
                            <button onclick="window.App.openContractModal('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-green-400 hover:bg-green-900/20 py-1 px-3 rounded-md transition-colors" title="Editar Contrato"><i class="fas fa-pencil-alt"></i> Editar</button>
-                           <button onclick="window.App.moveToLixeira('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 py-1 px-3 rounded-md transition-colors" title="Excluir Contrato"><i class="fas fa-trash-alt"></i> Excluir</button>
                            <button onclick="window.App.moveToLixeira('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 py-1 px-3 rounded-md transition-colors" title="Mover para Lixeira"><i class="fas fa-trash-alt"></i></button>
                         </div>
                     </div>
@@ -984,7 +957,7 @@
             const searchTerm = document.getElementById('servicosSearchInput').value.toLowerCase();
             const advogadoFilter = document.getElementById('servicosAdvogadoFilter').value;
             container.innerHTML = '';
-
+            
             let activeContracts = database.contracts.filter(c => {
                 const notDeleted = !c.isDeleted; // Filtra lixeira
                 const isNotConcluded = getContractStatus(c).statusText !== 'Concluído';
@@ -1024,7 +997,7 @@
                 let servicesHtml = (contract.serviceTypes || []).map((service, index) => {
                     let statusHtml, actionsHtml;
                     let deadlineHtml = '';
-
+                    
                     if (service.deadline) {
                         const hoje = new Date();
                         const prazo = new Date(service.deadline + "T12:00:00Z"); // Adiciona T12:00:00Z para evitar problemas de fuso
@@ -1099,7 +1072,7 @@
                 const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
                 const month = d.getMonth();
                 const year = d.getFullYear();
-
+                
                 labels.push(`${meses[month]}/${String(year).slice(-2)}`);
                 const income = calculateMonthlyIncome(year, month);
                 data.push(income.totalGeral);
@@ -1110,7 +1083,7 @@
         function renderAnalyticsPage() {
             const ctx = document.getElementById('faturamentoChart').getContext('2d');
             const chartData = getAnnualChartData();
-
+            
             // Destrói gráfico anterior se existir
             if (faturamentoChartInstance) {
                 faturamentoChartInstance.destroy();
@@ -1166,12 +1139,12 @@
             });
         }
         window.App.renderAnalyticsPage = renderAnalyticsPage;
-
+        
         // --- NOVA FUNÇÃO PARA LIXEIRA ---
         function renderLixeiraPage() {
             const container = document.getElementById('lixeiraListContainer');
             container.innerHTML = '';
-
+            
             const deletedContracts = database.contracts.filter(c => c.isDeleted === true);
 
             if (deletedContracts.length === 0) {
@@ -1248,7 +1221,7 @@
                 button.onclick = () => { currentInadimplentesSort = sort.key; renderInadimplentesPage(); renderSortButtons(); };
                 inadimplentesSortContainer.appendChild(button);
             });
-
+            
             const servicosSorts = [{ key: 'name-asc', label: 'Cliente (A-Z)' }, { key: 'adv-asc', label: 'Advogado (A-Z)' }];
             servicosSorts.forEach(sort => {
                 const button = document.createElement('button');
@@ -1346,24 +1319,24 @@
         const openPaymentModal = async function(contractId, parcelIndex) {
             const contract = database.contracts.find(c => c.id === contractId);
             const parcel = contract.parcels[parcelIndex];
-
+            
             let valorCorrigido = parcel.value;
             if (new Date(parcel.dueDate) < new Date()) {
                  valorCorrigido = await calcularValorCorrigido(parcel.value, parcel.dueDate);
             }
-
+            
             document.getElementById('pagamentoContractId').value = contractId;
             document.getElementById('pagamentoParcelIndex').value = parcelIndex;
-
+            
             const infoDiv = document.getElementById('pagamentoInfo');
             infoDiv.innerHTML = `
                 <p><strong>Cliente:</strong> ${contract.clientName}</p>
                 <p><strong>Valor Original:</strong> ${parcel.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
                 <p class="text-red-400"><strong>Valor Corrigido:</strong> ${valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>`;
-
+            
             document.getElementById('pagamentoValor').value = valorCorrigido.toFixed(2);
             document.getElementById('pagamentoData').value = new Date().toISOString().split('T')[0];
-
+            
             openModal('modalPagamento');
         }
         window.App.openPaymentModal = openPaymentModal; // Expor ao HTML
@@ -1372,9 +1345,9 @@
             const clientContracts = database.contracts.filter(c => c.clientName === clientName);
             const title = document.getElementById('clienteModalTitle');
             const content = document.getElementById('clienteModalContent');
-
+            
             title.textContent = `Histórico de ${clientName}`;
-
+            
             let totalContratado = 0;
             let totalPago = 0;
             let html = '';
@@ -1383,7 +1356,7 @@
                 totalContratado += contract.totalValue || 0;
                 let contractHtml = `<div class="bg-gray-700 p-4 rounded-lg">`;
                 contractHtml += `<h3 class="font-bold text-lg text-white">${(contract.serviceTypes || []).map(s => s.name).join(', ')} <span class="text-base font-normal text-gray-400">- ${contract.paymentType}</span></h3>`;
-
+                
                 if (contract.observations) {
                     contractHtml += `<blockquote class="text-sm mt-2 p-2 bg-gray-600/50 rounded-md text-gray-300 border-l-4 border-indigo-500 pl-4"><strong>Obs:</strong> ${contract.observations}</blockquote>`;
                 }
@@ -1480,7 +1453,7 @@
             const year = parseInt(document.getElementById('reportYear').value);
             const resultDiv = document.getElementById('reportResult');
             const income = calculateMonthlyIncome(year, month);
-
+            
             let detailsHtml = '<h4 class="text-lg font-semibold mt-6 border-t border-gray-700 pt-4 text-white">Detalhes dos Recebimentos</h4>';
             if (income.detailedPayments.length > 0) {
                 detailsHtml += '<ul class="space-y-2 mt-2 text-sm">';
@@ -1512,7 +1485,7 @@
             openModal('modalExito');
         }
         window.App.openExitoModal = openExitoModal; // Expor ao HTML
-
+        
         const createServiceTag = function(serviceName, deadline) {
             const container = document.getElementById('servicosContainer');
             const tag = document.createElement('div');
@@ -1534,7 +1507,7 @@
         window.App.createServiceTag = createServiceTag; // Expor ao HTML
 
         // --- FUNÇÕES DE CÁLCULO DE JUROS (COM API REAL) ---
-
+        
         async function fetchIPCA(startDate, endDate) {
             // Formata as datas para dd/MM/YYYY
             const formatApiDate = (date) => {
@@ -1553,11 +1526,11 @@
             if (ipcaCache.has(cacheKey)) {
                 return ipcaCache.get(cacheKey);
             }
-
+            
             // API do Banco Central para o índice IPCA (código 16121)
             const proxyUrl = 'https://api.allorigins.win/get?url='; // Proxy CORS
             const apiBase = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.16121/dados'; // Cód 16121 = Índice de preços
-
+            
             try {
                 // Busca o valor do índice no mês de vencimento
                 const urlStart = `${proxyUrl}${encodeURIComponent(`${apiBase}?formato=json&dataInicial=${startFormatted}&dataFinal=${startFormatted}`)}`;
@@ -1594,7 +1567,7 @@
         async function calcularValorCorrigido(valorOriginal, dataVencimento) {
             const hoje = new Date();
             const vencimento = new Date(dataVencimento);
-
+            
             if (hoje <= vencimento) {
                 return valorOriginal; // Não aplica juros se não venceu
             }
@@ -1607,11 +1580,11 @@
             const diffInMs = hoje - vencimento;
             const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
             const mesesAtraso = diffInDays / 30.44; // Média de dias no mês
-
+            
             // Juros SIMPLES de 1% ao mês (0.01)
             const fatorJuros = (1 + (0.01 * mesesAtraso));
             let valorFinal = valorCorrigido * fatorJuros;
-
+            
             return valorFinal;
         }
 
@@ -1686,7 +1659,7 @@
                 ].map(formatCSVCell).join(',');
                 csvRows.push(row);
             });
-
+            
             const monthName = document.getElementById('reportMonth').options[month].text;
             downloadCSV(csvRows.join('\n'), `relatorio_${monthName}_${year}.csv`);
         }
@@ -1696,7 +1669,7 @@
         // --- INICIALIZAÇÃO DA PÁGINA ---
         document.addEventListener('DOMContentLoaded', () => {
             initializeAndAuth(); // Chama a inicialização do Firebase
-
+            
             // --- Handlers de Autenticação ---
             const loginForm = document.getElementById('login-form');
             const authError = document.getElementById('auth-error');
@@ -1723,7 +1696,7 @@
                     }
                 }
             });
-
+            
             logoutButton.addEventListener('click', async () => {
                 await signOut(auth);
                 // O listener onAuthStateChanged cuidará de mostrar a tela de login
@@ -1742,7 +1715,7 @@
                         document.getElementById('user-display-name').textContent = name;
                         closeModal('modalDisplayName');
                         document.getElementById('app-container').style.display = 'block';
-
+                        
                         // Iniciar o listener do DB agora que temos o nome
                         contractsCollection = collection(db, `contracts`);
                         setupSnapshotListener();
@@ -1753,7 +1726,7 @@
                     }
                 }
             });
-
+            
             // --- Handlers do Aplicativo ---
             document.getElementById('formContrato').addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -1777,7 +1750,7 @@
                     alert('Adicione pelo menos um tipo de serviço.');
                     return;
                 }
-
+                
                 const contractData = { 
                     clientName, 
                     advogadoResponsavel, 
@@ -1805,7 +1778,8 @@
                 if (contractId) {
                     // Ao editar, não mexemos no status 'isDeleted'
                     const { isDeleted, ...dataToUpdate } = contractData; // Remove 'isDeleted' para não sobrescrever
-                    await updateDoc(doc(contractsCollection, contractId), dataToUpdate);
+                    const contractRef = doc(contractsCollection, contractId);
+                    await updateDoc(contractRef, dataToUpdate);
                 } else {
                     await addDoc(contractsCollection, contractData);
                 }
@@ -1818,7 +1792,7 @@
                 const parcelIndex = parseInt(document.getElementById('pagamentoParcelIndex').value);
                 const valuePaid = parseFloat(document.getElementById('pagamentoValor').value);
                 const paymentDate = document.getElementById('pagamentoData').value;
-
+                
                 const contractRef = doc(contractsCollection, contractId);
                 const contract = database.contracts.find(c => c.id === contractId);
 
@@ -1870,7 +1844,7 @@
                     const deadlineInput = document.getElementById('contratoPrazoInput');
                     const serviceName = serviceInput.value.trim();
                     const deadline = deadlineInput.value;
-
+                    
                     if (serviceName) {
                         createServiceTag(serviceName, deadline);
                         serviceInput.value = '';
@@ -1884,3 +1858,4 @@
     </script>
 </body>
 </html>
+
