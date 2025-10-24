@@ -213,10 +213,6 @@
                 <a onclick="window.App.showPage('page-servicos')" id="tab-servicos" class="nav-tab">
                     <i class="fas fa-tasks mr-2"></i>Serviços
                 </a>
-                <!-- Nova Aba de Análise Gráfica -->
-                <a onclick="window.App.showPage('page-analytics')" id="tab-analytics" class="nav-tab">
-                    <i class="fas fa-chart-bar mr-2"></i>Análise Gráfica
-                </a>
             </nav>
         </div>
 
@@ -228,6 +224,10 @@
                 </button>
                 <button onclick="window.App.openReportModal()" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
                     <i class="fas fa-chart-line"></i> Relatório Mensal
+                </button>
+                <!-- Botão para Gráficos -->
+                <button onclick="window.App.showPage('page-analytics')" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
+                    <i class="fas fa-chart-bar"></i> Ver Gráficos
                 </button>
             </div>
 
@@ -320,6 +320,21 @@
     </div>
 
     <!-- Modais -->
+    <!-- Modal: Adicionar Nome (NOVO) -->
+    <div id="modalDisplayName" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
+        <div class="p-6">
+            <h2 class="text-2xl font-bold text-white mb-4">Bem-vindo(a)!</h2>
+            <p class="text-gray-400 mb-4">Percebemos que é seu primeiro acesso. Como você gostaria de ser chamado(a)?</p>
+            <form id="formDisplayName">
+                <div class="mb-4">
+                    <label for="inputDisplayName" class="block text-sm font-medium text-gray-400">Seu Nome de Exibição</label>
+                    <input type="text" id="inputDisplayName" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" required>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Salvar e Entrar</button>
+            </form>
+        </div>
+    </div>
+
     <div id="modalContrato" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/2 lg:w-2/5">
         <div class="p-6">
             <div class="flex justify-between items-center mb-4">
@@ -483,12 +498,10 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { 
             getAuth, 
-            signInAnonymously, 
-            signInWithCustomToken, 
             onAuthStateChanged,
-            createUserWithEmailAndPassword,
             signInWithEmailAndPassword,
-            signOut
+            signOut,
+            updateProfile // Importar a função de atualizar perfil
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { 
             getFirestore, 
@@ -546,16 +559,24 @@
 
                     if (user) {
                         // Usuário está logado
-                        console.log("Usuário logado:", user.email);
-                        document.getElementById('user-display-name').textContent = user.displayName || user.email;
-                        authOverlay.style.display = 'none';
-                        appContainer.style.display = 'block';
-                        
-                        // Configura o listener do banco de dados SÓ DEPOIS de logar
-                        contractsCollection = collection(db, `contracts`);
-                        setupSnapshotListener();
-                        
-                        loadingOverlay.style.display = 'none';
+                        if (!user.displayName) {
+                            // NOVO: Se é o primeiro login (sem nome), mostrar o modal de nome
+                            loadingOverlay.style.display = 'none';
+                            authOverlay.style.display = 'none';
+                            appContainer.style.display = 'none';
+                            openModal('modalDisplayName');
+                        } else {
+                            // Login normal: mostrar o app
+                            console.log("Usuário logado:", user.displayName);
+                            document.getElementById('user-display-name').textContent = user.displayName;
+                            authOverlay.style.display = 'none';
+                            appContainer.style.display = 'block';
+                            
+                            contractsCollection = collection(db, `contracts`);
+                            setupSnapshotListener();
+                            
+                            loadingOverlay.style.display = 'none';
+                        }
                     } else {
                         // Usuário está deslogado
                         console.log("Nenhum usuário logado.");
@@ -583,17 +604,25 @@
         
         // --- FUNÇÕES DE NAVEGAÇÃO E RENDERIZAÇÃO ---
         const showPage = (pageId) => {
+            // Esconde todas as páginas
             ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-analytics'].forEach(id => {
                 if(document.getElementById(id)) document.getElementById(id).classList.add('hidden');
             });
-            ['tab-dashboard', 'tab-inadimplentes', 'tab-servicos', 'tab-analytics'].forEach(id => {
+            // Desativa todas as abas principais
+            ['tab-dashboard', 'tab-inadimplentes', 'tab-servicos'].forEach(id => {
                 if(document.getElementById(id)) document.getElementById(id).classList.remove('active');
             });
 
+            // Mostra a página clicada
             if(document.getElementById(pageId)) document.getElementById(pageId).classList.remove('hidden');
-            const tabId = `tab-${pageId.split('-')[1]}`;
-            if(document.getElementById(tabId)) document.getElementById(tabId).classList.add('active');
             
+            // Ativa a aba correspondente, se for uma aba principal
+            const tabId = `tab-${pageId.split('-')[1]}`;
+            if(document.getElementById(tabId)) {
+                document.getElementById(tabId).classList.add('active');
+            }
+            
+            // Roda a função específica da página
             if (pageId === 'page-inadimplentes') renderInadimplentesPage();
             if (pageId === 'page-servicos') renderServicosPage();
             if (pageId === 'page-analytics') renderAnalyticsPage();
@@ -1613,6 +1642,31 @@
                 await signOut(auth);
                 // O listener onAuthStateChanged cuidará de mostrar a tela de login
             });
+
+            // NOVO: Handler para o formulário de Display Name
+            const displayNameForm = document.getElementById('formDisplayName');
+            displayNameForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('inputDisplayName').value;
+                if (name && auth.currentUser) {
+                    try {
+                        await updateProfile(auth.currentUser, { displayName: name });
+                        // Sucesso! Agora recarregamos o estado do usuário (o onAuthStateChanged vai disparar de novo)
+                        // ou podemos simplesmente forçar a exibição do app
+                        document.getElementById('user-display-name').textContent = name;
+                        closeModal('modalDisplayName');
+                        document.getElementById('app-container').style.display = 'block';
+                        
+                        // Iniciar o listener do DB agora que temos o nome
+                        contractsCollection = collection(db, `contracts`);
+                        setupSnapshotListener();
+
+                    } catch (error) {
+                        console.error("Erro ao salvar nome:", error);
+                        alert("Não foi possível salvar seu nome. Tente novamente.");
+                    }
+                }
+            });
             
             // --- Handlers do Aplicativo ---
             document.getElementById('formContrato').addEventListener('submit', async (e) => {
@@ -1708,11 +1762,14 @@
             const backdrop = document.getElementById('modal-backdrop');
             if (backdrop) {
                 backdrop.addEventListener('click', () => {
-                    closeModal('modalContrato');
-                    closeModal('modalRelatorio');
-                    closeModal('modalExito');
-                    closeModal('modalPagamento');
-                    closeModal('modalCliente');
+                    // Não fechar o modal de display name ao clicar fora
+                    if (document.getElementById('modalDisplayName').style.display !== 'block') {
+                        closeModal('modalContrato');
+                        closeModal('modalRelatorio');
+                        closeModal('modalExito');
+                        closeModal('modalPagamento');
+                        closeModal('modalCliente');
+                    }
                 });
             }
 
