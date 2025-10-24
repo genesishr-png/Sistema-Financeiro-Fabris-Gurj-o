@@ -327,11 +327,20 @@
         <!-- Conteúdo da Página: Análise Gráfica -->
         <div id="page-analytics" class="hidden">
             <h2 class="text-2xl font-semibold text-white mb-6">Análise Gráfica</h2>
-            <div class="grid grid-cols-1 gap-6">
+            <!-- Alterado para grid de 2 colunas -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Gráfico de Faturamento (Existente) -->
                 <div class="dark-card p-6 rounded-lg shadow-lg">
                     <h3 class="text-lg font-semibold text-white mb-4">Recebimentos Totais (Últimos 12 Meses)</h3>
                     <div class="h-96">
                         <canvas id="faturamentoChart"></canvas>
+                    </div>
+                </div>
+                <!-- NOVO: Gráfico de Produção -->
+                <div class="dark-card p-6 rounded-lg shadow-lg">
+                    <h3 class="text-lg font-semibold text-white mb-4">Produção (Novos Contratos) (Últimos 12 Meses)</h3>
+                    <div class="h-96">
+                        <canvas id="producaoChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -556,6 +565,7 @@
         let currentServicosSort = 'name-asc';
         let ipcaCache = new Map(); // Cache para os valores do IPCA
         let faturamentoChartInstance = null; // Variável para guardar a instância do gráfico
+        let producaoChartInstance = null; // ADICIONADO: Para o gráfico de produção
 
         // --- INICIALIZAÇÃO E AUTENTICAÇÃO ---
         async function initializeAndAuth() {
@@ -1110,26 +1120,77 @@
             return { labels, data };
         }
 
-        function renderAnalyticsPage() {
-            const ctx = document.getElementById('faturamentoChart').getContext('2d');
-            const chartData = getAnnualChartData();
+        // ADICIONADO: Função para calcular dados de produção (novos contratos)
+        function getAnnualProducaoData() {
+            const labels = [];
+            const data = [];
+            const meses = ["Jan", "Fev", "Mar", "Abr", "Maio", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+            const hoje = new Date();
             
-            // Destrói gráfico anterior se existir
+            // 1. Gera os labels dos últimos 12 meses
+            for (let i = 11; i >= 0; i--) {
+                const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+                labels.push(`${meses[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}`);
+            }
+
+            // 2. Inicializa o array de dados
+            const monthlyProduction = new Array(12).fill(0);
+            const dozeMesesAtras = new Date(hoje.getFullYear(), hoje.getMonth() - 11, 1);
+            dozeMesesAtras.setHours(0,0,0,0);
+
+            // 3. Calcula a produção
+            database.contracts.filter(c => !c.isDeleted && c.parcels && c.parcels.length > 0).forEach(contract => {
+                // Usamos a data da primeira parcela como data de "início" do contrato
+                const firstDueDate = new Date(contract.parcels[0].dueDate);
+                firstDueDate.setHours(0,0,0,0); // Normaliza a data
+
+                // Verifica se o contrato "iniciou" nos últimos 12 meses
+                if (firstDueDate >= dozeMesesAtras && firstDueDate <= hoje) {
+                    // Calcula o índice correto no array de 12 meses
+                    // (AnoAtual - AnoParcela) * 12 + (MesAtual - MesParcela)
+                    // Isso nos dá a diferença de meses (ex: 0 para mês atual, 1 para mês passado)
+                    const monthDiff = (hoje.getFullYear() - firstDueDate.getFullYear()) * 12 + (hoje.getMonth() - firstDueDate.getMonth());
+                    
+                    // O índice no array é 11 (mês atual) - diff
+                    const dataIndex = 11 - monthDiff; 
+                    
+                    if (dataIndex >= 0 && dataIndex < 12) {
+                        monthlyProduction[dataIndex] += (contract.totalValue || 0);
+                    }
+                }
+            });
+
+            return { labels, data: monthlyProduction };
+        }
+
+
+        function renderAnalyticsPage() {
+            const ctxFaturamento = document.getElementById('faturamentoChart').getContext('2d');
+            const ctxProducao = document.getElementById('producaoChart').getContext('2d'); // ADICIONADO
+            
+            const faturamentoData = getAnnualChartData();
+            const producaoData = getAnnualProducaoData(); // ADICIONADO
+            
+            // Destrói gráficos anteriores se existirem
             if (faturamentoChartInstance) {
                 faturamentoChartInstance.destroy();
+            }
+            if (producaoChartInstance) { // ADICIONADO
+                producaoChartInstance.destroy();
             }
 
             // Configurações globais do Chart.js para modo escuro
             Chart.defaults.color = '#9ca3af';
             Chart.defaults.borderColor = '#374151';
 
-            faturamentoChartInstance = new Chart(ctx, {
+            // Gráfico de Faturamento (Existente)
+            faturamentoChartInstance = new Chart(ctxFaturamento, {
                 type: 'bar',
                 data: {
-                    labels: chartData.labels,
+                    labels: faturamentoData.labels,
                     datasets: [{
                         label: 'Faturamento Total Recebido',
-                        data: chartData.data,
+                        data: faturamentoData.data,
                         backgroundColor: 'rgba(79, 70, 229, 0.6)', // Cor indigo-600 com opacidade
                         borderColor: 'rgba(99, 102, 241, 1)', // Cor indigo-500
                         borderWidth: 1,
@@ -1137,6 +1198,52 @@
                     }]
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // ADICIONADO: Gráfico de Produção
+            producaoChartInstance = new Chart(ctxProducao, {
+                type: 'bar', // Pode ser 'line' se preferir
+                data: {
+                    labels: producaoData.labels,
+                    datasets: [{
+                        label: 'Valor de Novos Contratos',
+                        data: producaoData.data,
+                        backgroundColor: 'rgba(14, 165, 233, 0.6)', // Cor sky-500 com opacidade
+                        borderColor: 'rgba(56, 189, 248, 1)', // Cor sky-400
+                        borderWidth: 1,
+                        borderRadius: 5
+                    }]
+                },
+                options: { // Opções idênticas ao outro gráfico
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
@@ -1888,7 +1995,5 @@
     </script>
 </body>
 </html>
-
-
 
 
