@@ -99,8 +99,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            /* ADICIONADO: Espaço para a logo (aprox 90px de largura + 30px de margem) */
-            padding-right: 160px; /* Aumentado de 120px para 160px */
+            /* REMOVIDO o padding-right que não funcionou */
+        }
+        /* ADICIONADO: Nova classe para o bloco de usuário */
+        .header-user-block {
+            margin-right: 160px; /* Margem para criar espaço para a logo */
         }
         .header-logo {
             position: absolute;
@@ -201,8 +204,8 @@
                 <p class="text-gray-400">Controle Financeiro e de Produção do Escritório</p>
             </div>
             
-            <!-- Bloco Direito: Usuário e Logout -->
-            <div class="flex items-center">
+            <!-- Bloco Direito: Usuário e Logout (CLASSE ADICIONADA AQUI) -->
+            <div class="flex items-center header-user-block">
                 <span id="user-display-name" class="text-sm text-gray-300 font-medium mr-4"></span>
                 <button id="logout-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded-lg shadow-md text-sm flex items-center gap-2">
                     <i class="fas fa-sign-out-alt"></i> Sair
@@ -1885,6 +1888,7 @@
     </script>
 </body>
 </html>
+
 
 
 
