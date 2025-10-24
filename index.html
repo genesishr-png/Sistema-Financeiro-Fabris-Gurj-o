@@ -93,20 +93,7 @@
             background-color: #1f2937; /* bg-gray-800 */
             border: 1px solid #374151; /* border-gray-700 */
         }
-        .header-with-logo {
-            position: relative;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .header-logo {
-            position: absolute;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            max-height: 60px; 
-            opacity: 0.8; 
-        }
+        /* Estilos do Header removidos pois não são mais necessários com o flex */
         .sort-button {
             background-color: #374151;
             border: 1px solid #4b5563;
@@ -188,19 +175,27 @@
 
     <!-- Conteúdo Principal do App (Começa escondido) -->
     <div id="app-container" class="container mx-auto p-4 md:p-8">
-        <header class="mb-6 header-with-logo">
-            <div>
-                <h1 class="text-3xl font-bold text-white">Painel de Gestão</h1>
-                <p class="text-gray-400">Controle Financeiro e de Produção do Escritório</p>
+        
+        <!-- ***** HEADER MODIFICADO ***** -->
+        <header class="mb-6 flex justify-between items-center">
+            <!-- Bloco Esquerdo: Logo e Título -->
+            <div class="flex items-center gap-4">
+                <img src="https://www.fabrisegurjao.adv.br/netpage/data/uploads/2019/12/logo-fabris-e-gurjao-491x325px.png" alt="Fabris e Gurjão Logo" class="h-12">
+                 <h1 class="text-3xl font-bold text-white">Painel de Gestão</h1>
+                 <!-- Descrição removida -->
             </div>
+            
+            <!-- Bloco Direito: Usuário e Logout -->
             <div class="flex items-center">
                 <span id="user-display-name" class="text-sm text-gray-300 font-medium mr-4"></span>
                 <button id="logout-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded-lg shadow-md text-sm flex items-center gap-2">
                     <i class="fas fa-sign-out-alt"></i> Sair
                 </button>
-                <img src="https://www.fabrisegurjao.adv.br/netpage/data/uploads/2019/12/logo-fabris-e-gurjao-491x325px.png" alt="Fabris e Gurjão Logo" class="header-logo" style="position: relative; right: auto; top: auto; transform: none; margin-left: 20px;">
+                <!-- Logo removida deste bloco -->
             </div>
         </header>
+        <!-- ***** FIM DO HEADER MODIFICADO ***** -->
+
 
         <div class="border-b border-gray-700 mb-8">
             <nav class="flex -mb-px">
@@ -511,10 +506,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { 
             getAuth, 
-            signInAnonymously, 
-            signInWithCustomToken, 
             onAuthStateChanged,
-            createUserWithEmailAndPassword,
             signInWithEmailAndPassword,
             signOut,
             updateProfile // Importar a função de atualizar perfil
@@ -873,7 +865,7 @@
                         <div class="bg-gray-900/50 px-4 py-2 flex justify-end gap-2">
                            <button onclick="window.App.openClientHistoryModal('${contract.clientName}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-indigo-400 hover:bg-indigo-900/20 py-1 px-3 rounded-md transition-colors" title="Ver Histórico do Cliente"><i class="fas fa-eye"></i> Histórico</button>
                            <button onclick="window.App.openContractModal('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-green-400 hover:bg-green-900/20 py-1 px-3 rounded-md transition-colors" title="Editar Contrato"><i class="fas fa-pencil-alt"></i> Editar</button>
-                           <button onclick="window.App.moveToLixeira('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 py-1 px-3 rounded-md transition-colors" title="Excluir Contrato"><i class="fas fa-trash-alt"></i> Excluir</button>
+                           <button onclick="window.App.moveToLixeira('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 py-1 px-3 rounded-md transition-colors" title="Mover para Lixeira"><i class="fas fa-trash-alt"></i></button>
                         </div>
                     </div>
                 `;
