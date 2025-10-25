@@ -413,14 +413,14 @@
              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                  <div class="dark-card p-6 rounded-lg shadow-lg">
                      <h3 class="text-lg font-semibold text-white mb-4">Recebimentos Totais</h3>
-                     <!-- CORREÇÃO: Container para recriar o canvas -->
+                     <!-- Container para recriar o canvas -->
                      <div id="faturamentoChartContainer" class="canvas-container">
                          <canvas id="faturamentoChart"></canvas>
                      </div>
                  </div>
                  <div class="dark-card p-6 rounded-lg shadow-lg">
                      <h3 class="text-lg font-semibold text-white mb-4">Produção (Novos Contratos)</h3>
-                     <!-- CORREÇÃO: Container para recriar o canvas -->
+                     <!-- Container para recriar o canvas -->
                      <div id="producaoChartContainer" class="canvas-container">
                          <canvas id="producaoChart"></canvas>
                      </div>
@@ -768,7 +768,8 @@
             });
 
             // --- CORREÇÃO: Destruir gráficos E limpar/recriar canvas ao sair da página de análise ---
-            if (pageId !== 'page-analytics') {
+            const currentPageId = document.querySelector('div[id^="page-"]:not(.hidden)')?.id;
+            if (currentPageId === 'page-analytics' && pageId !== 'page-analytics') {
                 // Destroi instância do Chart.js se existir
                 if (faturamentoChartInstance) {
                     faturamentoChartInstance.destroy();
@@ -780,9 +781,10 @@
                 }
                 // Limpa o conteúdo dos containers dos canvas
                 const faturamentoContainer = document.getElementById('faturamentoChartContainer');
-                if (faturamentoContainer) faturamentoContainer.innerHTML = '<canvas id="faturamentoChart"></canvas>'; // Recria o canvas vazio
+                if (faturamentoContainer) faturamentoContainer.innerHTML = ''; // Limpa completamente
                 const producaoContainer = document.getElementById('producaoChartContainer');
-                if (producaoContainer) producaoContainer.innerHTML = '<canvas id="producaoChart"></canvas>'; // Recria o canvas vazio
+                if (producaoContainer) producaoContainer.innerHTML = ''; // Limpa completamente
+                console.log("Gráficos destruídos e containers limpos."); // Log para depuração
             }
             // --- FIM DA CORREÇÃO ---
 
@@ -816,6 +818,15 @@
             } else if (pageId === 'page-servicos') {
                 renderServicosPage(filteredData);
             } else if (pageId === 'page-analytics' && isUserAdmin) { // Só renderiza se for admin
+                // Certifica que os canvas existem antes de renderizar
+                const faturamentoContainer = document.getElementById('faturamentoChartContainer');
+                if (faturamentoContainer && !faturamentoContainer.querySelector('canvas')) {
+                    faturamentoContainer.innerHTML = '<canvas id="faturamentoChart"></canvas>';
+                }
+                const producaoContainer = document.getElementById('producaoChartContainer');
+                if (producaoContainer && !producaoContainer.querySelector('canvas')) {
+                    producaoContainer.innerHTML = '<canvas id="producaoChart"></canvas>';
+                }
                 renderAnalyticsPage(filteredData);
             } else if (pageId === 'page-lixeira') {
                 renderLixeiraPage(allFilteredData); // Lixeira usa dados incluindo deletados
@@ -847,6 +858,15 @@
             } else if (pageId === 'page-servicos') {
                 renderServicosPage(filteredData);
             } else if (pageId === 'page-analytics' && isUserAdmin) {
+                // Garante que os canvas existem antes de renderizar
+                const faturamentoContainer = document.getElementById('faturamentoChartContainer');
+                if (faturamentoContainer && !faturamentoContainer.querySelector('canvas')) {
+                    faturamentoContainer.innerHTML = '<canvas id="faturamentoChart"></canvas>';
+                }
+                const producaoContainer = document.getElementById('producaoChartContainer');
+                if (producaoContainer && !producaoContainer.querySelector('canvas')) {
+                    producaoContainer.innerHTML = '<canvas id="producaoChart"></canvas>';
+                }
                 renderAnalyticsPage(filteredData);
             } else if (pageId === 'page-lixeira') {
                 renderLixeiraPage(allFilteredData);
@@ -1328,28 +1348,53 @@
 
         function renderAnalyticsPage(contractsToRender) {
              if (!isUserAdmin) return; // Não renderiza se não for admin
+             console.log("Rendering analytics page..."); // Log para depuração
 
-             // Destroi instâncias existentes
-             if (faturamentoChartInstance) faturamentoChartInstance.destroy();
-             if (producaoChartInstance) producaoChartInstance.destroy();
+             // Destroi instâncias existentes, se houver
+             if (faturamentoChartInstance) {
+                 faturamentoChartInstance.destroy();
+                 faturamentoChartInstance = null;
+                 console.log("Faturamento chart instance destroyed."); // Log
+             }
+             if (producaoChartInstance) {
+                 producaoChartInstance.destroy();
+                 producaoChartInstance = null;
+                 console.log("Produção chart instance destroyed."); // Log
+             }
 
-             // CORREÇÃO: Recria os elementos canvas dentro dos seus containers
+             // CORREÇÃO: Garante que os containers tenham os canvas ANTES de tentar obter o contexto
              const faturamentoContainer = document.getElementById('faturamentoChartContainer');
-             faturamentoContainer.innerHTML = '<canvas id="faturamentoChart"></canvas>';
+             if (faturamentoContainer && !faturamentoContainer.querySelector('canvas')) {
+                 faturamentoContainer.innerHTML = '<canvas id="faturamentoChart"></canvas>';
+                 console.log("Faturamento canvas recreated."); // Log
+             }
              const producaoContainer = document.getElementById('producaoChartContainer');
-             producaoContainer.innerHTML = '<canvas id="producaoChart"></canvas>';
+             if (producaoContainer && !producaoContainer.querySelector('canvas')) {
+                 producaoContainer.innerHTML = '<canvas id="producaoChart"></canvas>';
+                 console.log("Produção canvas recreated."); // Log
+             }
              // --- FIM DA CORREÇÃO ---
+
+             // Verifica se os canvas existem antes de prosseguir
+             const faturamentoCanvas = document.getElementById('faturamentoChart');
+             const producaoCanvas = document.getElementById('producaoChart');
+
+             if (!faturamentoCanvas || !producaoCanvas) {
+                console.error("Canvas elements not found after attempting recreation.");
+                return;
+             }
 
              const faturamentoData = getAnnualChartData(currentAnalyticsPeriod, contractsToRender);
              const producaoData = getAnnualProducaoData(currentAnalyticsPeriod, contractsToRender);
-             const ctxFaturamento = document.getElementById('faturamentoChart').getContext('2d');
-             const ctxProducao = document.getElementById('producaoChart').getContext('2d');
+             const ctxFaturamento = faturamentoCanvas.getContext('2d');
+             const ctxProducao = producaoCanvas.getContext('2d');
 
              Chart.defaults.color = '#9ca3af'; Chart.defaults.borderColor = '#374151';
 
              // Cria as novas instâncias
              faturamentoChartInstance = new Chart(ctxFaturamento, { type: 'bar', data: { labels: faturamentoData.labels, datasets: [{ label: 'Faturamento Total Recebido', data: faturamentoData.data, backgroundColor: 'rgba(79, 70, 229, 0.6)', borderColor: 'rgba(99, 102, 241, 1)', borderWidth: 1, borderRadius: 5 }] }, options: { /* ... opções ... */ responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: (v) => 'R$ ' + v.toLocaleString('pt-BR') } } }, plugins: { tooltip: { callbacks: { label: (c) => (c.dataset.label || '') + ': ' + new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.parsed.y) } } } } });
              producaoChartInstance = new Chart(ctxProducao, { type: 'bar', data: { labels: producaoData.labels, datasets: [{ label: 'Valor de Novos Contratos', data: producaoData.data, backgroundColor: 'rgba(14, 165, 233, 0.6)', borderColor: 'rgba(56, 189, 248, 1)', borderWidth: 1, borderRadius: 5 }] }, options: { /* ... opções idênticas ... */ responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: (v) => 'R$ ' + v.toLocaleString('pt-BR') } } }, plugins: { tooltip: { callbacks: { label: (c) => (c.dataset.label || '') + ': ' + new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.parsed.y) } } } } });
+             console.log("New chart instances created."); // Log
         }
         window.App.renderAnalyticsPage = renderAnalyticsPage;
 
