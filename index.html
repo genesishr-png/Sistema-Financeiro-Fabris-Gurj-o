@@ -622,6 +622,7 @@
         let currentChartPeriod = '12M'; // Para os filtros do gráfico
         let contractsLoadedCount = 0; // Para paginacao
         const CONTRACTS_PER_PAGE = 30; // Para paginacao
+        let backdrop; // NOVO: Definido globalmente
 
         // NOVO: Controle de Acesso
         const adminUsers = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "D'Arc"];
@@ -663,9 +664,11 @@
                         // Usuário está logado
                         if (!user.displayName) {
                             // NOVO: Se é o primeiro login (sem nome), mostrar o modal de nome
+                            console.log("Primeiro login detectado, usuário sem nome de exibição."); // DEBUG
                             loadingOverlay.style.display = 'none';
                             authOverlay.style.display = 'none';
                             appContainer.style.display = 'none';
+                            console.log("Tentando abrir o modal 'modalDisplayName'."); // DEBUG
                             openModal('modalDisplayName');
                         } else {
                             // Login normal: mostrar o app
@@ -1645,14 +1648,16 @@
         // --- FIM DAS FUNÇÕES DA LIXEIRA ---
 
 
-        const backdrop = document.getElementById('modal-backdrop');
+        // const backdrop = document.getElementById('modal-backdrop'); // REMOVIDO DAQUI
         const openModal = function(modalId) {
+            // const backdrop = document.getElementById('modal-backdrop'); // REMOVIDO
             if(document.getElementById(modalId)) document.getElementById(modalId).style.display = 'block';
             if(backdrop) backdrop.style.display = 'block';
         }
         window.App.openModal = openModal; // Expor ao HTML
 
         const closeModal = function(modalId) {
+            // const backdrop = document.getElementById('modal-backdrop'); // REMOVIDO
             if(document.getElementById(modalId)) document.getElementById(modalId).style.display = 'none';
             if(backdrop) backdrop.style.display = 'none';
         }
@@ -2073,6 +2078,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             initializeAndAuth(); // Chama a inicialização do Firebase
 
+            // NOVO: Inicializa o backdrop aqui
+            backdrop = document.getElementById('modal-backdrop');
+
             // --- Handlers de Autenticação ---
             const loginForm = document.getElementById('login-form');
             const authError = document.getElementById('auth-error');
@@ -2242,7 +2250,7 @@
                 }
             });
 
-            const backdrop = document.getElementById('modal-backdrop');
+            // const backdrop = document.getElementById('modal-backdrop'); // REMOVIDO DAQUI
             if (backdrop) {
                 backdrop.addEventListener('click', () => {
                     // Não fechar o modal de display name ao clicar fora
