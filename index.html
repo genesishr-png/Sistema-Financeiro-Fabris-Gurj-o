@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Biblioteca de Gráficos -->
+    <!-- Biblioteca de Gráficos (mantida caso seja usada em outro lugar, como relatórios) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -208,12 +208,8 @@
         body.is-admin .flex.admin-only { display: flex; } /* Ajuste para flex containers */
         body:not(.is-admin) .non-admin-hidden { display: none; }
 
-        /* Estilo para container dos canvas para recriação */
-        .canvas-container {
-            position: relative;
-            height: 24rem; /* h-96 */
-            width: 100%;
-        }
+        /* Estilo para container dos canvas para recriação - REMOVIDO */
+        /* .canvas-container { ... } */
 
     </style>
 </head>
@@ -308,9 +304,10 @@
                 <button onclick="window.App.openReportModal()" class="admin-only bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
                     <i class="fas fa-chart-line"></i> Relatório Mensal
                 </button>
-                <button onclick="window.App.showPage('page-analytics')" class="admin-only bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
+                <!-- REMOVIDO: Botão Ver Gráficos -->
+                <!-- <button onclick="window.App.showPage('page-analytics')" class="admin-only bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
                     <i class="fas fa-chart-bar"></i> Ver Gráficos
-                </button>
+                </button> -->
             </div>
 
             <div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -400,33 +397,8 @@
              <div id="servicosListContainer" class="space-y-6"></div>
         </div>
 
-        <!-- Conteúdo da Página: Análise Gráfica (Admin Only) -->
-        <div id="page-analytics" class="hidden admin-only">
-             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-semibold text-white">Análise Gráfica</h2>
-                <div id="analyticsPeriodFilter" class="flex gap-1">
-                    <button onclick="window.App.setAnalyticsPeriod('12m')" class="filter-button active" data-period="12m">Últimos 12 Meses</button>
-                    <button onclick="window.App.setAnalyticsPeriod('thisYear')" class="filter-button" data-period="thisYear">Este Ano</button>
-                    <button onclick="window.App.setAnalyticsPeriod('lastYear')" class="filter-button" data-period="lastYear">Ano Passado</button>
-                </div>
-             </div>
-             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                 <div class="dark-card p-6 rounded-lg shadow-lg">
-                     <h3 class="text-lg font-semibold text-white mb-4">Recebimentos Totais</h3>
-                     <!-- Container para recriar o canvas -->
-                     <div id="faturamentoChartContainer" class="canvas-container">
-                         <canvas id="faturamentoChart"></canvas>
-                     </div>
-                 </div>
-                 <div class="dark-card p-6 rounded-lg shadow-lg">
-                     <h3 class="text-lg font-semibold text-white mb-4">Produção (Novos Contratos)</h3>
-                     <!-- Container para recriar o canvas -->
-                     <div id="producaoChartContainer" class="canvas-container">
-                         <canvas id="producaoChart"></canvas>
-                     </div>
-                 </div>
-             </div>
-        </div>
+        <!-- Conteúdo da Página: Análise Gráfica (Admin Only) - REMOVIDO -->
+        <!-- <div id="page-analytics" class="hidden admin-only"> ... </div> -->
 
         <!-- Conteúdo da Página: Lixeira -->
         <div id="page-lixeira" class="hidden">
@@ -636,15 +608,17 @@
         let currentInadimplentesSort = 'days-desc';
         let currentServicosSort = 'name-asc';
         let ipcaCache = new Map();
-        let faturamentoChartInstance = null;
-        let producaoChartInstance = null;
+        // REMOVIDO: Variáveis dos gráficos
+        // let faturamentoChartInstance = null;
+        // let producaoChartInstance = null;
         let backdrop;
         let contractListPage = 0;
         const CONTRACTS_PER_PAGE = 30;
         const ADMIN_USERS = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "D'Arc"]; // Usernames dos admins
         let currentUserDisplayName = null;
         let isUserAdmin = false;
-        let currentAnalyticsPeriod = '12m';
+        // REMOVIDO: Variável de período dos gráficos
+        // let currentAnalyticsPeriod = '12m';
 
         // --- Initialization and Authentication ---
         async function initializeAndAuth() {
@@ -758,7 +732,8 @@
 
         const showPage = (pageId) => {
             // Esconde todas as páginas e desativa tabs
-            ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-analytics', 'page-lixeira'].forEach(id => {
+            // REMOVIDO: 'page-analytics' da lista
+            ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-lixeira'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.add('hidden');
             });
@@ -767,41 +742,17 @@
                 if (tab) tab.classList.remove('active');
             });
 
-            // --- CORREÇÃO: Destruir gráficos E limpar/recriar canvas ao sair da página de análise ---
-            const currentPageId = document.querySelector('div[id^="page-"]:not(.hidden)')?.id;
-            if (currentPageId === 'page-analytics' && pageId !== 'page-analytics') {
-                // Destroi instância do Chart.js se existir
-                if (faturamentoChartInstance) {
-                    faturamentoChartInstance.destroy();
-                    faturamentoChartInstance = null;
-                }
-                if (producaoChartInstance) {
-                    producaoChartInstance.destroy();
-                    producaoChartInstance = null;
-                }
-                // Limpa o conteúdo dos containers dos canvas
-                const faturamentoContainer = document.getElementById('faturamentoChartContainer');
-                if (faturamentoContainer) faturamentoContainer.innerHTML = ''; // Limpa completamente
-                const producaoContainer = document.getElementById('producaoChartContainer');
-                if (producaoContainer) producaoContainer.innerHTML = ''; // Limpa completamente
-                console.log("Gráficos destruídos e containers limpos."); // Log para depuração
-            }
-            // --- FIM DA CORREÇÃO ---
+            // REMOVIDO: Lógica de limpar/destruir gráficos
 
-
-            // Mostra a página clicada (respeitando admin-only se necessário)
+            // Mostra a página clicada
             const targetPage = document.getElementById(pageId);
             if (targetPage) {
-                if(targetPage.classList.contains('admin-only') && !isUserAdmin) {
-                     console.warn("Acesso negado a ", pageId);
-                     // Opcional: redirecionar para dashboard ou mostrar mensagem
-                     showPage('page-dashboard'); // Volta pro dashboard
-                     return;
-                 }
+                // REMOVIDO: Verificação admin para page-analytics pois ela não existe mais
                 targetPage.classList.remove('hidden');
             }
 
             // Ativa a tab correspondente
+            // REMOVIDO: Condição especial para tab-analytics
             const tabId = `tab-${pageId.split('-')[1]}`;
             const targetTab = document.getElementById(tabId);
             if (targetTab) targetTab.classList.add('active');
@@ -817,17 +768,7 @@
                 renderInadimplentesPage(filteredData);
             } else if (pageId === 'page-servicos') {
                 renderServicosPage(filteredData);
-            } else if (pageId === 'page-analytics' && isUserAdmin) { // Só renderiza se for admin
-                // Certifica que os canvas existem antes de renderizar
-                const faturamentoContainer = document.getElementById('faturamentoChartContainer');
-                if (faturamentoContainer && !faturamentoContainer.querySelector('canvas')) {
-                    faturamentoContainer.innerHTML = '<canvas id="faturamentoChart"></canvas>';
-                }
-                const producaoContainer = document.getElementById('producaoChartContainer');
-                if (producaoContainer && !producaoContainer.querySelector('canvas')) {
-                    producaoContainer.innerHTML = '<canvas id="producaoChart"></canvas>';
-                }
-                renderAnalyticsPage(filteredData);
+            // REMOVIDO: Else if para page-analytics
             } else if (pageId === 'page-lixeira') {
                 renderLixeiraPage(allFilteredData); // Lixeira usa dados incluindo deletados
             }
@@ -857,17 +798,7 @@
                 await renderInadimplentesPage(filteredData);
             } else if (pageId === 'page-servicos') {
                 renderServicosPage(filteredData);
-            } else if (pageId === 'page-analytics' && isUserAdmin) {
-                // Garante que os canvas existem antes de renderizar
-                const faturamentoContainer = document.getElementById('faturamentoChartContainer');
-                if (faturamentoContainer && !faturamentoContainer.querySelector('canvas')) {
-                    faturamentoContainer.innerHTML = '<canvas id="faturamentoChart"></canvas>';
-                }
-                const producaoContainer = document.getElementById('producaoChartContainer');
-                if (producaoContainer && !producaoContainer.querySelector('canvas')) {
-                    producaoContainer.innerHTML = '<canvas id="producaoChart"></canvas>';
-                }
-                renderAnalyticsPage(filteredData);
+            // REMOVIDO: Else if para page-analytics
             } else if (pageId === 'page-lixeira') {
                 renderLixeiraPage(allFilteredData);
             }
@@ -1283,130 +1214,14 @@
         }
         window.App.renderServicosPage = renderServicosPage;
 
-        // --- Analytics Functions (Admin Only) ---
-        function getAnnualChartData(period, contractsToRender) {
-             if (!isUserAdmin) return { labels: [], data: [] }; // Retorna vazio se não for admin
-             // ... (resto da lógica como estava) ...
-            const labels = [], data = [];
-            const meses = ["Jan", "Fev", "Mar", "Abr", "Maio", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-            const hoje = new Date();
-             if (period === '12m') { /* ... */
-                for (let i = 11; i >= 0; i--) {
-                    const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
-                    labels.push(`${meses[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}`);
-                    const income = calculateMonthlyIncome(d.getFullYear(), d.getMonth(), contractsToRender);
-                    data.push(income.totalGeral);
-                }
-            } else if (period === 'thisYear') { /* ... */
-                for (let i = 0; i < 12; i++) {
-                    labels.push(meses[i]);
-                    const income = calculateMonthlyIncome(hoje.getFullYear(), i, contractsToRender);
-                    data.push(income.totalGeral);
-                }
-            } else if (period === 'lastYear') { /* ... */
-                const lastYear = hoje.getFullYear() - 1;
-                for (let i = 0; i < 12; i++) {
-                    labels.push(meses[i]);
-                    const income = calculateMonthlyIncome(lastYear, i, contractsToRender);
-                    data.push(income.totalGeral);
-                }
-            }
-             return { labels, data };
-        }
-
-        function getAnnualProducaoData(period, contractsToRender) {
-             if (!isUserAdmin) return { labels: [], data: [] }; // Retorna vazio se não for admin
-             // ... (resto da lógica como estava) ...
-            const labels = [], data = [];
-            const meses = ["Jan", "Fev", "Mar", "Abr", "Maio", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-            const hoje = new Date();
-            let yearToScan, startRange, endRange;
-             if (period === '12m') { /* ... */
-                for (let i = 11; i >= 0; i--) { const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1); labels.push(`${meses[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}`); }
-                 startRange = new Date(hoje.getFullYear(), hoje.getMonth() - 11, 1);
-                 endRange = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
-            } else if (period === 'thisYear') { /* ... */
-                yearToScan = hoje.getFullYear(); labels.push(...meses);
-                 startRange = new Date(yearToScan, 0, 1); endRange = new Date(yearToScan, 11, 31);
-            } else if (period === 'lastYear') { /* ... */
-                yearToScan = hoje.getFullYear() - 1; labels.push(...meses);
-                 startRange = new Date(yearToScan, 0, 1); endRange = new Date(yearToScan, 11, 31);
-            }
-             const monthlyProduction = new Array(12).fill(0);
-             startRange.setHours(0,0,0,0); endRange.setHours(23,59,59,999);
-             contractsToRender.filter(c => c.parcels && c.parcels.length > 0).forEach(contract => {
-                 const firstDueDate = new Date(contract.parcels[0].dueDate);
-                 if (firstDueDate >= startRange && firstDueDate <= endRange) {
-                     let dataIndex;
-                     if (period === '12m') { const monthDiff = (endRange.getFullYear() - firstDueDate.getFullYear()) * 12 + (endRange.getMonth() - firstDueDate.getMonth()); dataIndex = 11 - monthDiff; }
-                     else { dataIndex = firstDueDate.getMonth(); }
-                     if (dataIndex >= 0 && dataIndex < 12) monthlyProduction[dataIndex] += (contract.totalValue || 0);
-                 }
-             });
-             return { labels, data: monthlyProduction };
-        }
-
-        function renderAnalyticsPage(contractsToRender) {
-             if (!isUserAdmin) return; // Não renderiza se não for admin
-             console.log("Rendering analytics page..."); // Log para depuração
-
-             // Destroi instâncias existentes, se houver
-             if (faturamentoChartInstance) {
-                 faturamentoChartInstance.destroy();
-                 faturamentoChartInstance = null;
-                 console.log("Faturamento chart instance destroyed."); // Log
-             }
-             if (producaoChartInstance) {
-                 producaoChartInstance.destroy();
-                 producaoChartInstance = null;
-                 console.log("Produção chart instance destroyed."); // Log
-             }
-
-             // CORREÇÃO: Garante que os containers tenham os canvas ANTES de tentar obter o contexto
-             const faturamentoContainer = document.getElementById('faturamentoChartContainer');
-             if (faturamentoContainer && !faturamentoContainer.querySelector('canvas')) {
-                 faturamentoContainer.innerHTML = '<canvas id="faturamentoChart"></canvas>';
-                 console.log("Faturamento canvas recreated."); // Log
-             }
-             const producaoContainer = document.getElementById('producaoChartContainer');
-             if (producaoContainer && !producaoContainer.querySelector('canvas')) {
-                 producaoContainer.innerHTML = '<canvas id="producaoChart"></canvas>';
-                 console.log("Produção canvas recreated."); // Log
-             }
-             // --- FIM DA CORREÇÃO ---
-
-             // Verifica se os canvas existem antes de prosseguir
-             const faturamentoCanvas = document.getElementById('faturamentoChart');
-             const producaoCanvas = document.getElementById('producaoChart');
-
-             if (!faturamentoCanvas || !producaoCanvas) {
-                console.error("Canvas elements not found after attempting recreation.");
-                return;
-             }
-
-             const faturamentoData = getAnnualChartData(currentAnalyticsPeriod, contractsToRender);
-             const producaoData = getAnnualProducaoData(currentAnalyticsPeriod, contractsToRender);
-             const ctxFaturamento = faturamentoCanvas.getContext('2d');
-             const ctxProducao = producaoCanvas.getContext('2d');
-
-             Chart.defaults.color = '#9ca3af'; Chart.defaults.borderColor = '#374151';
-
-             // Cria as novas instâncias
-             faturamentoChartInstance = new Chart(ctxFaturamento, { type: 'bar', data: { labels: faturamentoData.labels, datasets: [{ label: 'Faturamento Total Recebido', data: faturamentoData.data, backgroundColor: 'rgba(79, 70, 229, 0.6)', borderColor: 'rgba(99, 102, 241, 1)', borderWidth: 1, borderRadius: 5 }] }, options: { /* ... opções ... */ responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: (v) => 'R$ ' + v.toLocaleString('pt-BR') } } }, plugins: { tooltip: { callbacks: { label: (c) => (c.dataset.label || '') + ': ' + new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.parsed.y) } } } } });
-             producaoChartInstance = new Chart(ctxProducao, { type: 'bar', data: { labels: producaoData.labels, datasets: [{ label: 'Valor de Novos Contratos', data: producaoData.data, backgroundColor: 'rgba(14, 165, 233, 0.6)', borderColor: 'rgba(56, 189, 248, 1)', borderWidth: 1, borderRadius: 5 }] }, options: { /* ... opções idênticas ... */ responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: (v) => 'R$ ' + v.toLocaleString('pt-BR') } } }, plugins: { tooltip: { callbacks: { label: (c) => (c.dataset.label || '') + ': ' + new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.parsed.y) } } } } });
-             console.log("New chart instances created."); // Log
-        }
-        window.App.renderAnalyticsPage = renderAnalyticsPage;
-
-        const setAnalyticsPeriod = function(period) {
-             if (!isUserAdmin) return; // Ação apenas para admin
-             currentAnalyticsPeriod = period;
-             document.querySelectorAll('#analyticsPeriodFilter .filter-button').forEach(btn => btn.classList.remove('active'));
-             document.querySelector(`#analyticsPeriodFilter .filter-button[data-period="${period}"]`).classList.add('active');
-             renderAnalyticsPage(getFilteredContracts(false)); // Re-renderiza com dados filtrados
-        }
-        window.App.setAnalyticsPeriod = setAnalyticsPeriod;
-        window.App.setChartPeriod = setAnalyticsPeriod; // Alias
+        // --- Analytics Functions (Admin Only) - REMOVIDO ---
+        // function getAnnualChartData(...) { ... }
+        // function getAnnualProducaoData(...) { ... }
+        // function renderAnalyticsPage(...) { ... }
+        // window.App.renderAnalyticsPage = renderAnalyticsPage;
+        // const setAnalyticsPeriod = function(...) { ... }
+        // window.App.setAnalyticsPeriod = setAnalyticsPeriod;
+        // window.App.setChartPeriod = setAnalyticsPeriod; // Alias
 
         // --- Lixeira Functions ---
         function renderLixeiraPage(contractsToRender) {
