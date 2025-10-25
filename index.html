@@ -633,18 +633,25 @@
         async function initializeAndAuth() {
             try {
                 // Suas credenciais do Firebase
-                const firebaseConfig = {
+                // ATUALIZADO: Configuração fornecida pelo usuário como fallback
+                const firebaseConfigFallback = {
                     apiKey: "AIzaSyA0TWb7DgZAHNl3TuoK3xQD-ANvCcQIDK4",
                     authDomain: "fabrisgurjao.firebaseapp.com",
                     projectId: "fabrisgurjao",
-                    storageBucket: "fabrisgurjao.appspot.com",
+                    storageBucket: "fabrisgurjao.firebasestorage.app", // <-- ATUALIZADO
                     messagingSenderId: "466702265991",
                     appId: "1:466702265991:web:78c4d98b47cab537921222",
                     measurementId: "G-E99R5TFMQK"
                 };
 
                 const appId = typeof __app_id !== 'undefined' ? __app_id : 'fabrisgurjao-app';
-                const finalConfig = (typeof __firebase_config !== 'undefined' && __firebase_config !== '') ? JSON.parse(__firebase_config) : firebaseConfig;
+                
+                // TENTATIVA DE CORREÇÃO: Priorizar a config do ambiente
+                const finalConfig = (typeof __firebase_config !== 'undefined' && __firebase_config !== '' && __firebase_config !== '{{ SCRIPT_DATA.firebase_config }}') 
+                    ? JSON.parse(__firebase_config) 
+                    : firebaseConfigFallback;
+
+                // console.log("Usando Firebase Config:", finalConfig); // DEBUG
 
                 const app = initializeApp(finalConfig);
                 db = getFirestore(app);
@@ -1650,8 +1657,11 @@
 
         // const backdrop = document.getElementById('modal-backdrop'); // REMOVIDO DAQUI
         const openModal = function(modalId) {
-            // const backdrop = document.getElementById('modal-backdrop'); // REMOVIDO
-            if(document.getElementById(modalId)) document.getElementById(modalId).style.display = 'block';
+            const modal = document.getElementById(modalId);
+            console.log(`Tentando abrir modal: ${modalId}. Elemento encontrado?`, !!modal); // DEBUG
+            console.log(`Backdrop encontrado?`, !!backdrop); // DEBUG
+
+            if(modal) modal.style.display = 'block';
             if(backdrop) backdrop.style.display = 'block';
         }
         window.App.openModal = openModal; // Expor ao HTML
