@@ -208,6 +208,13 @@
         body.is-admin .flex.admin-only { display: flex; } /* Ajuste para flex containers */
         body:not(.is-admin) .non-admin-hidden { display: none; }
 
+        /* Estilo para container dos canvas para recriação */
+        .canvas-container {
+            position: relative;
+            height: 24rem; /* h-96 */
+            width: 100%;
+        }
+
     </style>
 </head>
 <body class="text-gray-300"> <!-- Classe is-admin será adicionada via JS -->
@@ -406,13 +413,15 @@
              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                  <div class="dark-card p-6 rounded-lg shadow-lg">
                      <h3 class="text-lg font-semibold text-white mb-4">Recebimentos Totais</h3>
-                     <div class="h-96">
+                     <!-- CORREÇÃO: Container para recriar o canvas -->
+                     <div id="faturamentoChartContainer" class="canvas-container">
                          <canvas id="faturamentoChart"></canvas>
                      </div>
                  </div>
                  <div class="dark-card p-6 rounded-lg shadow-lg">
                      <h3 class="text-lg font-semibold text-white mb-4">Produção (Novos Contratos)</h3>
-                     <div class="h-96">
+                     <!-- CORREÇÃO: Container para recriar o canvas -->
+                     <div id="producaoChartContainer" class="canvas-container">
                          <canvas id="producaoChart"></canvas>
                      </div>
                  </div>
@@ -758,8 +767,9 @@
                 if (tab) tab.classList.remove('active');
             });
 
-            // --- CORREÇÃO: Destruir gráficos ao sair da página de análise ---
+            // --- CORREÇÃO: Destruir gráficos E limpar/recriar canvas ao sair da página de análise ---
             if (pageId !== 'page-analytics') {
+                // Destroi instância do Chart.js se existir
                 if (faturamentoChartInstance) {
                     faturamentoChartInstance.destroy();
                     faturamentoChartInstance = null;
@@ -768,6 +778,11 @@
                     producaoChartInstance.destroy();
                     producaoChartInstance = null;
                 }
+                // Limpa o conteúdo dos containers dos canvas
+                const faturamentoContainer = document.getElementById('faturamentoChartContainer');
+                if (faturamentoContainer) faturamentoContainer.innerHTML = '<canvas id="faturamentoChart"></canvas>'; // Recria o canvas vazio
+                const producaoContainer = document.getElementById('producaoChartContainer');
+                if (producaoContainer) producaoContainer.innerHTML = '<canvas id="producaoChart"></canvas>'; // Recria o canvas vazio
             }
             // --- FIM DA CORREÇÃO ---
 
@@ -1314,16 +1329,25 @@
         function renderAnalyticsPage(contractsToRender) {
              if (!isUserAdmin) return; // Não renderiza se não for admin
 
-             // ... (lógica de destroy e criação dos charts como estava) ...
+             // Destroi instâncias existentes
+             if (faturamentoChartInstance) faturamentoChartInstance.destroy();
+             if (producaoChartInstance) producaoChartInstance.destroy();
+
+             // CORREÇÃO: Recria os elementos canvas dentro dos seus containers
+             const faturamentoContainer = document.getElementById('faturamentoChartContainer');
+             faturamentoContainer.innerHTML = '<canvas id="faturamentoChart"></canvas>';
+             const producaoContainer = document.getElementById('producaoChartContainer');
+             producaoContainer.innerHTML = '<canvas id="producaoChart"></canvas>';
+             // --- FIM DA CORREÇÃO ---
+
              const faturamentoData = getAnnualChartData(currentAnalyticsPeriod, contractsToRender);
              const producaoData = getAnnualProducaoData(currentAnalyticsPeriod, contractsToRender);
              const ctxFaturamento = document.getElementById('faturamentoChart').getContext('2d');
              const ctxProducao = document.getElementById('producaoChart').getContext('2d');
-             // --- CORREÇÃO: Garantir destruição antes de recriar ---
-             if (faturamentoChartInstance) faturamentoChartInstance.destroy();
-             if (producaoChartInstance) producaoChartInstance.destroy();
-             // --- FIM DA CORREÇÃO ---
+
              Chart.defaults.color = '#9ca3af'; Chart.defaults.borderColor = '#374151';
+
+             // Cria as novas instâncias
              faturamentoChartInstance = new Chart(ctxFaturamento, { type: 'bar', data: { labels: faturamentoData.labels, datasets: [{ label: 'Faturamento Total Recebido', data: faturamentoData.data, backgroundColor: 'rgba(79, 70, 229, 0.6)', borderColor: 'rgba(99, 102, 241, 1)', borderWidth: 1, borderRadius: 5 }] }, options: { /* ... opções ... */ responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: (v) => 'R$ ' + v.toLocaleString('pt-BR') } } }, plugins: { tooltip: { callbacks: { label: (c) => (c.dataset.label || '') + ': ' + new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.parsed.y) } } } } });
              producaoChartInstance = new Chart(ctxProducao, { type: 'bar', data: { labels: producaoData.labels, datasets: [{ label: 'Valor de Novos Contratos', data: producaoData.data, backgroundColor: 'rgba(14, 165, 233, 0.6)', borderColor: 'rgba(56, 189, 248, 1)', borderWidth: 1, borderRadius: 5 }] }, options: { /* ... opções idênticas ... */ responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: (v) => 'R$ ' + v.toLocaleString('pt-BR') } } }, plugins: { tooltip: { callbacks: { label: (c) => (c.dataset.label || '') + ': ' + new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.parsed.y) } } } } });
         }
