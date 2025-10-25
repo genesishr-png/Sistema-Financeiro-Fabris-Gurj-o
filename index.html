@@ -79,6 +79,19 @@
             border-bottom-color: #6366f1; /* indigo-500 */
             color: #e5e7eb; /* gray-200 */
         }
+        /* Classe específica para o ícone da lixeira */
+        .nav-tab-icon {
+            cursor: pointer;
+            padding: 10px 15px; /* Padding ligeiramente ajustado */
+            color: #9ca3af; /* gray-400 */
+            transition: all 0.2s;
+        }
+        .nav-tab-icon:hover {
+            color: #e5e7eb; /* gray-200 */
+        }
+        .nav-tab-icon.active {
+             color: #6366f1; /* indigo-500 */
+        }
         .progress-bar-bg {
             background-color: #374151; /* gray-700 */
             border-radius: 9999px;
@@ -93,15 +106,12 @@
             background-color: #1f2937; /* bg-gray-800 */
             border: 1px solid #374151; /* border-gray-700 */
         }
-        /* ***** CSS DO HEADER RESTAURADO ***** */
         .header-with-logo {
             position: relative;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            /* REMOVIDO o padding-right que não funcionou */
         }
-        /* ADICIONADO: Nova classe para o bloco de usuário */
         .header-user-block {
             margin-right: 160px; /* Margem para criar espaço para a logo */
         }
@@ -113,8 +123,7 @@
             max-height: 60px; 
             opacity: 0.8; 
         }
-        /* ***** FIM DO CSS RESTAURADO ***** */
-        .sort-button {
+        .sort-button, .filter-button {
             background-color: #374151;
             border: 1px solid #4b5563;
             color: #9ca3af;
@@ -124,36 +133,15 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        .sort-button:hover {
+        .sort-button:hover, .filter-button:hover {
             background-color: #4b5563;
             color: white;
         }
-        .sort-button.active {
+        .sort-button.active, .filter-button.active {
             background-color: #4f46e5;
             border-color: #4f46e5;
             color: white;
         }
-        /* NOVO: Botão de filtro de período */
-        .period-filter-button {
-            background-color: #374151;
-            border: 1px solid #4b5563;
-            color: #9ca3af;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .period-filter-button:hover {
-            background-color: #4b5563;
-            color: white;
-        }
-        .period-filter-button.active {
-            background-color: #4f46e5;
-            border-color: #4f46e5;
-            color: white;
-        }
-
         .filter-select {
             background-color: #374151;
             border: 1px solid #4b5563;
@@ -161,11 +149,6 @@
             padding: 8px 12px;
             border-radius: 6px;
             font-size: 14px;
-        }
-        .filter-select:disabled {
-            background-color: #4b5563;
-            opacity: 0.7;
-            cursor: not-allowed;
         }
         #loading-overlay, #auth-overlay {
             position: fixed;
@@ -222,7 +205,6 @@
     <!-- Conteúdo Principal do App (Começa escondido) -->
     <div id="app-container" class="container mx-auto p-4 md:p-8">
 
-        <!-- ***** HEADER RESTAURADO AO ORIGINAL ***** -->
         <header class="mb-6 header-with-logo">
             <!-- Bloco Esquerdo: Título e Descrição -->
             <div>
@@ -240,13 +222,12 @@
             <!-- Logo (flutuante) -->
             <img src="https://www.fabrisegurjao.adv.br/netpage/data/uploads/2019/12/logo-fabris-e-gurjao-491x325px.png" alt="Fabris e Gurjão Logo" class="header-logo">
         </header>
-        <!-- ***** FIM DO HEADER RESTAURADO ***** -->
 
 
         <div class="border-b border-gray-700 mb-8">
-            <!-- Nav ajustada com justify-between e items-center -->
-            <nav class="flex -mb-px justify-between items-center">
-                <!-- Grupo das abas principais -->
+            <!-- Container flex para a barra de navegação -->
+            <nav class="flex justify-between items-center -mb-px">
+                <!-- Tabs Principais (esquerda) -->
                 <div class="flex">
                     <a onclick="window.App.showPage('page-dashboard')" id="tab-dashboard" class="nav-tab active">
                         <i class="fas fa-tachometer-alt mr-2"></i>Painel Principal
@@ -258,12 +239,16 @@
                         <i class="fas fa-tasks mr-2"></i>Serviços
                     </a>
                 </div>
-                <!-- Aba Lixeira isolada (só ícone) -->
-                <a onclick="window.App.showPage('page-lixeira')" id="tab-lixeira" class="nav-tab px-3" title="Lixeira"> <!-- Adicionado title para acessibilidade -->
-                    <i class="fas fa-trash-alt"></i> <!-- Removido texto e margem -->
-                </a>
+                
+                <!-- Ícone da Lixeira (direita) -->
+                <div>
+                    <a onclick="window.App.showPage('page-lixeira')" id="tab-lixeira" class="nav-tab-icon" title="Lixeira">
+                        <i class="fas fa-trash-alt"></i>
+                    </a>
+                </div>
             </nav>
         </div>
+
 
         <!-- Conteúdo da Página: Painel Principal -->
         <div id="page-dashboard">
@@ -312,7 +297,7 @@
                         <button onclick="window.App.exportContractsCSV()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2 text-sm">
                             <i class="fas fa-file-csv"></i> Exportar (CSV)
                         </button>
-                        <select id="advogadoFilter" onchange="window.App.resetAndRenderContractList()" class="filter-select"></select>
+                        <select id="advogadoFilter" onchange="window.App.renderContractList()" class="filter-select"></select>
                         <div class="flex items-center gap-2">
                            <span class="text-sm text-gray-400">Ordenar por:</span>
                            <div id="contractSortButtons" class="flex gap-1"></div>
@@ -320,13 +305,13 @@
                     </div>
                 </div>
                 <div class="mb-4">
-                    <input type="text" id="searchInput" onkeyup="window.App.resetAndRenderContractList()" placeholder="🔎 Pesquisar por cliente ou tipo de serviço..." class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white">
+                    <input type="text" id="searchInput" onkeyup="window.App.renderContractList()" placeholder="🔎 Pesquisar por cliente ou tipo de serviço..." class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white">
                 </div>
                 <div id="contractListContainer"></div>
                 <!-- NOVO: Botão Carregar Mais -->
-                <div id="loadMoreContainer" class="text-center mt-8">
-                    <button onclick="window.App.loadMoreContracts()" id="loadMoreButton" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all flex items-center gap-2 mx-auto">
-                        <i class="fas fa-plus"></i> Carregar Mais
+                <div id="loadMoreContainer" class="text-center mt-6">
+                    <button id="loadMoreButton" onclick="window.App.loadMoreContracts()" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-all">
+                        Carregar Mais
                     </button>
                 </div>
             </div>
@@ -363,29 +348,30 @@
         <!-- Conteúdo da Página: Análise Gráfica -->
         <div id="page-analytics" class="hidden">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-semibold text-white">Análise Gráfica</h2>
-                <!-- NOVO: Botões de Filtro de Período -->
-                <div id="chartPeriodFilters" class="flex gap-2">
-                    <button onclick="window.App.setChartPeriod('12M')" id="filter-12M" class="period-filter-button active">Últimos 12 Meses</button>
-                    <button onclick="window.App.setChartPeriod('THIS_YEAR')" id="filter-THIS_YEAR" class="period-filter-button">Este Ano</button>
-                    <button onclick="window.App.setChartPeriod('LAST_YEAR')" id="filter-LAST_YEAR" class="period-filter-button">Ano Passado</button>
-                </div>
+                 <h2 class="text-2xl font-semibold text-white">Análise Gráfica</h2>
+                 <!-- NOVO: Filtros de Período -->
+                 <div id="analyticsPeriodFilter" class="flex gap-1">
+                    <button onclick="window.App.setAnalyticsPeriod('12m')" class="filter-button active" data-period="12m">Últimos 12 Meses</button>
+                    <button onclick="window.App.setAnalyticsPeriod('thisYear')" class="filter-button" data-period="thisYear">Este Ano</button>
+                    <button onclick="window.App.setAnalyticsPeriod('lastYear')" class="filter-button" data-period="lastYear">Ano Passado</button>
+                 </div>
             </div>
             <div class="grid grid-cols-1 gap-6">
-            <!-- Alterado para grid de 2 colunas -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Gráfico de Faturamento (Existente) -->
-                <div class="dark-card p-6 rounded-lg shadow-lg">
-                    <h3 class="text-lg font-semibold text-white mb-4">Recebimentos Totais</h3>
-                    <div class="h-96">
-                        <canvas id="faturamentoChart"></canvas>
+                <!-- Alterado para grid de 2 colunas -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Gráfico de Faturamento (Existente) -->
+                    <div class="dark-card p-6 rounded-lg shadow-lg">
+                        <h3 class="text-lg font-semibold text-white mb-4">Recebimentos Totais</h3>
+                        <div class="h-96">
+                            <canvas id="faturamentoChart"></canvas>
+                        </div>
                     </div>
-                </div>
-                <!-- NOVO: Gráfico de Produção -->
-                <div class="dark-card p-6 rounded-lg shadow-lg">
-                    <h3 class="text-lg font-semibold text-white mb-4">Produção (Novos Contratos)</h3>
-                    <div class="h-96">
-                        <canvas id="producaoChart"></canvas>
+                    <!-- NOVO: Gráfico de Produção -->
+                    <div class="dark-card p-6 rounded-lg shadow-lg">
+                        <h3 class="text-lg font-semibold text-white mb-4">Produção (Novos Contratos)</h3>
+                        <div class="h-96">
+                            <canvas id="producaoChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -438,9 +424,7 @@
                             <option>Dr. Felipe Gurjão</option>
                             <option>Dr. Glaison</option>
                             <option>Dr. Bruno D'Lucas</option>
-                            <!-- Dra. Danielle já existia, ajustando para Dra. Danielle Guimarães -->
                             <option>Dra. Danielle Guimarães</option>
-                            <!-- Novos nomes adicionados -->
                             <option>Dr. Joaquim Océlio</option>
                             <option>Dra. Larissa Mendes</option>
                         </select>
@@ -532,7 +516,6 @@
         </div>
     </div>
 
-    <!-- REFORMULADO: Modal de Relatório -->
     <div id="modalRelatorio" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/2 lg:w-2/5">
         <div class="p-6">
             <div class="flex justify-between items-center mb-6">
@@ -553,9 +536,9 @@
                 <button onclick="window.App.generateAndShowReport()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg">Gerar Relatório</button>
                 <button onclick="window.App.exportReportCSV()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Exportar (CSV)</button>
              </div>
-            <!-- Container de resultados com novo estilo -->
+            <!-- REFORMULADO: Container do Resultado -->
             <div id="reportResult" class="space-y-4">
-                <!-- O conteúdo será injetado aqui pela generateAndShowReport -->
+                <!-- O conteúdo será injetado aqui pelo JS -->
             </div>
         </div>
     </div>
@@ -618,40 +601,37 @@
         let currentServicosSort = 'name-asc';
         let ipcaCache = new Map(); // Cache para os valores do IPCA
         let faturamentoChartInstance = null; // Variável para guardar a instância do gráfico
-        let producaoChartInstance = null; // ADICIONADO: Para o gráfico de produção
-        let currentChartPeriod = '12M'; // Para os filtros do gráfico
-        let contractsLoadedCount = 0; // Para paginacao
-        const CONTRACTS_PER_PAGE = 30; // Para paginacao
-        let backdrop; // NOVO: Definido globalmente
+        let producaoChartInstance = null; // Para o gráfico de produção
+        let backdrop; // Definida globalmente
+        let contractListPage = 0; // NOVO: Paginação
+        const CONTRACTS_PER_PAGE = 30; // NOVO: Itens por página
 
         // NOVO: Controle de Acesso
-        const adminUsers = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "D'Arc"];
+        const ADMIN_USERS = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "D'Arc"];
         let currentUserDisplayName = null;
+        let isUserAdmin = false;
 
+        // NOVO: Período do Gráfico
+        let currentAnalyticsPeriod = '12m'; // '12m', 'thisYear', 'lastYear'
 
         // --- INICIALIZAÇÃO E AUTENTICAÇÃO ---
         async function initializeAndAuth() {
             try {
-                // Suas credenciais do Firebase
-                // ATUALIZADO: Configuração fornecida pelo usuário como fallback
-                const firebaseConfigFallback = {
+                // Configuração do Firebase fornecida pelo usuário
+                const firebaseConfig = {
                     apiKey: "AIzaSyA0TWb7DgZAHNl3TuoK3xQD-ANvCcQIDK4",
                     authDomain: "fabrisgurjao.firebaseapp.com",
                     projectId: "fabrisgurjao",
-                    storageBucket: "fabrisgurjao.firebasestorage.app", // <-- ATUALIZADO
+                    storageBucket: "fabrisgurjao.firebasestorage.app",
                     messagingSenderId: "466702265991",
                     appId: "1:466702265991:web:78c4d98b47cab537921222",
                     measurementId: "G-E99R5TFMQK"
                 };
 
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'fabrisgurjao-app';
-                
-                // TENTATIVA DE CORREÇÃO: Priorizar a config do ambiente
-                const finalConfig = (typeof __firebase_config !== 'undefined' && __firebase_config !== '' && __firebase_config !== '{{ SCRIPT_DATA.firebase_config }}') 
+                // Tenta usar a configuração do ambiente, se disponível, senão usa a fixa
+                const finalConfig = (typeof __firebase_config !== 'undefined' && __firebase_config !== '') 
                     ? JSON.parse(__firebase_config) 
-                    : firebaseConfigFallback;
-
-                // console.log("Usando Firebase Config:", finalConfig); // DEBUG
+                    : firebaseConfig;
 
                 const app = initializeApp(finalConfig);
                 db = getFirestore(app);
@@ -665,24 +645,27 @@
                     const appContainer = document.getElementById('app-container');
 
                     if (user) {
-                        // NOVO: Armazena o nome do usuário
-                        currentUserDisplayName = user.displayName;
-
                         // Usuário está logado
+                        currentUserDisplayName = user.displayName; // Armazena o nome do usuário
+                        isUserAdmin = ADMIN_USERS.includes(currentUserDisplayName); // Verifica se é admin
+
                         if (!user.displayName) {
                             // NOVO: Se é o primeiro login (sem nome), mostrar o modal de nome
-                            console.log("Primeiro login detectado, usuário sem nome de exibição."); // DEBUG
+                            console.log("Primeiro login detectado, usuário sem nome de exibição.");
                             loadingOverlay.style.display = 'none';
                             authOverlay.style.display = 'none';
                             appContainer.style.display = 'none';
-                            console.log("Tentando abrir o modal 'modalDisplayName'."); // DEBUG
+                            console.log("Tentando abrir o modal 'modalDisplayName'.");
                             openModal('modalDisplayName');
                         } else {
                             // Login normal: mostrar o app
-                            console.log("Usuário logado:", user.displayName);
+                            console.log("Usuário logado:", user.displayName, "É admin?", isUserAdmin);
                             document.getElementById('user-display-name').textContent = user.displayName;
                             authOverlay.style.display = 'none';
                             appContainer.style.display = 'block';
+
+                            // NOVO: Ajusta a UI com base na permissão
+                            setupUIAccess(isUserAdmin); 
 
                             contractsCollection = collection(db, `contracts`);
                             setupSnapshotListener();
@@ -692,6 +675,8 @@
                     } else {
                         // Usuário está deslogado
                         console.log("Nenhum usuário logado.");
+                        currentUserDisplayName = null;
+                        isUserAdmin = false;
                         authOverlay.style.display = 'flex';
                         appContainer.style.display = 'none';
                         loadingOverlay.style.display = 'none';
@@ -703,10 +688,32 @@
                 document.getElementById('loading-overlay').textContent = "Erro ao conectar. Verifique as credenciais.";
             }
         }
+        
+        // NOVO: Ajusta a UI (filtros) com base na permissão do usuário
+        function setupUIAccess(isAdmin) {
+            const filtersToToggle = [
+                document.getElementById('advogadoFilter'),
+                document.getElementById('servicosAdvogadoFilter')
+            ];
+            
+            filtersToToggle.forEach(select => {
+                if (select) {
+                    if (isAdmin) {
+                        select.disabled = false;
+                        select.value = 'Todos'; // Reseta para "Todos" para admin
+                    } else {
+                        select.disabled = true;
+                        select.value = currentUserDisplayName; // Trava no nome do usuário
+                    }
+                }
+            });
+        }
 
         function setupSnapshotListener() {
             onSnapshot(contractsCollection, (snapshot) => {
                 database.contracts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                // NOVO: Reseta a paginação ao receber novos dados
+                contractListPage = 0; 
                 render();
             }, (error) => {
                 console.error("Erro ao buscar dados:", error);
@@ -715,30 +722,6 @@
         }
 
         // --- FUNÇÕES DE NAVEGAÇÃO E RENDERIZAÇÃO ---
-
-        // --- NOVAS FUNÇÕES DE CONTROLE DE ACESSO ---
-        const isUserAdmin = () => {
-            return adminUsers.includes(currentUserDisplayName);
-        }
-
-        // Retorna todos os contratos ou apenas os do usuário logado
-        const getFilteredContracts = (includeDeleted = false) => {
-            const allContracts = database.contracts;
-
-            if (isUserAdmin()) {
-                return allContracts.filter(c => includeDeleted ? true : !c.isDeleted);
-            }
-
-            // Filtra para o usuário logado e não deletados (a menos que includeDeleted seja true)
-            return allContracts.filter(c => {
-                const isOwner = c.advogadoResponsavel === currentUserDisplayName;
-                const isNotDeleted = includeDeleted ? true : !c.isDeleted;
-                return isOwner && isNotDeleted;
-            });
-        }
-        // --- FIM DO CONTROLE DE ACESSO ---
-
-
         const showPage = (pageId) => {
             // Esconde todas as páginas
             ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-analytics', 'page-lixeira'].forEach(id => {
@@ -746,23 +729,36 @@
             });
             // Desativa todas as abas principais
             ['tab-dashboard', 'tab-inadimplentes', 'tab-servicos', 'tab-lixeira'].forEach(id => {
-                if(document.getElementById(id)) document.getElementById(id).classList.remove('active');
+                if(document.getElementById(id)) {
+                    document.getElementById(id).classList.remove('active');
+                    // Trata a lixeira (ícone)
+                    if (id === 'tab-lixeira') {
+                         document.getElementById(id).classList.remove('active'); // Usa a classe de ícone
+                    } else {
+                         document.getElementById(id).classList.remove('active'); // Usa a classe de aba normal
+                    }
+                }
             });
 
             // Mostra a página clicada
             if(document.getElementById(pageId)) document.getElementById(pageId).classList.remove('hidden');
 
-            // Ativa a aba correspondente, se for uma aba principal
+            // Ativa a aba correspondente
             const tabId = `tab-${pageId.split('-')[1]}`;
             if(document.getElementById(tabId)) {
-                document.getElementById(tabId).classList.add('active');
+                if (tabId === 'tab-lixeira') {
+                    document.getElementById(tabId).classList.add('active'); // Classe de ícone
+                } else {
+                    document.getElementById(tabId).classList.add('active'); // Classe de aba
+                }
             }
 
             // Roda a função específica da página
+            if (pageId === 'page-dashboard') renderContractList(); // Renderiza a lista na dashboard
             if (pageId === 'page-inadimplentes') renderInadimplentesPage();
             if (pageId === 'page-servicos') renderServicosPage();
             if (pageId === 'page-analytics') renderAnalyticsPage();
-            if (pageId === 'page-lixeira') renderLixeiraPage(); // Nova
+            if (pageId === 'page-lixeira') renderLixeiraPage();
         }
         window.App.showPage = showPage;
 
@@ -778,22 +774,27 @@
                 return;
             }
 
+            // NOVO: Lógica de filtragem de dados por permissão
+            const allData = database.contracts;
+            const filteredData = isUserAdmin 
+                ? allData 
+                : allData.filter(c => c.advogadoResponsavel === currentUserDisplayName);
+
             if(document.getElementById('page-dashboard') && !document.getElementById('page-dashboard').classList.contains('hidden')) {
-                await renderKanban();
-                // Na renderização inicial, não reseta a paginação
-                renderContractList(false); 
+                await renderKanban(filteredData);
+                renderContractList(); // A paginação e o filtro são feitos dentro desta função
             }
             if(document.getElementById('page-inadimplentes') && !document.getElementById('page-inadimplentes').classList.contains('hidden')) {
-                await renderInadimplentesPage();
+                await renderInadimplentesPage(filteredData);
             }
             if(document.getElementById('page-servicos') && !document.getElementById('page-servicos').classList.contains('hidden')) {
-                renderServicosPage();
+                renderServicosPage(filteredData);
             }
             if(document.getElementById('page-analytics') && !document.getElementById('page-analytics').classList.contains('hidden')) {
-                renderAnalyticsPage();
+                renderAnalyticsPage(filteredData);
             }
             if(document.getElementById('page-lixeira') && !document.getElementById('page-lixeira').classList.contains('hidden')) {
-                renderLixeiraPage();
+                renderLixeiraPage(filteredData); // Admins veem tudo na lixeira, usuários veem só o seu
             }
 
             renderSortButtons();
@@ -802,7 +803,7 @@
             if (loadingOverlay) loadingOverlay.style.display = 'none';
         }
 
-        async function renderKanban() {
+        async function renderKanban(contractsToRender) {
             const kanbanVencidas = document.getElementById('kanban-vencidas');
             const kanbanAVencer = document.getElementById('kanban-a-vencer');
             const kanbanPagas = document.getElementById('kanban-pagas');
@@ -821,13 +822,11 @@
 
             let totalAVencer30dias = 0;
             let totalVencido = 0;
-            let totalContratosAtivos = 0; // Para o dashboard
+            
+            // NOVO: Otimização com Promise.all para correção de valores
+            const vencidasPromises = [];
 
-            // NOVO: Usa a função de filtro
-            const contractsToRender = getFilteredContracts(false);
-            totalContratosAtivos = contractsToRender.length;
-
-            for (const contract of contractsToRender) { // Filtra lixeira
+            for (const contract of contractsToRender.filter(c => !c.isDeleted)) { // Filtra lixeira
                 if (!contract.parcels) contract.parcels = []; 
                 let remainingValue = contract.parcels.reduce((sum, p) => p.status === 'Pendente' ? sum + p.value : sum, 0);
 
@@ -842,9 +841,13 @@
                          }
                     } else { 
                         if (vencimento < hoje) {
-                            const valorCorrigido = await calcularValorCorrigido(parcel.value, parcel.dueDate);
-                            kanbanVencidas.innerHTML += createParcelCard(contract, parcel, i, 'vencida', remainingValue, valorCorrigido);
-                            totalVencido += valorCorrigido; // Soma o valor corrigido
+                            // Adiciona a promessa à fila
+                            vencidasPromises.push(
+                                calcularValorCorrigido(parcel.value, parcel.dueDate).then(valorCorrigido => {
+                                    totalVencido += valorCorrigido; // Soma o valor corrigido
+                                    return createParcelCard(contract, parcel, i, 'vencida', remainingValue, valorCorrigido);
+                                })
+                            );
                         } else if (vencimento >= hoje && vencimento <= trintaDiasFrente) {
                             kanbanAVencer.innerHTML += createParcelCard(contract, parcel, i, 'a-vencer', remainingValue);
                             totalAVencer30dias += parcel.value;
@@ -857,9 +860,12 @@
                 }
             }
 
-            // NOVO: Calcula o total pago baseado nos contratos filtrados
+            // Espera todas as correções terminarem
+            const vencidasHtml = await Promise.all(vencidasPromises);
+            kanbanVencidas.innerHTML = vencidasHtml.join('');
+
             const totalPagoMes = calculateMonthlyIncome(hoje.getFullYear(), hoje.getMonth(), contractsToRender).totalGeral;
-            renderDashboard(totalAVencer30dias, totalVencido, totalPagoMes, totalContratosAtivos); // Usa o total filtrado
+            renderDashboard(totalAVencer30dias, totalVencido, totalPagoMes, contractsToRender.filter(c => !c.isDeleted).length);
         }
 
         function createParcelCard(contract, parcel, index, type, remainingValue, valorCorrigido = null) {
@@ -949,58 +955,55 @@
                 <div class="dark-card p-6 rounded-lg shadow-lg"><h3 class="text-lg font-semibold text-gray-400">Contratos Ativos</h3><p class="text-3xl font-bold text-white">${totalContratos}</p></div>`;
         }
 
-        // --- ATUALIZADO: Paginação ---
-        const resetAndRenderContractList = function() {
-            renderContractList(true); // true = resetar a paginação
-        }
-        window.App.resetAndRenderContractList = resetAndRenderContractList;
-
-        const renderContractList = function(resetPagination = false) {
+        const renderContractList = function() {
             const listContainer = document.getElementById('contractListContainer');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const advogadoFilter = document.getElementById('advogadoFilter').value;
-            const loadMoreContainer = document.getElementById('loadMoreContainer');
-
-            if (resetPagination) {
-                contractsLoadedCount = 0;
-                listContainer.innerHTML = ''; // Limpa a lista ao resetar (filtrar/buscar)
+            const advogadoFilterEl = document.getElementById('advogadoFilter');
+            
+            let advogadoFilter = advogadoFilterEl.value;
+            // Se não for admin, força o filtro para o nome do usuário
+            if (!isUserAdmin) {
+                advogadoFilter = currentUserDisplayName;
             }
 
-            // NOVO: Usa a função de filtro
-            let filteredContracts = getFilteredContracts(false).filter(c => {
-                // const notDeleted = !c.isDeleted; // Verificação já feita em getFilteredContracts
-                // A verificação de admin/owner já foi feita.
-                const matchesAdvogado = (isUserAdmin() && advogadoFilter === 'Todos') || c.advogadoResponsavel === advogadoFilter;
+            let filteredContracts = database.contracts.filter(c => {
+                const notDeleted = !c.isDeleted; // Filtra lixeira
+                const matchesAdvogado = advogadoFilter === 'Todos' || c.advogadoResponsavel === advogadoFilter;
                 const matchesSearch = c.clientName.toLowerCase().includes(searchTerm) || 
                                      (c.serviceTypes || []).some(s => s.name.toLowerCase().includes(searchTerm));
-                // return notDeleted && matchesAdvogado && matchesSearch;
-                return matchesAdvogado && matchesSearch;
+                return notDeleted && matchesAdvogado && matchesSearch;
             });
 
             if (currentContractSort === 'name-asc') {
                 filteredContracts.sort((a, b) => a.clientName.localeCompare(b.clientName));
             } else if (currentContractSort === 'value-desc') {
-                filteredContracts.sort((a, b) => b.totalValue - a.totalValue);
+                filteredContracts.sort((a, b) => (b.totalValue || 0) - (a.totalValue || 0));
             }
 
-            // Lógica de Paginação
-            const contractsToRender = filteredContracts.slice(0, contractsLoadedCount + CONTRACTS_PER_PAGE);
-            
-            if (resetPagination) {
-                listContainer.innerHTML = ''; // Garante que está limpo
+            // NOVO: Lógica de Paginação
+            const startIndex = 0; // Sempre começa do 0
+            const endIndex = (contractListPage + 1) * CONTRACTS_PER_PAGE;
+            const paginatedContracts = filteredContracts.slice(startIndex, endIndex);
+
+            // Controla a exibição do botão "Carregar Mais"
+            const loadMoreButton = document.getElementById('loadMoreButton');
+            if (filteredContracts.length > paginatedContracts.length) {
+                loadMoreButton.style.display = 'block';
+            } else {
+                loadMoreButton.style.display = 'none';
             }
 
-            if (contractsToRender.length === 0 && resetPagination) {
+            if (paginatedContracts.length === 0) {
                 listContainer.innerHTML = '<div class="dark-card p-4 rounded-lg shadow-md text-center text-gray-400 py-4">Nenhum contrato encontrado.</div>';
-                loadMoreContainer.style.display = 'none';
                 return;
             }
-
+            
+            // NOVO: Se for a primeira página (page 0), limpa o HTML. Senão, anexa.
+            // Para a lógica de paginação, sempre limpamos e redesenhamos
+            listContainer.innerHTML = ''; 
+            
             let html = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">`;
-            // Renderiza apenas os novos itens (slice do final)
-            const newContracts = contractsToRender.slice(contractsLoadedCount);
-
-            newContracts.forEach(contract => {
+            paginatedContracts.forEach(contract => {
                 const { statusText, statusColor, borderColor } = getContractStatus(contract);
                 let servicesHtml = (contract.serviceTypes || []).map(s => `<span class="service-tag-small">${s.name}</span>`).join('');
 
@@ -1038,34 +1041,16 @@
                 `;
             });
             html += `</div>`;
-
-            if (resetPagination) {
-                 listContainer.innerHTML = html;
-            } else {
-                 // Remove o grid <div> temporário e anexa os novos cards
-                 const tempDiv = document.createElement('div');
-                 tempDiv.innerHTML = html;
-                 const newCards = tempDiv.querySelector('.grid').children;
-                 listContainer.querySelector('.grid').append(...newCards);
-            }
-
-            contractsLoadedCount = contractsToRender.length;
-
-            // Gerencia a visibilidade do botão "Carregar Mais"
-            if (contractsLoadedCount < filteredContracts.length) {
-                loadMoreContainer.style.display = 'block';
-            } else {
-                loadMoreContainer.style.display = 'none';
-            }
+            listContainer.innerHTML = html;
         }
         window.App.renderContractList = renderContractList; // Expor ao HTML
 
-        // --- NOVA FUNÇÃO: Paginação ---
+        // NOVO: Função para carregar mais contratos
         const loadMoreContracts = function() {
-            renderContractList(false); // false = não resetar, apenas carregar mais
+            contractListPage++;
+            renderContractList();
         }
         window.App.loadMoreContracts = loadMoreContracts;
-        // --- FIM PAGINAÇÃO ---
 
         function getContractStatus(contract) {
             const hasPendingParcels = (contract.parcels || []).some(p => p.status === 'Pendente');
@@ -1078,39 +1063,37 @@
             return { statusText: 'Concluído', statusColor: 'bg-gray-700 text-gray-300', borderColor: 'border-gray-600' };
         }
 
-        async function renderInadimplentesPage() {
+        async function renderInadimplentesPage(contractsToRender) {
             const container = document.getElementById('inadimplentesListContainer');
             container.innerHTML = `<div class="col-span-1 md:col-span-3 text-center py-10"><i class="fas fa-spinner fa-spin fa-2x text-indigo-400"></i><p class="mt-2 text-sm text-gray-400">Calculando juros e correção monetária...</p></div>`;
             const hoje = new Date();
             hoje.setHours(0, 0, 0, 0);
 
             let inadimplentesList = [];
+            // NOVO: Otimização com Promise.all
+            const promises = [];
 
-            // NOVO: Usa a função de filtro
-            const contractsToRender = getFilteredContracts(false);
-
-            // Mapeia os contratos filtrados para promessas
-            const promises = contractsToRender.map(async (contract) => {
-                if (!contract.parcels) return []; // Retorna array vazio se não houver parcelas
-                
-                const contractInadimplencias = [];
+            for (const contract of contractsToRender.filter(c => !c.isDeleted)) { // Filtra lixeira
+                if (!contract.parcels) continue; // Pula se não houver parcelas
                 for (let i = 0; i < contract.parcels.length; i++) {
                     const parcel = contract.parcels[i];
                     const vencimento = new Date(parcel.dueDate);
                     if (parcel.status === 'Pendente' && vencimento < hoje) {
                         const diffTime = Math.abs(hoje - vencimento);
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        // A função await está dentro do map, mas o Promise.all espera por ela
-                        const valorCorrigido = await calcularValorCorrigido(parcel.value, parcel.dueDate);
-                        contractInadimplencias.push({ contract, parcel, index: i, diffDays, valorCorrigido });
+                        
+                        // Adiciona a promessa ao array
+                        promises.push(
+                            calcularValorCorrigido(parcel.value, parcel.dueDate).then(valorCorrigido => {
+                                inadimplentesList.push({ contract, parcel, index: i, diffDays, valorCorrigido });
+                            })
+                        );
                     }
                 }
-                return contractInadimplencias;
-            });
+            }
 
-            // OTIMIZAÇÃO: Executa todas as buscas de IPCA em paralelo
-            const results = await Promise.all(promises);
-            inadimplentesList = results.flat(); // Achata o array de arrays
+            // Espera todas as chamadas da API terminarem
+            await Promise.all(promises);
 
             if (currentInadimplentesSort === 'days-desc') {
                 inadimplentesList.sort((a, b) => b.diffDays - a.diffDays);
@@ -1161,23 +1144,28 @@
             container.innerHTML = inadimplentesHtml;
         }
 
-        const renderServicosPage = () => {
+        const renderServicosPage = (contractsToRender) => {
             const container = document.getElementById('servicosListContainer');
             const searchTerm = document.getElementById('servicosSearchInput').value.toLowerCase();
-            const advogadoFilter = document.getElementById('servicosAdvogadoFilter').value;
+            const advogadoFilterEl = document.getElementById('servicosAdvogadoFilter');
+            
+            let advogadoFilter = advogadoFilterEl.value;
+            // Se não for admin, força o filtro
+            if (!isUserAdmin) {
+                advogadoFilter = currentUserDisplayName;
+            }
+            
             container.innerHTML = '';
 
-            // NOVO: Usa a função de filtro
-            let activeContracts = getFilteredContracts(false).filter(c => {
-                // const notDeleted = !c.isDeleted; // Já filtrado
+            let activeContracts = contractsToRender.filter(c => {
+                const notDeleted = !c.isDeleted; // Filtra lixeira
                 const isNotConcluded = getContractStatus(c).statusText !== 'Concluído';
-                if (!isNotConcluded) return false;
+                if (!isNotConcluded || !notDeleted) return false;
 
-                const matchesAdvogado = (isUserAdmin() && advogadoFilter === 'Todos') || c.advogadoResponsavel === advogadoFilter;
+                const matchesAdvogado = advogadoFilter === 'Todos' || c.advogadoResponsavel === advogadoFilter;
                 const matchesSearch = c.clientName.toLowerCase().includes(searchTerm) || 
                                      (c.serviceTypes || []).some(s => s.name.toLowerCase().includes(searchTerm)) ||
                                      c.advogadoResponsavel.toLowerCase().includes(searchTerm);
-                // return matchesAdvogado && matchesSearch; // O filtro de 'notDeleted' e 'isNotConcluded' foi movido
                 return matchesAdvogado && matchesSearch;
             });
 
@@ -1203,7 +1191,7 @@
                 const serviceProgress = totalServices > 0 ? (progressValue / totalServices) * 100 : 0;
 
                 const totalPaid = (contract.parcels || []).reduce((sum, p) => sum + (p.valuePaid || 0), 0) + (contract.successFeeValueReceived || 0);
-                const financialProgress = contract.totalValue > 0 ? (totalPaid / contract.totalValue) * 100 : (totalPaid > 0 ? 100 : 0);
+                const financialProgress = (contract.totalValue || 0) > 0 ? (totalPaid / contract.totalValue) * 100 : (totalPaid > 0 ? 100 : 0);
 
                 let servicesHtml = (contract.serviceTypes || []).map((service, index) => {
                     let statusHtml, actionsHtml;
@@ -1211,6 +1199,7 @@
 
                     if (service.deadline) {
                         const hoje = new Date();
+                        hoje.setHours(0,0,0,0);
                         const prazo = new Date(service.deadline + "T12:00:00Z"); // Adiciona T12:00:00Z para evitar problemas de fuso
                         const diffTime = prazo - hoje;
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -1220,8 +1209,10 @@
                             deadlineHtml = `<span class="text-xs font-medium text-red-400"><i class="fas fa-exclamation-triangle"></i> Vencido: ${formattedPrazo}</span>`;
                         } else if (diffDays <= 7 && service.status !== 'Concluído') {
                             deadlineHtml = `<span class="text-xs font-medium text-yellow-400"><i class="fas fa-clock"></i> Vence: ${formattedPrazo}</span>`;
-                        } else {
+                        } else if (service.status !== 'Concluído') {
                             deadlineHtml = `<span class="text-xs text-gray-500"><i class="far fa-calendar-alt"></i> ${formattedPrazo}</span>`;
+                        } else {
+                            deadlineHtml = `<span class="text-xs text-gray-500"><i class="far fa-calendar-check"></i> ${formattedPrazo}</span>`;
                         }
                     }
 
@@ -1272,114 +1263,105 @@
         }
         window.App.renderServicosPage = renderServicosPage; // Expor ao HTML
 
-        // --- FUNÇÕES DE GRÁFICOS (COM FILTRO) ---
-        function getAnnualChartData(period) {
+        // --- FUNÇÕES DOS GRÁFICOS (COM FILTRO DE PERÍODO) ---
+        function getAnnualChartData(period, contractsToRender) {
             const labels = [];
             const data = [];
             const meses = ["Jan", "Fev", "Mar", "Abr", "Maio", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
             const hoje = new Date();
             let startDate, endDate;
 
-            if (period === '12M') {
-                endDate = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-                startDate = new Date(hoje.getFullYear(), hoje.getMonth() - 11, 1);
-            } else if (period === 'THIS_YEAR') {
+            if (period === '12m') {
+                for (let i = 11; i >= 0; i--) {
+                    const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+                    labels.push(`${meses[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}`);
+                    const income = calculateMonthlyIncome(d.getFullYear(), d.getMonth(), contractsToRender);
+                    data.push(income.totalGeral);
+                }
+            } else if (period === 'thisYear') {
                 startDate = new Date(hoje.getFullYear(), 0, 1);
-                endDate = new Date(hoje.getFullYear(), 11, 1); // Sempre 12 meses no gráfico
-            } else if (period === 'LAST_YEAR') {
-                startDate = new Date(hoje.getFullYear() - 1, 0, 1);
-                endDate = new Date(hoje.getFullYear() - 1, 11, 1);
+                for (let i = 0; i < 12; i++) {
+                    labels.push(meses[i]);
+                    const income = calculateMonthlyIncome(hoje.getFullYear(), i, contractsToRender);
+                    data.push(income.totalGeral);
+                }
+            } else if (period === 'lastYear') {
+                const lastYear = hoje.getFullYear() - 1;
+                startDate = new Date(lastYear, 0, 1);
+                for (let i = 0; i < 12; i++) {
+                    labels.push(meses[i]);
+                    const income = calculateMonthlyIncome(lastYear, i, contractsToRender);
+                    data.push(income.totalGeral);
+                }
             }
-
-            let currentDate = new Date(startDate);
-            while (currentDate <= endDate) {
-                const month = currentDate.getMonth();
-                const year = currentDate.getFullYear();
-                
-                labels.push(`${meses[month]}/${String(year).slice(-2)}`);
-                
-                // NOVO: Usa a função de filtro
-                // Pega os contratos filtrados (para admin ou usuário)
-                const contractsToAnalyze = getFilteredContracts(false);
-
-                // Calcula a renda baseado APENAS nos contratos filtrados
-                const income = calculateMonthlyIncome(year, month, contractsToAnalyze);
-                data.push(income.totalGeral);
-                
-                currentDate.setMonth(currentDate.getMonth() + 1);
-            }
-
+            
             return { labels, data };
         }
 
-        function getAnnualProducaoData(period) {
+        function getAnnualProducaoData(period, contractsToRender) {
             const labels = [];
             const meses = ["Jan", "Fev", "Mar", "Abr", "Maio", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
             const hoje = new Date();
-            let startDate, endDate;
+            let yearToScan;
+            let startRange, endRange;
 
-            if (period === '12M') {
-                endDate = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-                startDate = new Date(hoje.getFullYear(), hoje.getMonth() - 11, 1);
-            } else if (period === 'THIS_YEAR') {
-                startDate = new Date(hoje.getFullYear(), 0, 1);
-                endDate = new Date(hoje.getFullYear(), 11, 1);
-            } else if (period === 'LAST_YEAR') {
-                startDate = new Date(hoje.getFullYear() - 1, 0, 1);
-                endDate = new Date(hoje.getFullYear() - 1, 11, 1);
+            if (period === '12m') {
+                 for (let i = 11; i >= 0; i--) {
+                    const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+                    labels.push(`${meses[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}`);
+                }
+                startRange = new Date(hoje.getFullYear(), hoje.getMonth() - 11, 1);
+                endRange = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0); // Último dia do mês atual
+            } else if (period === 'thisYear') {
+                yearToScan = hoje.getFullYear();
+                labels.push(...meses);
+                startRange = new Date(yearToScan, 0, 1);
+                endRange = new Date(yearToScan, 11, 31);
+            } else if (period === 'lastYear') {
+                yearToScan = hoje.getFullYear() - 1;
+                labels.push(...meses);
+                startRange = new Date(yearToScan, 0, 1);
+                endRange = new Date(yearToScan, 11, 31);
             }
 
-            let monthlyProduction = [];
-            let currentDate = new Date(startDate);
+            const monthlyProduction = new Array(12).fill(0);
+            startRange.setHours(0,0,0,0);
+            endRange.setHours(23,59,59,999);
 
-            while (currentDate <= endDate) {
-                const month = currentDate.getMonth();
-                const year = currentDate.getFullYear();
-                labels.push(`${meses[month]}/${String(year).slice(-2)}`);
-                monthlyProduction.push({ year: year, month: month, value: 0 });
-                currentDate.setMonth(currentDate.getMonth() + 1);
-            }
-
-            // NOVO: Usa a função de filtro
-            const contractsToAnalyze = getFilteredContracts(false);
-
-            // 3. Calcula a produção
-            // Substituído 'database.contracts' por 'contractsToAnalyze'
-            contractsToAnalyze.filter(c => c.parcels && c.parcels.length > 0).forEach(contract => {
+            contractsToRender.filter(c => !c.isDeleted && c.parcels && c.parcels.length > 0).forEach(contract => {
                 const firstDueDate = new Date(contract.parcels[0].dueDate);
                 
-                // Verifica se o contrato "iniciou" no período selecionado
-                if (firstDueDate >= startDate && firstDueDate <= endDate) {
-                    // Encontra o bucket correto
-                    const entry = monthlyProduction.find(m => m.year === firstDueDate.getFullYear() && m.month === firstDueDate.getMonth());
-                    if (entry) {
-                        entry.value += (contract.totalValue || 0);
+                if (firstDueDate >= startRange && firstDueDate <= endRange) {
+                    let dataIndex;
+                    if (period === '12m') {
+                        const monthDiff = (hoje.getFullYear() - firstDueDate.getFullYear()) * 12 + (hoje.getMonth() - firstDueDate.getMonth());
+                        dataIndex = 11 - monthDiff;
+                    } else { // thisYear or lastYear
+                        dataIndex = firstDueDate.getMonth(); // 0 = Jan, 1 = Feb, etc.
+                    }
+                    
+                    if (dataIndex >= 0 && dataIndex < 12) {
+                        monthlyProduction[dataIndex] += (contract.totalValue || 0);
                     }
                 }
             });
 
-            return { labels, data: monthlyProduction.map(m => m.value) };
+            return { labels, data: monthlyProduction };
         }
 
 
-        function renderAnalyticsPage() {
-            // Remove botões de filtro antigos
-            document.querySelectorAll('#chartPeriodFilters .period-filter-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            // Ativa o botão correto
-            document.getElementById(`filter-${currentChartPeriod}`).classList.add('active');
-
-            const faturamentoData = getAnnualChartData(currentChartPeriod);
-            const producaoData = getAnnualProducaoData(currentChartPeriod); // ADICIONADO
-            const ctxFaturamento = document.getElementById('faturamentoChart').getContext('2d');
-            const ctxProducao = document.getElementById('producaoChart').getContext('2d'); // ADICIONADO
+        function renderAnalyticsPage(contractsToRender) {
+            const faturamentoData = getAnnualChartData(currentAnalyticsPeriod, contractsToRender);
+            const producaoData = getAnnualProducaoData(currentAnalyticsPeriod, contractsToRender);
             
+            const ctxFaturamento = document.getElementById('faturamentoChart').getContext('2d');
+            const ctxProducao = document.getElementById('producaoChart').getContext('2d');
+
             // Destrói gráficos anteriores se existirem
             if (faturamentoChartInstance) {
                 faturamentoChartInstance.destroy();
             }
-            if (producaoChartInstance) { // ADICIONADO
+            if (producaoChartInstance) {
                 producaoChartInstance.destroy();
             }
 
@@ -1387,7 +1369,7 @@
             Chart.defaults.color = '#9ca3af';
             Chart.defaults.borderColor = '#374151';
 
-            // Gráfico de Faturamento (Existente)
+            // Gráfico de Faturamento
             faturamentoChartInstance = new Chart(ctxFaturamento, {
                 type: 'bar',
                 data: {
@@ -1433,7 +1415,7 @@
                 }
             });
 
-            // ADICIONADO: Gráfico de Produção
+            // Gráfico de Produção
             producaoChartInstance = new Chart(ctxProducao, {
                 type: 'bar', // Pode ser 'line' se preferir
                 data: {
@@ -1481,21 +1463,30 @@
         }
         window.App.renderAnalyticsPage = renderAnalyticsPage;
 
-        // NOVO: Função para trocar o período do gráfico
-        const setChartPeriod = function(period) {
-            currentChartPeriod = period;
-            renderAnalyticsPage(); // Re-renderiza a página de gráficos
+        // NOVO: Função para atualizar período dos gráficos
+        const setAnalyticsPeriod = function(period) {
+            currentAnalyticsPeriod = period;
+            // Atualiza botões
+            document.querySelectorAll('#analyticsPeriodFilter .filter-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`#analyticsPeriodFilter .filter-button[data-period="${period}"]`).classList.add('active');
+            
+            // Redesenha os gráficos com os dados filtrados por permissão
+            const filteredData = isUserAdmin 
+                ? database.contracts 
+                : database.contracts.filter(c => c.advogadoResponsavel === currentUserDisplayName);
+            renderAnalyticsPage(filteredData);
         }
-        window.App.setChartPeriod = setChartPeriod;
+        window.App.setAnalyticsPeriod = setAnalyticsPeriod;
 
-
-        // --- NOVA FUNÇÃO PARA LIXEIRA ---
-        function renderLixeiraPage() {
+        // --- FUNÇÃO PARA LIXEIRA ---
+        function renderLixeiraPage(contractsToRender) {
             const container = document.getElementById('lixeiraListContainer');
             container.innerHTML = '';
 
-            // NOVO: Usa a função de filtro, mas pede os deletados
-            const deletedContracts = getFilteredContracts(true).filter(c => c.isDeleted === true);
+            // Na lixeira, filtramos apenas os deletados
+            const deletedContracts = contractsToRender.filter(c => c.isDeleted === true);
 
             if (deletedContracts.length === 0) {
                  container.innerHTML = `<div class="col-span-1 md:col-span-3 text-center py-10"><div class="inline-block dark-card text-gray-400 p-6 rounded-lg shadow-md"><i class="fas fa-trash fa-3x mb-3"></i><p class="font-bold text-xl">Lixeira Vazia</p><p class="text-sm">Nenhum contrato foi excluído.</p></div></div>`;
@@ -1522,10 +1513,8 @@
 
         function renderAdvogadoFilters() {
             const advogadoFilters = [document.getElementById('advogadoFilter'), document.getElementById('servicosAdvogadoFilter')];
-            
-            // NOVO: Pega os advogados apenas dos contratos visíveis
-            const visibleContracts = getFilteredContracts(true); // Pega todos (incluindo lixeira) do usuário
-            const advogados = [...new Set(visibleContracts.map(c => c.advogadoResponsavel))];
+            // Popula com todos os advogados do DB, mesmo os de usuários restritos (para admins)
+            const advogados = [...new Set(database.contracts.map(c => c.advogadoResponsavel))];
             advogados.sort();
 
             advogadoFilters.forEach(select => {
@@ -1534,42 +1523,32 @@
                 select.innerHTML = '<option>Todos</option>';
                 // Adiciona a opção "Não Informado"
                 select.add(new Option("Não Informado", "Não Informado"));
-                // Adiciona os nomes fixos + os do banco de dados
-                const allLawyers = new Set([
-                    "Dra. Renata Fabris",
-                    "Dr. Felipe Gurjão",
-                    "Dr. Glaison",
-                    "Dr. Bruno D'Lucas",
-                    "Dra. Danielle Guimarães", // Nome ajustado
-                    "Dr. Joaquim Océlio",    // Novo
-                    "Dra. Larissa Mendes",     // Novo
-                    ...advogados // Adiciona os que já existem nos contratos *visíveis*
-                ]);
-
-                // Ordena alfabeticamente, exceto "Não Informado"
-                const sortedLawyers = [...allLawyers].filter(adv => adv && adv !== "Não Informado").sort();
-
-                sortedLawyers.forEach(adv => {
-                    const option = document.createElement('option');
-                    option.value = adv;
-                    option.textContent = adv;
-                    select.appendChild(option);
+                
+                // Adiciona nomes fixos para garantir que estejam sempre lá
+                const fixedNames = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "Dr. Glaison", "Dr. Bruno D'Lucas", "Dra. Danielle Guimarães", "Dr. Joaquim Océlio", "Dra. Larissa Mendes"];
+                fixedNames.forEach(name => {
+                    if (!advogados.includes(name) && name !== "Não Informado") {
+                        advogados.push(name);
+                    }
                 });
-
-                // NOVO: Trava o filtro se o usuário não for admin
-                if (!isUserAdmin()) {
-                    // Adiciona uma opção "Todos" desabilitada para clareza
-                    const option = document.createElement('option');
-                    option.value = 'Todos';
-                    option.textContent = 'Todos (Acesso Restrito)';
-                    option.disabled = true;
-                    select.prepend(option);
-
+                advogados.sort();
+                
+                advogados.forEach(adv => {
+                    if (adv && adv !== "Não Informado") { // Garante que não duplique
+                        const option = document.createElement('option');
+                        option.value = adv;
+                        option.textContent = adv;
+                        select.appendChild(option);
+                    }
+                });
+                
+                // Restaura o valor selecionado ou aplica a restrição
+                if (isUserAdmin) {
+                    select.value = currentValue || 'Todos';
+                    select.disabled = false;
+                } else {
                     select.value = currentUserDisplayName;
                     select.disabled = true;
-                } else {
-                    select.disabled = false;
-                    select.value = currentValue || 'Todos';
                 }
             });
         }
@@ -1590,7 +1569,7 @@
                 const button = document.createElement('button');
                 button.textContent = sort.label;
                 button.className = `sort-button ${currentContractSort === sort.key ? 'active' : ''}`;
-                button.onclick = () => { currentContractSort = sort.key; renderContractList(true); renderSortButtons(); };
+                button.onclick = () => { currentContractSort = sort.key; contractListPage = 0; renderContractList(); renderSortButtons(); };
                 contractSortContainer.appendChild(button);
             });
 
@@ -1599,7 +1578,12 @@
                 const button = document.createElement('button');
                 button.textContent = sort.label;
                 button.className = `sort-button ${currentInadimplentesSort === sort.key ? 'active' : ''}`;
-                button.onclick = () => { currentInadimplentesSort = sort.key; renderInadimplentesPage(); renderSortButtons(); };
+                button.onclick = () => { 
+                    currentInadimplentesSort = sort.key; 
+                    const filteredData = isUserAdmin ? database.contracts : database.contracts.filter(c => c.advogadoResponsavel === currentUserDisplayName);
+                    renderInadimplentesPage(filteredData); 
+                    renderSortButtons(); 
+                };
                 inadimplentesSortContainer.appendChild(button);
             });
 
@@ -1608,7 +1592,12 @@
                 const button = document.createElement('button');
                 button.textContent = sort.label;
                 button.className = `sort-button ${currentServicosSort === sort.key ? 'active' : ''}`;
-                button.onclick = () => { currentServicosSort = sort.key; renderServicosPage(); renderSortButtons(); };
+                button.onclick = () => { 
+                    currentServicosSort = sort.key; 
+                    const filteredData = isUserAdmin ? database.contracts : database.contracts.filter(c => c.advogadoResponsavel === currentUserDisplayName);
+                    renderServicosPage(filteredData); 
+                    renderSortButtons(); 
+                };
                 servicosSortContainer.appendChild(button);
             });
         }
@@ -1626,48 +1615,58 @@
         }
         window.App.updateServiceStatus = updateServiceStatus; // Expor ao HTML
 
-        // --- NOVAS FUNÇÕES DA LIXEIRA ---
+        // --- FUNÇÕES DA LIXEIRA ---
         const moveToLixeira = async function(contractId) {
             const contract = database.contracts.find(c => c.id === contractId);
-            // NOVO: Substituir confirm() por uma UI customizada (ou remover a confirmação)
-            // if(confirm(`Tem certeza que deseja mover o contrato de "${contract.clientName}" para a lixeira?`)){
+            // Substitui confirm() por uma verificação simples
+            if(window.confirm(`Tem certeza que deseja mover o contrato de "${contract.clientName}" para a lixeira?`)){
                 const contractRef = doc(contractsCollection, contractId);
                 await updateDoc(contractRef, { isDeleted: true });
-            // }
+            }
         }
         window.App.moveToLixeira = moveToLixeira;
 
         const restoreContract = async function(contractId) {
-            // if(confirm(`Tem certeza que deseja restaurar este contrato?`)){
+            if(window.confirm(`Tem certeza que deseja restaurar este contrato?`)){
                 const contractRef = doc(contractsCollection, contractId);
                 await updateDoc(contractRef, { isDeleted: false });
-            // }
+            }
         }
         window.App.restoreContract = restoreContract;
 
         const deleteContractPermanently = async function(contractId) {
             const contract = database.contracts.find(c => c.id === contractId);
-            // if(confirm(`EXCLUSÃO PERMANENTE: Tem certeza que deseja apagar o contrato de "${contract.clientName}" para sempre? Esta ação não pode ser desfeita.`)){
+            if(window.confirm(`EXCLUSÃO PERMANENTE: Tem certeza que deseja apagar o contrato de "${contract.clientName}" para sempre? Esta ação não pode ser desfeita.`)){
                 await deleteDoc(doc(contractsCollection, contractId));
-            // }
+            }
         }
         window.App.deleteContractPermanently = deleteContractPermanently;
         // --- FIM DAS FUNÇÕES DA LIXEIRA ---
 
-
-        // const backdrop = document.getElementById('modal-backdrop'); // REMOVIDO DAQUI
+        // --- FUNÇÕES DE MODAL (COM CORREÇÃO) ---
+        
+        // CORRIGIDO: usa o 'backdrop' global inicializado no DOMContentLoaded
         const openModal = function(modalId) {
-            const modal = document.getElementById(modalId);
-            console.log(`Tentando abrir modal: ${modalId}. Elemento encontrado?`, !!modal); // DEBUG
-            console.log(`Backdrop encontrado?`, !!backdrop); // DEBUG
-
-            if(modal) modal.style.display = 'block';
-            if(backdrop) backdrop.style.display = 'block';
+            // Adiciona um pequeno atraso para garantir que o DOM esteja pronto
+            setTimeout(() => {
+                const modal = document.getElementById(modalId);
+                
+                if(modal) {
+                    modal.style.display = 'block';
+                    modal.style.zIndex = '1000'; // Garante que o modal fique na frente
+                } else {
+                    console.error("Modal não encontrado:", modalId);
+                }
+                
+                if(backdrop) {
+                    backdrop.style.display = 'block';
+                    backdrop.style.zIndex = '999'; // Garante que o backdrop fique atrás do modal
+                }
+            }, 0); // 0ms é suficiente para adiar para o próximo ciclo de eventos
         }
         window.App.openModal = openModal; // Expor ao HTML
 
         const closeModal = function(modalId) {
-            // const backdrop = document.getElementById('modal-backdrop'); // REMOVIDO
             if(document.getElementById(modalId)) document.getElementById(modalId).style.display = 'none';
             if(backdrop) backdrop.style.display = 'none';
         }
@@ -1679,15 +1678,22 @@
             const title = document.getElementById('modalContratoTitle');
             const servicosContainer = document.getElementById('servicosContainer');
             servicosContainer.innerHTML = '';
+            
+            // NOVO: Pré-seleciona o advogado (se não for admin)
             const advogadoSelect = document.getElementById('advogadoResponsavel');
+            if (!isUserAdmin) {
+                advogadoSelect.value = currentUserDisplayName;
+            } else {
+                 advogadoSelect.value = 'Não Informado'; // Default para admin
+            }
 
             if (contractId) {
                 const contract = database.contracts.find(c => c.id === contractId);
                 title.textContent = "Editar Contrato";
                 document.getElementById('contractId').value = contract.id;
                 document.getElementById('clienteNome').value = contract.clientName;
-                advogadoSelect.value = contract.advogadoResponsavel;
-                (contract.serviceTypes || []).forEach(service => createServiceTag(service.name, service.deadline));
+                advogadoSelect.value = contract.advogadoResponsavel; // Sobrescreve se estiver editando
+                (contract.serviceTypes || []).forEach(service => createServiceTag(service.name, service.deadline, service.status)); // Passa o status
                 document.getElementById('contratoTipoPagamento').value = contract.paymentType;
                 document.getElementById('valorTotal').value = contract.totalValue;
                 document.getElementById('numParcelas').value = (contract.parcels || []).length || 1;
@@ -1699,10 +1705,6 @@
             } else {
                 title.textContent = "Cadastrar Novo Contrato";
                 document.getElementById('contractId').value = '';
-                // NOVO: Preenche automaticamente o advogado responsável se não for admin
-                if (!isUserAdmin()) {
-                    advogadoSelect.value = currentUserDisplayName;
-                }
             }
             openModal('modalContrato');
         }
@@ -1713,8 +1715,11 @@
             const parcel = contract.parcels[parcelIndex];
 
             let valorCorrigido = parcel.value;
+            let infoCorrecao = '';
+            
             if (new Date(parcel.dueDate) < new Date()) {
                  valorCorrigido = await calcularValorCorrigido(parcel.value, parcel.dueDate);
+                 infoCorrecao = `<p class="text-red-400"><strong>Valor Corrigido:</strong> ${valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>`;
             }
 
             document.getElementById('pagamentoContractId').value = contractId;
@@ -1724,7 +1729,7 @@
             infoDiv.innerHTML = `
                 <p><strong>Cliente:</strong> ${contract.clientName}</p>
                 <p><strong>Valor Original:</strong> ${parcel.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
-                <p class="text-red-400"><strong>Valor Corrigido:</strong> ${valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>`;
+                ${infoCorrecao}`;
 
             document.getElementById('pagamentoValor').value = valorCorrigido.toFixed(2);
             document.getElementById('pagamentoData').value = new Date().toISOString().split('T')[0];
@@ -1734,8 +1739,9 @@
         window.App.openPaymentModal = openPaymentModal; // Expor ao HTML
 
         const openClientHistoryModal = function(clientName) {
-            // NOVO: Usa a função de filtro (pega até deletados para o histórico)
-            const clientContracts = getFilteredContracts(true).filter(c => c.clientName === clientName);
+            // No histórico, mostramos todos do cliente, mesmo se o usuário for restrito
+            // (pois ele já tem acesso a pelo menos 1 contrato desse cliente)
+            const clientContracts = database.contracts.filter(c => c.clientName === clientName && !c.isDeleted);
             const title = document.getElementById('clienteModalTitle');
             const content = document.getElementById('clienteModalContent');
 
@@ -1765,8 +1771,8 @@
                     contractHtml += `</ul>`;
                 }
                  if(contract.successFeePaymentDate){
-                     totalPago += contract.successFeeValueReceived;
-                     contractHtml += `<p class="mt-2 text-sm text-green-400">Êxito Recebido: ${contract.successFeeValueReceived.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>`;
+                    totalPago += contract.successFeeValueReceived;
+                    contractHtml += `<p class="mt-2 text-sm text-green-400">Êxito Recebido: ${contract.successFeeValueReceived.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>`;
                  }
                 contractHtml += `</div>`;
                 html += contractHtml;
@@ -1804,16 +1810,13 @@
             yearSelect.value = anoAtual;
         }
 
-        // NOVO: Aceita uma lista de contratos para calcular
-        function calculateMonthlyIncome(year, month, contractsToAnalyze) {
+        function calculateMonthlyIncome(year, month, contractsToRender) {
             let totalParcelas = 0;
             let totalExito = 0;
             let detailedPayments = [];
-
-            // Se 'contractsToAnalyze' não for fornecido, usa o filtro padrão (para o dashboard)
-            const contracts = contractsToAnalyze || getFilteredContracts(false);
-
-            contracts.forEach(contract => { // Não filtra mais 'isDeleted' aqui
+            
+            // Usa os contratos já filtrados por permissão
+            contractsToRender.filter(c => !c.isDeleted).forEach(contract => { // Filtra lixeira
                 (contract.parcels || []).forEach(parcel => {
                     if(parcel.status === 'Paga') {
                         const d = new Date(parcel.paymentDate);
@@ -1831,8 +1834,8 @@
                 if (contract.successFeePaymentDate) {
                     const d = new Date(contract.successFeePaymentDate);
                      if (d.getFullYear() === year && d.getMonth() === month) {
-                         totalExito += contract.successFeeValueReceived;
-                         detailedPayments.push({
+                        totalExito += contract.successFeeValueReceived;
+                        detailedPayments.push({
                             type: 'Taxa de Êxito',
                             clientName: contract.clientName,
                             date: d.toLocaleDateString('pt-BR', {timeZone: 'UTC'}),
@@ -1850,20 +1853,24 @@
             const year = parseInt(document.getElementById('reportYear').value);
             const resultDiv = document.getElementById('reportResult');
             
-            // NOVO: Passa os contratos filtrados para o cálculo
-            const income = calculateMonthlyIncome(year, month, getFilteredContracts(false));
+            // Filtra os dados com base na permissão
+            const filteredData = isUserAdmin 
+                ? database.contracts 
+                : database.contracts.filter(c => c.advogadoResponsavel === currentUserDisplayName);
+                
+            const income = calculateMonthlyIncome(year, month, filteredData);
 
             let detailsHtml = '<h4 class="text-lg font-semibold mt-6 border-t border-gray-700 pt-4 text-white">Detalhes dos Recebimentos</h4>';
             if (income.detailedPayments.length > 0) {
                 detailsHtml += '<ul class="space-y-2 mt-2 text-sm">';
                 income.detailedPayments.forEach(p => {
                     detailsHtml += `
-                        <li class="flex justify-between items-center bg-gray-700/50 p-3 rounded-md">
+                        <li class="flex justify-between items-center bg-gray-700/50 p-2 rounded-md">
                             <div>
                                 <p class="font-semibold text-white">${p.clientName}</p>
                                 <p class="text-xs text-gray-400">${p.type} - ${p.date}</p>
                             </div>
-                            <span class="font-semibold text-green-400 text-lg">${p.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                            <span class="font-semibold text-green-400">${p.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                         </li>
                     `;
                 });
@@ -1872,20 +1879,20 @@
                 detailsHtml += '<p class="text-sm text-gray-400 mt-2">Nenhum recebimento neste período.</p>';
             }
 
-            // NOVO: Layout de cartões para o relatório
+            // NOVO: Layout em cards
             resultDiv.innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="dark-card p-4 rounded-lg text-center">
-                        <p class="text-sm text-gray-400">Total (Parcelas)</p>
+                    <div class="dark-card p-4 rounded-lg">
+                        <p class="text-sm text-gray-400">Total Recebido (Parcelas):</p>
                         <p class="text-2xl font-bold text-white">${income.totalParcelas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
                     </div>
-                    <div class="dark-card p-4 rounded-lg text-center">
-                        <p class="text-sm text-gray-400">Total (Êxito)</p>
+                    <div class="dark-card p-4 rounded-lg">
+                        <p class="text-sm text-gray-400">Total Recebido (Êxito):</p>
                         <p class="text-2xl font-bold text-indigo-400">${income.totalExito.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
                     </div>
                 </div>
-                <div class="bg-gray-900 p-4 rounded-lg border border-gray-700 text-center">
-                    <p class="text-white font-bold">TOTAL GERAL RECEBIDO</p>
+                <div class="bg-gray-900 p-4 rounded-lg border border-gray-700 mt-4">
+                    <p class="text-white font-bold">TOTAL GERAL RECEBIDO:</p>
                     <p class="text-3xl font-extrabold text-green-400">${income.totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
                 </div>
             ` + detailsHtml;
@@ -1901,12 +1908,14 @@
         }
         window.App.openExitoModal = openExitoModal; // Expor ao HTML
 
-        const createServiceTag = function(serviceName, deadline) {
+        // Ao criar tag, preserva o status se ele existir (na edição)
+        const createServiceTag = function(serviceName, deadline, status = 'Pendente') {
             const container = document.getElementById('servicosContainer');
             const tag = document.createElement('div');
             tag.className = 'service-tag';
             tag.dataset.name = serviceName;
             tag.dataset.deadline = deadline || '';
+            tag.dataset.status = status; // Salva o status
 
             let deadlineHtml = '';
             if (deadline) {
@@ -2028,11 +2037,15 @@
         }
 
         const exportContractsCSV = function() {
+            // Exporta com base nos filtros e permissões atuais
+             const filteredData = isUserAdmin 
+                ? database.contracts 
+                : database.contracts.filter(c => c.advogadoResponsavel === currentUserDisplayName);
+
             const headers = ["ID", "Cliente", "Advogado", "Tipo Pagamento", "Valor Total", "Taxa Êxito", "Status", "Serviços", "Observações"];
             let csvRows = [headers.join(',')];
 
-            // NOVO: Exporta apenas os contratos filtrados
-            getFilteredContracts(false).forEach(c => { // Filtra lixeira
+            filteredData.filter(c => !c.isDeleted).forEach(c => { // Filtra lixeira
                 const status = getContractStatus(c).statusText;
                 const services = (c.serviceTypes || []).map(s => s.name).join('; '); // Usar ; para não conflitar
                 const row = [
@@ -2056,11 +2069,16 @@
         const exportReportCSV = function() {
             const month = parseInt(document.getElementById('reportMonth').value);
             const year = parseInt(document.getElementById('reportYear').value);
-            // NOVO: Passa os contratos filtrados
-            const income = calculateMonthlyIncome(year, month, getFilteredContracts(false));
+            
+            // Filtra os dados com base na permissão
+            const filteredData = isUserAdmin 
+                ? database.contracts 
+                : database.contracts.filter(c => c.advogadoResponsavel === currentUserDisplayName);
+
+            const income = calculateMonthlyIncome(year, month, filteredData);
 
             if (income.detailedPayments.length === 0) {
-                // NOVO: Remover alert
+                // Não usar alert
                 console.warn("Não há dados para exportar neste relatório.");
                 return;
             }
@@ -2086,10 +2104,8 @@
 
         // --- INICIALIZAÇÃO DA PÁGINA ---
         document.addEventListener('DOMContentLoaded', () => {
+            backdrop = document.getElementById('modal-backdrop'); // Inicializa o backdrop global
             initializeAndAuth(); // Chama a inicialização do Firebase
-
-            // NOVO: Inicializa o backdrop aqui
-            backdrop = document.getElementById('modal-backdrop');
 
             // --- Handlers de Autenticação ---
             const loginForm = document.getElementById('login-form');
@@ -2131,12 +2147,17 @@
                 if (name && auth.currentUser) {
                     try {
                         await updateProfile(auth.currentUser, { displayName: name });
-                        // Sucesso! Agora recarregamos o estado do usuário (o onAuthStateChanged vai disparar de novo)
-                        // ou podemos simplesmente forçar a exibição do app
+                        
+                        // Atualiza as variáveis globais de permissão IMEDIATAMENTE
+                        currentUserDisplayName = name;
+                        isUserAdmin = ADMIN_USERS.includes(name);
+                        
                         document.getElementById('user-display-name').textContent = name;
-                        currentUserDisplayName = name; // Atualiza nossa variável global
                         closeModal('modalDisplayName');
                         document.getElementById('app-container').style.display = 'block';
+                        
+                        // Ajusta a UI
+                        setupUIAccess(isUserAdmin);
 
                         // Iniciar o listener do DB agora que temos o nome
                         contractsCollection = collection(db, `contracts`);
@@ -2144,7 +2165,7 @@
 
                     } catch (error) {
                         console.error("Erro ao salvar nome:", error);
-                        // alert("Não foi possível salvar seu nome. Tente novamente."); // Remover alert
+                        // Não usar alert
                     }
                 }
             });
@@ -2156,11 +2177,14 @@
                 const clientName = document.getElementById('clienteNome').value;
                 const advogadoResponsavel = document.getElementById('advogadoResponsavel').value;
                 const serviceTags = document.querySelectorAll('#servicosContainer .service-tag');
+                
+                // Ao salvar, preserva o status existente se estiver editando
                 const serviceTypes = Array.from(serviceTags).map(tag => ({ 
                     name: tag.dataset.name, 
-                    status: 'Pendente', 
+                    status: tag.dataset.status || 'Pendente', // Usa status salvo ou 'Pendente'
                     deadline: tag.dataset.deadline || null 
                 }));
+
                 const paymentType = document.getElementById('contratoTipoPagamento').value;
                 const totalValue = parseFloat(document.getElementById('valorTotal').value) || 0;
                 const numParcels = parseInt(document.getElementById('numParcelas').value) || 1;
@@ -2169,7 +2193,7 @@
                 const observations = document.getElementById('contratoObservacoes').value;
 
                 if (serviceTypes.length === 0) {
-                    // alert('Adicione pelo menos um tipo de serviço.'); // Remover alert
+                    // Não usar alert
                     console.warn('Adicione pelo menos um tipo de serviço.');
                     return;
                 }
@@ -2181,42 +2205,44 @@
                     paymentType, 
                     totalValue, 
                     successFee, 
-                    observations, 
-                    parcels: [], 
-                    successFeeValueReceived: 0, 
-                    successFeePaymentDate: null,
-                    isDeleted: false // Garante que novos contratos não estejam na lixeira
+                    observations,
                 };
+                
+                // --- Lógica de Parcelas (Não alterar se o contrato já existe) ---
+                if (!contractId) {
+                     contractData.parcels = [];
+                     contractData.successFeeValueReceived = 0;
+                     contractData.successFeePaymentDate = null;
+                     contractData.isDeleted = false; // Garante que novos contratos não estejam na lixeira
 
-                if (numParcels > 0 && totalValue > 0) {
-                    if (!firstDueDate) { 
-                        // alert('Informe a data de vencimento da primeira parcela.'); // Remover alert
-                        console.warn('Informe a data de vencimento da primeira parcela.');
-                        return; 
+                    if (numParcels > 0 && totalValue > 0) {
+                        if (!firstDueDate) { console.warn('Informe a data de vencimento da primeira parcela.'); return; }
+                        const parcelValue = totalValue / numParcels;
+                        let currentDueDate = new Date(firstDueDate + 'T12:00:00Z');
+                        for (let i = 0; i < numParcels; i++) {
+                            contractData.parcels.push({ number: i + 1, value: parcelValue, dueDate: new Date(currentDueDate).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null });
+                            currentDueDate.setMonth(currentDueDate.getMonth() + 1);
+                        }
                     }
-                    const parcelValue = totalValue / numParcels;
-                    let currentDueDate = new Date(firstDueDate + 'T12:00:00Z');
-                    for (let i = 0; i < numParcels; i++) {
-                        contractData.parcels.push({ number: i + 1, value: parcelValue, dueDate: new Date(currentDueDate).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null });
-                        currentDueDate.setMonth(currentDueDate.getMonth() + 1);
+                } else {
+                    // Se estiver editando, só atualiza os dados do formulário,
+                    // mas preserva os dados de parcelas e lixeira existentes.
+                    // A lógica de "serviceTypes" já pega o status salvo.
+                    // Precisamos preservar o status das parcelas
+                    const existingContract = database.contracts.find(c => c.id === contractId);
+                    if (existingContract) {
+                        contractData.parcels = existingContract.parcels;
+                        contractData.isDeleted = existingContract.isDeleted;
+                        contractData.successFeeValueReceived = existingContract.successFeeValueReceived;
+                        contractData.successFeePaymentDate = existingContract.successFeePaymentDate;
                     }
                 }
+                
+                // --- Fim da Lógica de Parcelas ---
 
                 if (contractId) {
-                    // Ao editar, não mexemos no status 'isDeleted'
-                    const { isDeleted, ...dataToUpdate } = contractData; // Remove 'isDeleted' para não sobrescrever
-                    
-                    // Manter o status dos serviços existentes
-                    const oldContract = database.contracts.find(c => c.id === contractId);
-                    if(oldContract && oldContract.serviceTypes) {
-                        dataToUpdate.serviceTypes = dataToUpdate.serviceTypes.map(newService => {
-                            const old = oldContract.serviceTypes.find(o => o.name === newService.name && o.deadline === newService.deadline);
-                            return old ? old : newService; // Se achar, mantém o status antigo, senão, é novo
-                        });
-                    }
-
                     const contractRef = doc(contractsCollection, contractId);
-                    await updateDoc(contractRef, dataToUpdate);
+                    await updateDoc(contractRef, contractData);
                 } else {
                     await addDoc(contractsCollection, contractData);
                 }
@@ -2255,12 +2281,10 @@
                     });
                     closeModal('modalExito');
                 } else {
-                    // alert('Valor inválido.'); // Remover alert
-                    console.warn('Valor inválido para êxito.');
+                    console.warn('Valor de êxito inválido.');
                 }
             });
 
-            // const backdrop = document.getElementById('modal-backdrop'); // REMOVIDO DAQUI
             if (backdrop) {
                 backdrop.addEventListener('click', () => {
                     // Não fechar o modal de display name ao clicar fora
@@ -2284,11 +2308,10 @@
                     const deadline = deadlineInput.value;
 
                     if (serviceName) {
-                        createServiceTag(serviceName, deadline);
+                        createServiceTag(serviceName, deadline, 'Pendente'); // Novos serviços são Pendentes
                         serviceInput.value = '';
                         deadlineInput.value = '';
                     } else {
-                        // alert('Por favor, insira um nome para o serviço.'); // Remover alert
                         console.warn('Por favor, insira um nome para o serviço.');
                     }
                 });
