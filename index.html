@@ -218,19 +218,23 @@
 
 
         <div class="border-b border-gray-700 mb-8">
-            <nav class="flex -mb-px">
-                <a onclick="window.App.showPage('page-dashboard')" id="tab-dashboard" class="nav-tab active">
-                    <i class="fas fa-tachometer-alt mr-2"></i>Painel Principal
-                </a>
-                <a onclick="window.App.showPage('page-inadimplentes')" id="tab-inadimplentes" class="nav-tab">
-                    <i class="fas fa-exclamation-triangle mr-2"></i>Inadimplentes
-                </a>
-                <a onclick="window.App.showPage('page-servicos')" id="tab-servicos" class="nav-tab">
-                    <i class="fas fa-tasks mr-2"></i>Serviços
-                </a>
-                <!-- Nova Aba de Lixeira -->
-                <a onclick="window.App.showPage('page-lixeira')" id="tab-lixeira" class="nav-tab">
-                    <i class="fas fa-trash-alt mr-2"></i>Lixeira
+            <!-- Nav ajustada com justify-between e items-center -->
+            <nav class="flex -mb-px justify-between items-center">
+                <!-- Grupo das abas principais -->
+                <div class="flex">
+                    <a onclick="window.App.showPage('page-dashboard')" id="tab-dashboard" class="nav-tab active">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Painel Principal
+                    </a>
+                    <a onclick="window.App.showPage('page-inadimplentes')" id="tab-inadimplentes" class="nav-tab">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>Inadimplentes
+                    </a>
+                    <a onclick="window.App.showPage('page-servicos')" id="tab-servicos" class="nav-tab">
+                        <i class="fas fa-tasks mr-2"></i>Serviços
+                    </a>
+                </div>
+                <!-- Aba Lixeira isolada (só ícone) -->
+                <a onclick="window.App.showPage('page-lixeira')" id="tab-lixeira" class="nav-tab px-3" title="Lixeira"> <!-- Adicionado title para acessibilidade -->
+                    <i class="fas fa-trash-alt"></i> <!-- Removido texto e margem -->
                 </a>
             </nav>
         </div>
@@ -2135,4 +2139,5 @@
     </script>
 </body>
 </html>
+
 
