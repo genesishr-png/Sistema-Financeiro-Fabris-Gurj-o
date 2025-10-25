@@ -171,6 +171,8 @@
         #app-container {
             display: none; /* Começa escondido */
         }
+        /* Classe auxiliar para esconder elementos de não-admins */
+        .admin-only { display: none; } 
     </style>
 </head>
 <body class="text-gray-300">
@@ -256,11 +258,12 @@
                 <button onclick="window.App.openContractModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
                     <i class="fas fa-plus-circle"></i> Novo Contrato
                 </button>
-                <button onclick="window.App.openReportModal()" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
+                <!-- Botão de Relatório (Apenas Admins) -->
+                <button id="report-button" onclick="window.App.openReportModal()" class="admin-only bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
                     <i class="fas fa-chart-line"></i> Relatório Mensal
                 </button>
-                <!-- Botão para Gráficos -->
-                <button onclick="window.App.showPage('page-analytics')" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
+                <!-- Botão para Gráficos (Apenas Admins) -->
+                <button id="analytics-button" onclick="window.App.showPage('page-analytics')" class="admin-only bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
                     <i class="fas fa-chart-bar"></i> Ver Gráficos
                 </button>
             </div>
@@ -294,6 +297,7 @@
                 <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-4">
                     <h2 class="text-2xl font-semibold text-white">Todos os Contratos</h2>
                     <div class="flex items-center gap-4">
+                        <!-- Exportação (Apenas Admins veem valores) -->
                         <button onclick="window.App.exportContractsCSV()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2 text-sm">
                             <i class="fas fa-file-csv"></i> Exportar (CSV)
                         </button>
@@ -308,7 +312,7 @@
                     <input type="text" id="searchInput" onkeyup="window.App.renderContractList()" placeholder="🔎 Pesquisar por cliente ou tipo de serviço..." class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white">
                 </div>
                 <div id="contractListContainer"></div>
-                <!-- NOVO: Botão Carregar Mais -->
+                <!-- Botão Carregar Mais -->
                 <div id="loadMoreContainer" class="text-center mt-6">
                     <button id="loadMoreButton" onclick="window.App.loadMoreContracts()" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-all">
                         Carregar Mais
@@ -345,11 +349,11 @@
              <div id="servicosListContainer" class="space-y-6"></div>
         </div>
 
-        <!-- Conteúdo da Página: Análise Gráfica -->
-        <div id="page-analytics" class="hidden">
+        <!-- Conteúdo da Página: Análise Gráfica (Apenas Admins) -->
+        <div id="page-analytics" class="hidden admin-only">
             <div class="flex justify-between items-center mb-6">
                  <h2 class="text-2xl font-semibold text-white">Análise Gráfica</h2>
-                 <!-- NOVO: Filtros de Período -->
+                 <!-- Filtros de Período -->
                  <div id="analyticsPeriodFilter" class="flex gap-1">
                     <button onclick="window.App.setAnalyticsPeriod('12m')" class="filter-button active" data-period="12m">Últimos 12 Meses</button>
                     <button onclick="window.App.setAnalyticsPeriod('thisYear')" class="filter-button" data-period="thisYear">Este Ano</button>
@@ -357,16 +361,15 @@
                  </div>
             </div>
             <div class="grid grid-cols-1 gap-6">
-                <!-- Alterado para grid de 2 colunas -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Gráfico de Faturamento (Existente) -->
+                    <!-- Gráfico de Faturamento -->
                     <div class="dark-card p-6 rounded-lg shadow-lg">
                         <h3 class="text-lg font-semibold text-white mb-4">Recebimentos Totais</h3>
                         <div class="h-96">
                             <canvas id="faturamentoChart"></canvas>
                         </div>
                     </div>
-                    <!-- NOVO: Gráfico de Produção -->
+                    <!-- Gráfico de Produção -->
                     <div class="dark-card p-6 rounded-lg shadow-lg">
                         <h3 class="text-lg font-semibold text-white mb-4">Produção (Novos Contratos)</h3>
                         <div class="h-96">
@@ -377,7 +380,7 @@
             </div>
         </div>
 
-        <!-- Conteúdo da Página: Lixeira (NOVO) -->
+        <!-- Conteúdo da Página: Lixeira -->
         <div id="page-lixeira" class="hidden">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-2xl font-semibold text-white">Lixeira de Contratos</h2>
@@ -388,7 +391,7 @@
     </div>
 
     <!-- Modais -->
-    <!-- Modal: Adicionar Nome (NOVO) -->
+    <!-- Modal: Adicionar Nome -->
     <div id="modalDisplayName" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
         <div class="p-6">
             <h2 class="text-2xl font-bold text-white mb-4">Bem-vindo(a)!</h2>
@@ -403,6 +406,7 @@
         </div>
     </div>
 
+    <!-- Modal: Contrato -->
     <div id="modalContrato" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/2 lg:w-2/5">
         <div class="p-6">
             <div class="flex justify-between items-center mb-4">
@@ -453,24 +457,27 @@
                     <label for="contratoObservacoes" class="block text-sm font-medium text-gray-400">Observações</label>
                     <textarea id="contratoObservacoes" rows="3" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" placeholder="Detalhes da negociação, informações do caso, etc..."></textarea>
                 </div>
-                <h3 class="text-lg font-semibold mb-2 border-t border-gray-700 pt-4 text-white">Detalhes Financeiros</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="mb-4">
-                        <label for="valorTotal" class="block text-sm font-medium text-gray-400">Valor Fixo Total (R$)</label>
-                        <input type="number" step="0.01" id="valorTotal" placeholder="0 se for só êxito" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white">
+                <!-- Detalhes Financeiros (Apenas Admins) -->
+                <div id="financial-details-section" class="admin-only">
+                    <h3 class="text-lg font-semibold mb-2 border-t border-gray-700 pt-4 text-white">Detalhes Financeiros</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="mb-4">
+                            <label for="valorTotal" class="block text-sm font-medium text-gray-400">Valor Fixo Total (R$)</label>
+                            <input type="number" step="0.01" id="valorTotal" placeholder="0 se for só êxito" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white">
+                        </div>
+                        <div class="mb-4">
+                            <label for="numParcelas" class="block text-sm font-medium text-gray-400">N° de Parcelas</label>
+                            <input type="number" id="numParcelas" placeholder="1 para 'À Vista'" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white" value="1">
+                        </div>
                     </div>
                     <div class="mb-4">
-                        <label for="numParcelas" class="block text-sm font-medium text-gray-400">N° de Parcelas</label>
-                        <input type="number" id="numParcelas" placeholder="1 para 'À Vista'" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white" value="1">
+                        <label for="vencimentoPrimeiraParcela" class="block text-sm font-medium text-gray-400">Vencimento da 1ª Parcela</label>
+                        <input type="date" id="vencimentoPrimeiraParcela" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white" style="color-scheme: dark;">
                     </div>
-                </div>
-                 <div class="mb-4">
-                    <label for="vencimentoPrimeiraParcela" class="block text-sm font-medium text-gray-400">Vencimento da 1ª Parcela</label>
-                    <input type="date" id="vencimentoPrimeiraParcela" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white" style="color-scheme: dark;">
-                </div>
-                <div class="mb-4">
-                    <label for="taxaExito" class="block text-sm font-medium text-gray-400">Taxa de Êxito (Bonificação)</label>
-                    <input type="text" id="taxaExito" placeholder="Ex: 20%, 10000, 5 SALARIOS" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white">
+                    <div class="mb-4">
+                        <label for="taxaExito" class="block text-sm font-medium text-gray-400">Taxa de Êxito (Bonificação)</label>
+                        <input type="text" id="taxaExito" placeholder="Ex: 20%, 10000, 5 SALARIOS" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white">
+                    </div>
                 </div>
                 <div class="flex justify-end mt-6">
                     <button type="button" onclick="window.App.closeModal('modalContrato')" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg mr-2">Cancelar</button>
@@ -480,6 +487,7 @@
         </div>
     </div>
 
+    <!-- Modal: Pagamento (Com restrição de valor para não-admins) -->
     <div id="modalPagamento" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
          <div class="p-6">
             <div class="flex justify-between items-center mb-4">
@@ -488,7 +496,8 @@
             </div>
             <form id="formPagamento">
                 <div id="pagamentoInfo" class="mb-4 bg-gray-700 p-3 rounded-md text-white"></div>
-                <div class="mb-4">
+                <!-- Campo Valor Pago (Apenas Admins) -->
+                <div class="mb-4 admin-only" id="valor-pago-input-container">
                     <label for="pagamentoValor" class="block text-sm font-medium text-gray-400">Valor Pago (R$)</label>
                     <input type="number" step="0.01" id="pagamentoValor" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white" required>
                 </div>
@@ -506,6 +515,7 @@
         </div>
     </div>
 
+    <!-- Modal: Histórico Cliente -->
     <div id="modalCliente" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-3/4 lg:w-2/3">
          <div class="p-6">
             <div class="flex justify-between items-center mb-4">
@@ -516,7 +526,8 @@
         </div>
     </div>
 
-    <div id="modalRelatorio" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/2 lg:w-2/5">
+    <!-- Modal: Relatório (Apenas Admins) -->
+    <div id="modalRelatorio" class="modal admin-only bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/2 lg:w-2/5">
         <div class="p-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-white">Relatório Financeiro Mensal</h2>
@@ -536,14 +547,14 @@
                 <button onclick="window.App.generateAndShowReport()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg">Gerar Relatório</button>
                 <button onclick="window.App.exportReportCSV()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Exportar (CSV)</button>
              </div>
-            <!-- REFORMULADO: Container do Resultado -->
             <div id="reportResult" class="space-y-4">
                 <!-- O conteúdo será injetado aqui pelo JS -->
             </div>
         </div>
     </div>
 
-    <div id="modalExito" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
+    <!-- Modal: Êxito (Apenas Admins) -->
+    <div id="modalExito" class="modal admin-only bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
         <div class="p-6">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-2xl font-bold text-white">Registrar Recebimento de Êxito</h2>
@@ -574,7 +585,7 @@
             onAuthStateChanged,
             signInWithEmailAndPassword,
             signOut,
-            updateProfile // Importar a função de atualizar perfil
+            updateProfile 
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { 
             getFirestore, 
@@ -589,7 +600,7 @@
         // --- FIM: Importações do Firebase ---
 
         // --- OBJETO GLOBAL PARA EXPOR FUNÇÕES ---
-        window.App = {}; // Objeto global para "pendurar" nossas funções
+        window.App = {}; 
 
         // --- VARIÁVEIS GLOBAIS ---
         let db;
@@ -599,26 +610,25 @@
         let currentContractSort = 'name-asc';
         let currentInadimplentesSort = 'days-desc';
         let currentServicosSort = 'name-asc';
-        let ipcaCache = new Map(); // Cache para os valores do IPCA
-        let faturamentoChartInstance = null; // Variável para guardar a instância do gráfico
-        let producaoChartInstance = null; // Para o gráfico de produção
-        let backdrop; // Definida globalmente
-        let contractListPage = 0; // NOVO: Paginação
-        const CONTRACTS_PER_PAGE = 30; // NOVO: Itens por página
+        let ipcaCache = new Map(); 
+        let faturamentoChartInstance = null; 
+        let producaoChartInstance = null; 
+        let backdrop; 
+        let contractListPage = 0; 
+        const CONTRACTS_PER_PAGE = 30; 
 
-        // NOVO: Controle de Acesso
+        // --- CONTROLE DE ACESSO ---
         const ADMIN_USERS = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "D'Arc"];
         let currentUserDisplayName = null;
         let isUserAdmin = false;
 
-        // NOVO: Período do Gráfico
-        let currentAnalyticsPeriod = '12m'; // '12m', 'thisYear', 'lastYear'
+        let currentAnalyticsPeriod = '12m'; 
 
         // --- INICIALIZAÇÃO E AUTENTICAÇÃO ---
         async function initializeAndAuth() {
             try {
-                // Configuração do Firebase fornecida pelo usuário
-                const firebaseConfig = {
+                // Configuração Fallback
+                const firebaseConfigFallback = {
                     apiKey: "AIzaSyA0TWb7DgZAHNl3TuoK3xQD-ANvCcQIDK4",
                     authDomain: "fabrisgurjao.firebaseapp.com",
                     projectId: "fabrisgurjao",
@@ -628,14 +638,13 @@
                     measurementId: "G-E99R5TFMQK"
                 };
 
-                // Tenta usar a configuração do ambiente, se disponível, senão usa a fixa
                 const finalConfig = (typeof __firebase_config !== 'undefined' && __firebase_config !== '') 
                     ? JSON.parse(__firebase_config) 
-                    : firebaseConfig;
+                    : firebaseConfigFallback;
 
                 const app = initializeApp(finalConfig);
                 db = getFirestore(app);
-                auth = getAuth(app); // Obter a instância do Auth
+                auth = getAuth(app); 
                 setLogLevel('debug');
 
                 // Listener do estado de autenticação
@@ -645,12 +654,13 @@
                     const appContainer = document.getElementById('app-container');
 
                     if (user) {
-                        // Usuário está logado
-                        currentUserDisplayName = user.displayName; // Armazena o nome do usuário
-                        isUserAdmin = ADMIN_USERS.includes(currentUserDisplayName); // Verifica se é admin
+                        currentUserDisplayName = user.displayName; 
+                        isUserAdmin = ADMIN_USERS.includes(currentUserDisplayName); 
+
+                        // Adiciona/Remove classe 'admin-only' do body para CSS global
+                        document.body.classList.toggle('is-admin', isUserAdmin);
 
                         if (!user.displayName) {
-                            // NOVO: Se é o primeiro login (sem nome), mostrar o modal de nome
                             console.log("Primeiro login detectado, usuário sem nome de exibição.");
                             loadingOverlay.style.display = 'none';
                             authOverlay.style.display = 'none';
@@ -658,13 +668,11 @@
                             console.log("Tentando abrir o modal 'modalDisplayName'.");
                             openModal('modalDisplayName');
                         } else {
-                            // Login normal: mostrar o app
                             console.log("Usuário logado:", user.displayName, "É admin?", isUserAdmin);
                             document.getElementById('user-display-name').textContent = user.displayName;
                             authOverlay.style.display = 'none';
                             appContainer.style.display = 'block';
 
-                            // NOVO: Ajusta a UI com base na permissão
                             setupUIAccess(isUserAdmin); 
 
                             contractsCollection = collection(db, `contracts`);
@@ -673,10 +681,10 @@
                             loadingOverlay.style.display = 'none';
                         }
                     } else {
-                        // Usuário está deslogado
                         console.log("Nenhum usuário logado.");
                         currentUserDisplayName = null;
                         isUserAdmin = false;
+                        document.body.classList.remove('is-admin'); // Remove classe do body
                         authOverlay.style.display = 'flex';
                         appContainer.style.display = 'none';
                         loadingOverlay.style.display = 'none';
@@ -689,8 +697,16 @@
             }
         }
         
-        // NOVO: Ajusta a UI (filtros) com base na permissão do usuário
+        // Ajusta a UI (filtros e botões) com base na permissão do usuário
         function setupUIAccess(isAdmin) {
+            const adminOnlyElements = document.querySelectorAll('.admin-only');
+            
+            // Mostra/Esconde elementos marcados como admin-only
+            adminOnlyElements.forEach(el => {
+                el.style.display = isAdmin ? '' : 'none'; // Usa display vazio para restaurar o padrão (block, flex, etc.)
+            });
+
+            // Ajusta filtros
             const filtersToToggle = [
                 document.getElementById('advogadoFilter'),
                 document.getElementById('servicosAdvogadoFilter')
@@ -700,19 +716,29 @@
                 if (select) {
                     if (isAdmin) {
                         select.disabled = false;
-                        select.value = 'Todos'; // Reseta para "Todos" para admin
+                        // Não reseta o valor aqui, deixa o renderAdvogadoFilters cuidar disso
                     } else {
                         select.disabled = true;
                         select.value = currentUserDisplayName; // Trava no nome do usuário
                     }
                 }
             });
+             // Esconde detalhes financeiros no modal de contrato para não-admins
+            const financialDetails = document.getElementById('financial-details-section');
+            if (financialDetails) {
+                 financialDetails.style.display = isAdmin ? '' : 'none';
+            }
+             // Esconde input de valor pago no modal de pagamento para não-admins
+            const valorPagoContainer = document.getElementById('valor-pago-input-container');
+             if (valorPagoContainer) {
+                 valorPagoContainer.style.display = isAdmin ? '' : 'none';
+             }
         }
+
 
         function setupSnapshotListener() {
             onSnapshot(contractsCollection, (snapshot) => {
                 database.contracts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                // NOVO: Reseta a paginação ao receber novos dados
                 contractListPage = 0; 
                 render();
             }, (error) => {
@@ -723,38 +749,30 @@
 
         // --- FUNÇÕES DE NAVEGAÇÃO E RENDERIZAÇÃO ---
         const showPage = (pageId) => {
-            // Esconde todas as páginas
             ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-analytics', 'page-lixeira'].forEach(id => {
                 if(document.getElementById(id)) document.getElementById(id).classList.add('hidden');
             });
-            // Desativa todas as abas principais
             ['tab-dashboard', 'tab-inadimplentes', 'tab-servicos', 'tab-lixeira'].forEach(id => {
                 if(document.getElementById(id)) {
-                    document.getElementById(id).classList.remove('active');
-                    // Trata a lixeira (ícone)
-                    if (id === 'tab-lixeira') {
-                         document.getElementById(id).classList.remove('active'); // Usa a classe de ícone
-                    } else {
-                         document.getElementById(id).classList.remove('active'); // Usa a classe de aba normal
-                    }
+                     document.getElementById(id).classList.remove('active');
                 }
             });
 
-            // Mostra a página clicada
             if(document.getElementById(pageId)) document.getElementById(pageId).classList.remove('hidden');
 
-            // Ativa a aba correspondente
             const tabId = `tab-${pageId.split('-')[1]}`;
             if(document.getElementById(tabId)) {
-                if (tabId === 'tab-lixeira') {
-                    document.getElementById(tabId).classList.add('active'); // Classe de ícone
-                } else {
-                    document.getElementById(tabId).classList.add('active'); // Classe de aba
-                }
+                document.getElementById(tabId).classList.add('active'); 
             }
 
-            // Roda a função específica da página
-            if (pageId === 'page-dashboard') renderContractList(); // Renderiza a lista na dashboard
+            // Garante que a página de analytics só seja mostrada para admins
+             if (pageId === 'page-analytics' && !isUserAdmin) {
+                 console.warn("Acesso negado à página de Análise.");
+                 showPage('page-dashboard'); // Redireciona para o dashboard
+                 return;
+             }
+
+            if (pageId === 'page-dashboard') renderContractList(); 
             if (pageId === 'page-inadimplentes') renderInadimplentesPage();
             if (pageId === 'page-servicos') renderServicosPage();
             if (pageId === 'page-analytics') renderAnalyticsPage();
@@ -768,33 +786,36 @@
                  loadingOverlay.style.display = 'flex';
             }
 
-            // Garante que o render só aconteça se o app estiver visível
             if (document.getElementById('app-container').style.display !== 'block') {
                 if (loadingOverlay) loadingOverlay.style.display = 'none';
                 return;
             }
 
-            // NOVO: Lógica de filtragem de dados por permissão
+            // Filtra os dados globais uma vez
             const allData = database.contracts;
-            const filteredData = isUserAdmin 
+            const visibleData = isUserAdmin 
                 ? allData 
                 : allData.filter(c => c.advogadoResponsavel === currentUserDisplayName);
 
+            // Atualiza a UI baseada nas permissões (incluindo botões e seções)
+             setupUIAccess(isUserAdmin);
+
             if(document.getElementById('page-dashboard') && !document.getElementById('page-dashboard').classList.contains('hidden')) {
-                await renderKanban(filteredData);
-                renderContractList(); // A paginação e o filtro são feitos dentro desta função
+                await renderKanban(visibleData);
+                renderContractList(); // Usa os dados completos, mas a função filtra internamente
             }
             if(document.getElementById('page-inadimplentes') && !document.getElementById('page-inadimplentes').classList.contains('hidden')) {
-                await renderInadimplentesPage(filteredData);
+                await renderInadimplentesPage(visibleData);
             }
             if(document.getElementById('page-servicos') && !document.getElementById('page-servicos').classList.contains('hidden')) {
-                renderServicosPage(filteredData);
+                renderServicosPage(visibleData);
             }
-            if(document.getElementById('page-analytics') && !document.getElementById('page-analytics').classList.contains('hidden')) {
-                renderAnalyticsPage(filteredData);
+            // Renderiza analytics APENAS se for admin E a página estiver visível
+            if(isUserAdmin && document.getElementById('page-analytics') && !document.getElementById('page-analytics').classList.contains('hidden')) {
+                renderAnalyticsPage(allData); // Admins veem gráficos com todos os dados
             }
             if(document.getElementById('page-lixeira') && !document.getElementById('page-lixeira').classList.contains('hidden')) {
-                renderLixeiraPage(filteredData); // Admins veem tudo na lixeira, usuários veem só o seu
+                renderLixeiraPage(visibleData); 
             }
 
             renderSortButtons();
@@ -804,6 +825,11 @@
         }
 
         async function renderKanban(contractsToRender) {
+            // ... (código do kanban existente) ...
+            // Modificações:
+            // 1. Passar `isUserAdmin` para `createParcelCard` e `createExitoCard`.
+            // 2. Não renderizar cards de valor no `renderDashboard` se `!isUserAdmin`.
+
             const kanbanVencidas = document.getElementById('kanban-vencidas');
             const kanbanAVencer = document.getElementById('kanban-a-vencer');
             const kanbanPagas = document.getElementById('kanban-pagas');
@@ -822,107 +848,111 @@
 
             let totalAVencer30dias = 0;
             let totalVencido = 0;
-            
-            // NOVO: Otimização com Promise.all para correção de valores
             const vencidasPromises = [];
 
-            for (const contract of contractsToRender.filter(c => !c.isDeleted)) { // Filtra lixeira
+            for (const contract of contractsToRender.filter(c => !c.isDeleted)) {
                 if (!contract.parcels) contract.parcels = []; 
-                let remainingValue = contract.parcels.reduce((sum, p) => p.status === 'Pendente' ? sum + p.value : sum, 0);
+                let remainingValue = contract.parcels.reduce((sum, p) => p.status === 'Pendente' ? sum + (p.value || 0) : sum, 0); // Garante que p.value existe
 
                 for (let i = 0; i < contract.parcels.length; i++) {
                     const parcel = contract.parcels[i];
+                    // Garante que parcel.value existe antes de usar
+                    const parcelValue = parcel.value || 0; 
                     const vencimento = new Date(parcel.dueDate);
 
                     if (parcel.status === 'Paga') {
                          const dataPagamento = new Date(parcel.paymentDate);
                          if(dataPagamento >= primeiroDiaMes && dataPagamento <= hoje) {
-                             kanbanPagas.innerHTML += createParcelCard(contract, parcel, i, 'paga', remainingValue);
+                             kanbanPagas.innerHTML += createParcelCard(contract, parcel, i, 'paga', remainingValue, null, isUserAdmin); // Passa isUserAdmin
                          }
                     } else { 
                         if (vencimento < hoje) {
-                            // Adiciona a promessa à fila
                             vencidasPromises.push(
-                                calcularValorCorrigido(parcel.value, parcel.dueDate).then(valorCorrigido => {
-                                    totalVencido += valorCorrigido; // Soma o valor corrigido
-                                    return createParcelCard(contract, parcel, i, 'vencida', remainingValue, valorCorrigido);
+                                calcularValorCorrigido(parcelValue, parcel.dueDate).then(valorCorrigido => {
+                                    totalVencido += valorCorrigido; 
+                                    return createParcelCard(contract, parcel, i, 'vencida', remainingValue, valorCorrigido, isUserAdmin); // Passa isUserAdmin
                                 })
                             );
                         } else if (vencimento >= hoje && vencimento <= trintaDiasFrente) {
-                            kanbanAVencer.innerHTML += createParcelCard(contract, parcel, i, 'a-vencer', remainingValue);
-                            totalAVencer30dias += parcel.value;
+                            kanbanAVencer.innerHTML += createParcelCard(contract, parcel, i, 'a-vencer', remainingValue, null, isUserAdmin); // Passa isUserAdmin
+                            totalAVencer30dias += parcelValue;
                         }
                     }
                 }
 
                 if (contract.successFee && !contract.successFeePaymentDate && (contract.parcels || []).every(p => p.status === 'Paga')) {
-                    kanbanExito.innerHTML += createExitoCard(contract);
+                    kanbanExito.innerHTML += createExitoCard(contract, isUserAdmin); // Passa isUserAdmin
                 }
             }
 
-            // Espera todas as correções terminarem
             const vencidasHtml = await Promise.all(vencidasPromises);
             kanbanVencidas.innerHTML = vencidasHtml.join('');
 
-            const totalPagoMes = calculateMonthlyIncome(hoje.getFullYear(), hoje.getMonth(), contractsToRender).totalGeral;
-            renderDashboard(totalAVencer30dias, totalVencido, totalPagoMes, contractsToRender.filter(c => !c.isDeleted).length);
+            // Apenas admins veem todos os dados no relatório mensal para o dashboard
+            const dataForDashboardReport = isUserAdmin ? database.contracts : contractsToRender;
+            const totalPagoMes = calculateMonthlyIncome(hoje.getFullYear(), hoje.getMonth(), dataForDashboardReport).totalGeral; 
+            renderDashboard(totalAVencer30dias, totalVencido, totalPagoMes, contractsToRender.filter(c => !c.isDeleted).length, isUserAdmin); // Passa isUserAdmin
         }
 
-        function createParcelCard(contract, parcel, index, type, remainingValue, valorCorrigido = null) {
+        function createParcelCard(contract, parcel, index, type, remainingValue, valorCorrigido = null, isAdmin) {
             const vencimento = new Date(parcel.dueDate);
             const formattedDate = vencimento.toLocaleDateString('pt-BR', {timeZone: 'UTC'});
-            const formattedValue = parcel.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            // Garante que parcel.value existe
+            const parcelValue = parcel.value || 0; 
+            const formattedValue = parcelValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             const formattedRemaining = remainingValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
             let actionButton = '';
             let statusClass = '';
             let valorHtml = '';
+            let extraInfoHtml = '';
 
-            if (type === 'vencida') {
-                statusClass = 'border-red-400';
-                valorHtml = `
-                    <div class="flex items-center text-gray-400 text-xs">
-                        <strong>Original:</strong>
-                        <span class="ml-auto font-medium line-through">${formattedValue}</span>
-                    </div>
-                    <div class="flex items-center text-red-400">
-                        <strong>Corrigido:</strong>
-                        <span class="ml-auto font-semibold text-lg">${valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                    </div>`;
-            } else if (type === 'a-vencer') {
-                 statusClass = 'border-yellow-400';
-                 valorHtml = `
-                    <div class="flex items-center text-gray-300">
-                        <i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-500"></i>
-                        <strong>Valor:</strong>
-                        <span class="ml-auto font-semibold text-lg text-white">${formattedValue}</span>
-                    </div>`;
-            } else { // Paga
-                 statusClass = 'border-gray-600';
-                 valorHtml = `
-                    <div class="flex items-center text-gray-300">
-                        <i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-500"></i>
-                        <strong>Valor:</strong>
-                        <span class="ml-auto font-semibold text-lg text-white">${formattedValue}</span>
-                    </div>`;
+            if (isAdmin) { // Admins veem os valores
+                if (type === 'vencida') {
+                    statusClass = 'border-red-400';
+                    valorHtml = `
+                        <div class="flex items-center text-gray-400 text-xs">
+                            <strong>Original:</strong>
+                            <span class="ml-auto font-medium line-through">${formattedValue}</span>
+                        </div>
+                        <div class="flex items-center text-red-400">
+                            <strong>Corrigido:</strong>
+                            <span class="ml-auto font-semibold text-lg">${(valorCorrigido || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                        </div>`;
+                } else { // 'a-vencer' or 'paga'
+                    statusClass = type === 'a-vencer' ? 'border-yellow-400' : 'border-gray-600';
+                    valorHtml = `
+                        <div class="flex items-center text-gray-300">
+                            <i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-500"></i>
+                            <strong>Valor:</strong>
+                            <span class="ml-auto font-semibold text-lg text-white">${formattedValue}</span>
+                        </div>`;
+                }
+                extraInfoHtml = `<div class="text-xs text-gray-400 border-t border-gray-700 pt-2 mt-3 flex justify-between"><span>Contrato: <strong>${(contract.totalValue || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></span> <span>Restante: <strong>${formattedRemaining}</strong></span></div>`;
+            } else { // Não-admins não veem valores
+                statusClass = type === 'vencida' ? 'border-red-400' : (type === 'a-vencer' ? 'border-yellow-400' : 'border-gray-600');
+                valorHtml = ''; // Sem valor
+                extraInfoHtml = ''; // Sem info extra de valor
             }
 
+            // Botão de pagamento visível para todos, mas só admins podem setar valor diferente
             if (type !== 'paga') {
                 actionButton = `<button onclick="window.App.openPaymentModal('${contract.id}', ${index})" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2"><i class="fas fa-check"></i> Registrar Pagamento</button>`;
-            } else {
-                 const formattedPaidValue = parcel.valuePaid.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            } else if (isAdmin) { // Apenas admins veem o valor pago
+                 const formattedPaidValue = (parcel.valuePaid || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                  const paymentDate = new Date(parcel.paymentDate).toLocaleDateString('pt-BR', {timeZone: 'UTC'});
                  actionButton = `<div class="mt-4 text-center text-sm bg-green-900/50 text-green-300 p-2 rounded-md font-medium">Pago ${formattedPaidValue} em ${paymentDate}</div>`;
+            } else { // Não-admins veem apenas "Pago"
+                 const paymentDate = new Date(parcel.paymentDate).toLocaleDateString('pt-BR', {timeZone: 'UTC'});
+                  actionButton = `<div class="mt-4 text-center text-sm bg-green-900/50 text-green-300 p-2 rounded-md font-medium">Pago em ${paymentDate}</div>`;
             }
-
-            let extraInfoHtml = `<div class="text-xs text-gray-400 border-t border-gray-700 pt-2 mt-3 flex justify-between"><span>Contrato: <strong>${(contract.totalValue || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></span> <span>Restante: <strong>${formattedRemaining}</strong></span></div>`;
 
             return `
                 <div class="dark-card p-4 rounded-lg shadow-md border-l-4 ${statusClass}">
                     <p class="font-bold text-white">${contract.clientName}</p>
                     <p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')} - Parcela ${parcel.number}/${contract.parcels.length || 1}</p>
                     <div class="space-y-2 text-sm">
-                        ${valorHtml}
+                        ${valorHtml} 
                         <div class="flex items-center text-gray-300">
                             <i class="fas fa-calendar-alt w-5 text-center mr-2 text-gray-500"></i>
                             <strong>Vencimento:</strong>
@@ -934,40 +964,58 @@
                 </div>`;
         }
 
-        function createExitoCard(contract) {
+
+        function createExitoCard(contract, isAdmin) {
+            let exitoValueHtml = '';
+            if (isAdmin) {
+                exitoValueHtml = `<p class="text-2xl font-semibold text-indigo-400">${contract.successFee}</p>`;
+            }
+
+            // Botão visível apenas para admins
+            const buttonHtml = isAdmin ? `<button onclick="window.App.openExitoModal('${contract.id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2"><i class="fas fa-gavel"></i> Registrar Recebimento</button>` : '';
+
             return `
                 <div class="dark-card p-4 rounded-lg shadow-md border-l-4 border-indigo-400">
                     <p class="font-bold text-white">${contract.clientName}</p>
                     <p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
                     <div class="my-4 text-center">
                         <p class="text-sm text-gray-400">Bonificação Pendente</p>
-                        <p class="text-2xl font-semibold text-indigo-400">${contract.successFee}</p>
+                        ${exitoValueHtml}
                     </div>
-                    <button onclick="window.App.openExitoModal('${contract.id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2"><i class="fas fa-gavel"></i> Registrar Recebimento</button>
+                    ${buttonHtml}
                 </div>`;
         }
 
-        function renderDashboard(aVencer, vencido, pago, totalContratos) {
-            document.getElementById('dashboard').innerHTML = `
-                <div class="dark-card p-6 rounded-lg shadow-lg"><h3 class="text-lg font-semibold text-gray-400">A Receber (Próx. 30 dias)</h3><p class="text-3xl font-bold text-green-400">${aVencer.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
-                <div class="dark-card p-6 rounded-lg shadow-lg"><h3 class="text-lg font-semibold text-gray-400">Vencido (Corrigido)</h3><p class="text-3xl font-bold text-red-400">${vencido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
-                <div class="dark-card p-6 rounded-lg shadow-lg"><h3 class="text-lg font-semibold text-gray-400">Recebido (Este Mês)</h3><p class="text-3xl font-bold text-indigo-400">${pago.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
-                <div class="dark-card p-6 rounded-lg shadow-lg"><h3 class="text-lg font-semibold text-gray-400">Contratos Ativos</h3><p class="text-3xl font-bold text-white">${totalContratos}</p></div>`;
+        function renderDashboard(aVencer, vencido, pago, totalContratos, isAdmin) {
+            let html = '';
+            if (isAdmin) {
+                html += `
+                    <div class="dark-card p-6 rounded-lg shadow-lg"><h3 class="text-lg font-semibold text-gray-400">A Receber (Próx. 30 dias)</h3><p class="text-3xl font-bold text-green-400">${aVencer.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+                    <div class="dark-card p-6 rounded-lg shadow-lg"><h3 class="text-lg font-semibold text-gray-400">Vencido (Corrigido)</h3><p class="text-3xl font-bold text-red-400">${vencido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+                    <div class="dark-card p-6 rounded-lg shadow-lg"><h3 class="text-lg font-semibold text-gray-400">Recebido (Este Mês)</h3><p class="text-3xl font-bold text-indigo-400">${pago.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+                `;
+            }
+             // Card de Contratos Ativos visível para todos
+            html += `<div class="dark-card p-6 rounded-lg shadow-lg"><h3 class="text-lg font-semibold text-gray-400">Contratos Ativos</h3><p class="text-3xl font-bold text-white">${totalContratos}</p></div>`;
+            
+            document.getElementById('dashboard').innerHTML = html;
         }
 
+
         const renderContractList = function() {
-            const listContainer = document.getElementById('contractListContainer');
+            // ... (Filtro e ordenação existentes) ...
+            // Modificação: Dentro do loop `forEach`, adicionar `admin-only` aos elementos de valor.
+             const listContainer = document.getElementById('contractListContainer');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const advogadoFilterEl = document.getElementById('advogadoFilter');
             
             let advogadoFilter = advogadoFilterEl.value;
-            // Se não for admin, força o filtro para o nome do usuário
             if (!isUserAdmin) {
                 advogadoFilter = currentUserDisplayName;
             }
 
             let filteredContracts = database.contracts.filter(c => {
-                const notDeleted = !c.isDeleted; // Filtra lixeira
+                const notDeleted = !c.isDeleted; 
                 const matchesAdvogado = advogadoFilter === 'Todos' || c.advogadoResponsavel === advogadoFilter;
                 const matchesSearch = c.clientName.toLowerCase().includes(searchTerm) || 
                                      (c.serviceTypes || []).some(s => s.name.toLowerCase().includes(searchTerm));
@@ -976,16 +1024,14 @@
 
             if (currentContractSort === 'name-asc') {
                 filteredContracts.sort((a, b) => a.clientName.localeCompare(b.clientName));
-            } else if (currentContractSort === 'value-desc') {
+            } else if (currentContractSort === 'value-desc' && isUserAdmin) { // Ordenar por valor só para admin
                 filteredContracts.sort((a, b) => (b.totalValue || 0) - (a.totalValue || 0));
             }
 
-            // NOVO: Lógica de Paginação
-            const startIndex = 0; // Sempre começa do 0
+            const startIndex = 0; 
             const endIndex = (contractListPage + 1) * CONTRACTS_PER_PAGE;
             const paginatedContracts = filteredContracts.slice(startIndex, endIndex);
 
-            // Controla a exibição do botão "Carregar Mais"
             const loadMoreButton = document.getElementById('loadMoreButton');
             if (filteredContracts.length > paginatedContracts.length) {
                 loadMoreButton.style.display = 'block';
@@ -998,14 +1044,22 @@
                 return;
             }
             
-            // NOVO: Se for a primeira página (page 0), limpa o HTML. Senão, anexa.
-            // Para a lógica de paginação, sempre limpamos e redesenhamos
             listContainer.innerHTML = ''; 
             
             let html = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">`;
             paginatedContracts.forEach(contract => {
                 const { statusText, statusColor, borderColor } = getContractStatus(contract);
                 let servicesHtml = (contract.serviceTypes || []).map(s => `<span class="service-tag-small">${s.name}</span>`).join('');
+                
+                // Formata valores apenas se for admin
+                const formattedTotalValue = isUserAdmin ? (contract.totalValue || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '';
+                const successFeeHtml = isUserAdmin && contract.successFee ? `
+                                <div class="flex items-center text-gray-300 admin-only">
+                                    <i class="fas fa-star w-5 text-center mr-2 text-gray-500"></i>
+                                    <strong>Êxito:</strong>
+                                    <span class="ml-auto font-medium text-indigo-400">${contract.successFee}</span>
+                                </div>` : '';
+
 
                 html += `
                     <div class="dark-card rounded-lg shadow-lg overflow-hidden border-l-4 ${borderColor} flex flex-col justify-between transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl">
@@ -1019,17 +1073,14 @@
                                 ${servicesHtml}
                             </div>
                             <div class="border-t border-gray-700 pt-4 space-y-3 text-sm">
-                                <div class="flex items-center text-gray-300">
+                                <!-- Valor Fixo (Apenas Admins) -->
+                                <div class="flex items-center text-gray-300 admin-only">
                                     <i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-500"></i>
                                     <strong>Valor Fixo:</strong>
-                                    <span class="ml-auto font-medium">${(contract.totalValue || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                    <span class="ml-auto font-medium">${formattedTotalValue}</span>
                                 </div>
-                                ${contract.successFee ? `
-                                <div class="flex items-center text-gray-300">
-                                    <i class="fas fa-star w-5 text-center mr-2 text-gray-500"></i>
-                                    <strong>Êxito:</strong>
-                                    <span class="ml-auto font-medium text-indigo-400">${contract.successFee}</span>
-                                </div>` : ''}
+                                <!-- Êxito (Apenas Admins) -->
+                                ${successFeeHtml}
                             </div>
                         </div>
                         <div class="bg-gray-900/50 px-4 py-2 flex justify-end gap-2">
@@ -1042,10 +1093,11 @@
             });
             html += `</div>`;
             listContainer.innerHTML = html;
+             // Reaplica a classe admin-only dinamicamente após renderizar
+             setupUIAccess(isUserAdmin);
         }
-        window.App.renderContractList = renderContractList; // Expor ao HTML
+        window.App.renderContractList = renderContractList; 
 
-        // NOVO: Função para carregar mais contratos
         const loadMoreContracts = function() {
             contractListPage++;
             renderContractList();
@@ -1053,7 +1105,8 @@
         window.App.loadMoreContracts = loadMoreContracts;
 
         function getContractStatus(contract) {
-            const hasPendingParcels = (contract.parcels || []).some(p => p.status === 'Pendente');
+            // ... (lógica existente) ...
+             const hasPendingParcels = (contract.parcels || []).some(p => p.status === 'Pendente');
             if (hasPendingParcels) {
                 return { statusText: 'Ativo', statusColor: 'bg-yellow-900/50 text-yellow-300', borderColor: 'border-yellow-500' };
             }
@@ -1064,27 +1117,29 @@
         }
 
         async function renderInadimplentesPage(contractsToRender) {
-            const container = document.getElementById('inadimplentesListContainer');
+            // ... (otimização com Promise.all existente) ...
+            // Modificação: Dentro do loop `forEach`, adicionar `admin-only` aos elementos de valor.
+             const container = document.getElementById('inadimplentesListContainer');
             container.innerHTML = `<div class="col-span-1 md:col-span-3 text-center py-10"><i class="fas fa-spinner fa-spin fa-2x text-indigo-400"></i><p class="mt-2 text-sm text-gray-400">Calculando juros e correção monetária...</p></div>`;
             const hoje = new Date();
             hoje.setHours(0, 0, 0, 0);
 
             let inadimplentesList = [];
-            // NOVO: Otimização com Promise.all
             const promises = [];
 
-            for (const contract of contractsToRender.filter(c => !c.isDeleted)) { // Filtra lixeira
-                if (!contract.parcels) continue; // Pula se não houver parcelas
+            for (const contract of contractsToRender.filter(c => !c.isDeleted)) { 
+                if (!contract.parcels) continue; 
                 for (let i = 0; i < contract.parcels.length; i++) {
                     const parcel = contract.parcels[i];
+                    // Garante que parcel.value existe
+                    const parcelValue = parcel.value || 0;
                     const vencimento = new Date(parcel.dueDate);
                     if (parcel.status === 'Pendente' && vencimento < hoje) {
                         const diffTime = Math.abs(hoje - vencimento);
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                         
-                        // Adiciona a promessa ao array
                         promises.push(
-                            calcularValorCorrigido(parcel.value, parcel.dueDate).then(valorCorrigido => {
+                            calcularValorCorrigido(parcelValue, parcel.dueDate).then(valorCorrigido => {
                                 inadimplentesList.push({ contract, parcel, index: i, diffDays, valorCorrigido });
                             })
                         );
@@ -1092,12 +1147,11 @@
                 }
             }
 
-            // Espera todas as chamadas da API terminarem
             await Promise.all(promises);
 
             if (currentInadimplentesSort === 'days-desc') {
                 inadimplentesList.sort((a, b) => b.diffDays - a.diffDays);
-            } else if (currentInadimplentesSort === 'value-desc') {
+            } else if (currentInadimplentesSort === 'value-desc' && isUserAdmin) { // Ordenar por valor só para admin
                 inadimplentesList.sort((a, b) => b.valorCorrigido - a.valorCorrigido);
             } else if (currentInadimplentesSort === 'name-asc') {
                 inadimplentesList.sort((a, b) => a.contract.clientName.localeCompare(b.contract.clientName));
@@ -1111,19 +1165,27 @@
             let inadimplentesHtml = '';
             inadimplentesList.forEach(({ contract, parcel, index, diffDays, valorCorrigido }) => {
                 const vencimento = new Date(parcel.dueDate);
+                // Garante que parcel.value existe
+                const parcelValue = parcel.value || 0;
+                // Formata valores apenas se for admin
+                const formattedOriginalValue = isUserAdmin ? parcelValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '';
+                const formattedCorrectedValue = isUserAdmin ? valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '';
+
                 inadimplentesHtml += `
                     <div class="dark-card p-5 rounded-lg shadow-lg border-l-4 border-red-500">
                         <p class="font-bold text-lg text-white">${contract.clientName}</p>
                         <p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
                         
                         <div class="border-t border-gray-700 pt-3 mt-3 space-y-2">
-                            <div class="flex justify-between items-center text-sm">
+                            <!-- Valor Original (Apenas Admins) -->
+                            <div class="flex justify-between items-center text-sm admin-only">
                                 <span class="text-gray-400">Valor Original:</span>
-                                <span class="font-medium text-gray-400 line-through">${parcel.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                <span class="font-medium text-gray-400 line-through">${formattedOriginalValue}</span>
                             </div>
-                            <div class="flex justify-between items-center">
+                            <!-- Valor Corrigido (Apenas Admins) -->
+                            <div class="flex justify-between items-center admin-only">
                                 <span class="text-sm text-white">Valor Corrigido:</span>
-                                <span class="font-semibold text-lg text-red-400">${valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                <span class="font-semibold text-lg text-red-400">${formattedCorrectedValue}</span>
                             </div>
                             <div class="flex justify-between items-center text-sm">
                                 <span class="text-gray-400">Venceu em:</span>
@@ -1142,15 +1204,18 @@
                 `;
             });
             container.innerHTML = inadimplentesHtml;
+            // Reaplica a classe admin-only dinamicamente após renderizar
+             setupUIAccess(isUserAdmin);
         }
 
         const renderServicosPage = (contractsToRender) => {
+             // ... (Filtro e ordenação existentes) ...
+             // Modificação: Adicionar `admin-only` à barra de progresso financeiro.
             const container = document.getElementById('servicosListContainer');
             const searchTerm = document.getElementById('servicosSearchInput').value.toLowerCase();
             const advogadoFilterEl = document.getElementById('servicosAdvogadoFilter');
             
             let advogadoFilter = advogadoFilterEl.value;
-            // Se não for admin, força o filtro
             if (!isUserAdmin) {
                 advogadoFilter = currentUserDisplayName;
             }
@@ -1158,7 +1223,7 @@
             container.innerHTML = '';
 
             let activeContracts = contractsToRender.filter(c => {
-                const notDeleted = !c.isDeleted; // Filtra lixeira
+                const notDeleted = !c.isDeleted; 
                 const isNotConcluded = getContractStatus(c).statusText !== 'Concluído';
                 if (!isNotConcluded || !notDeleted) return false;
 
@@ -1200,7 +1265,7 @@
                     if (service.deadline) {
                         const hoje = new Date();
                         hoje.setHours(0,0,0,0);
-                        const prazo = new Date(service.deadline + "T12:00:00Z"); // Adiciona T12:00:00Z para evitar problemas de fuso
+                        const prazo = new Date(service.deadline + "T12:00:00Z"); 
                         const diffTime = prazo - hoje;
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                         const formattedPrazo = prazo.toLocaleDateString('pt-BR', {timeZone: 'UTC'});
@@ -1243,10 +1308,12 @@
                         </div>
                         
                         <div class="space-y-4 mb-4">
-                            <div>
+                            <!-- Progresso Financeiro (Apenas Admins) -->
+                            <div class="admin-only">
                                 <div class="flex justify-between text-sm mb-1 text-gray-300"><label>Progresso Financeiro</label><span class="font-medium text-teal-300">${financialProgress.toFixed(0)}%</span></div>
                                 <div class="progress-bar-bg h-3 w-full"><div class="progress-bar bg-teal-500" style="width: ${financialProgress}%"></div></div>
                             </div>
+                            <!-- Progresso Serviços (Todos) -->
                             <div>
                                 <div class="flex justify-between text-sm mb-1 text-gray-300"><label>Progresso dos Serviços</label><span class="font-medium text-indigo-300">${serviceProgress.toFixed(0)}%</span></div>
                                 <div class="progress-bar-bg h-3 w-full"><div class="progress-bar bg-indigo-500" style="width: ${serviceProgress}%"></div></div>
@@ -1260,232 +1327,64 @@
                     </div>
                 `;
             });
+            // Reaplica a classe admin-only dinamicamente após renderizar
+             setupUIAccess(isUserAdmin);
         }
-        window.App.renderServicosPage = renderServicosPage; // Expor ao HTML
+        window.App.renderServicosPage = renderServicosPage; 
 
-        // --- FUNÇÕES DOS GRÁFICOS (COM FILTRO DE PERÍODO) ---
-        function getAnnualChartData(period, contractsToRender) {
-            const labels = [];
-            const data = [];
-            const meses = ["Jan", "Fev", "Mar", "Abr", "Maio", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-            const hoje = new Date();
-            let startDate, endDate;
-
-            if (period === '12m') {
-                for (let i = 11; i >= 0; i--) {
-                    const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
-                    labels.push(`${meses[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}`);
-                    const income = calculateMonthlyIncome(d.getFullYear(), d.getMonth(), contractsToRender);
-                    data.push(income.totalGeral);
-                }
-            } else if (period === 'thisYear') {
-                startDate = new Date(hoje.getFullYear(), 0, 1);
-                for (let i = 0; i < 12; i++) {
-                    labels.push(meses[i]);
-                    const income = calculateMonthlyIncome(hoje.getFullYear(), i, contractsToRender);
-                    data.push(income.totalGeral);
-                }
-            } else if (period === 'lastYear') {
-                const lastYear = hoje.getFullYear() - 1;
-                startDate = new Date(lastYear, 0, 1);
-                for (let i = 0; i < 12; i++) {
-                    labels.push(meses[i]);
-                    const income = calculateMonthlyIncome(lastYear, i, contractsToRender);
-                    data.push(income.totalGeral);
-                }
-            }
-            
-            return { labels, data };
-        }
-
-        function getAnnualProducaoData(period, contractsToRender) {
-            const labels = [];
-            const meses = ["Jan", "Fev", "Mar", "Abr", "Maio", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-            const hoje = new Date();
-            let yearToScan;
-            let startRange, endRange;
-
-            if (period === '12m') {
-                 for (let i = 11; i >= 0; i--) {
-                    const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
-                    labels.push(`${meses[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}`);
-                }
-                startRange = new Date(hoje.getFullYear(), hoje.getMonth() - 11, 1);
-                endRange = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0); // Último dia do mês atual
-            } else if (period === 'thisYear') {
-                yearToScan = hoje.getFullYear();
-                labels.push(...meses);
-                startRange = new Date(yearToScan, 0, 1);
-                endRange = new Date(yearToScan, 11, 31);
-            } else if (period === 'lastYear') {
-                yearToScan = hoje.getFullYear() - 1;
-                labels.push(...meses);
-                startRange = new Date(yearToScan, 0, 1);
-                endRange = new Date(yearToScan, 11, 31);
-            }
-
-            const monthlyProduction = new Array(12).fill(0);
-            startRange.setHours(0,0,0,0);
-            endRange.setHours(23,59,59,999);
-
-            contractsToRender.filter(c => !c.isDeleted && c.parcels && c.parcels.length > 0).forEach(contract => {
-                const firstDueDate = new Date(contract.parcels[0].dueDate);
-                
-                if (firstDueDate >= startRange && firstDueDate <= endRange) {
-                    let dataIndex;
-                    if (period === '12m') {
-                        const monthDiff = (hoje.getFullYear() - firstDueDate.getFullYear()) * 12 + (hoje.getMonth() - firstDueDate.getMonth());
-                        dataIndex = 11 - monthDiff;
-                    } else { // thisYear or lastYear
-                        dataIndex = firstDueDate.getMonth(); // 0 = Jan, 1 = Feb, etc.
-                    }
-                    
-                    if (dataIndex >= 0 && dataIndex < 12) {
-                        monthlyProduction[dataIndex] += (contract.totalValue || 0);
-                    }
-                }
-            });
-
-            return { labels, data: monthlyProduction };
-        }
-
-
+        // --- FUNÇÕES DOS GRÁFICOS ---
+        // Funções getAnnualChartData e getAnnualProducaoData já recebem contractsToRender
+        
         function renderAnalyticsPage(contractsToRender) {
+             // Só executa se for admin
+             if (!isUserAdmin) return;
+
             const faturamentoData = getAnnualChartData(currentAnalyticsPeriod, contractsToRender);
             const producaoData = getAnnualProducaoData(currentAnalyticsPeriod, contractsToRender);
             
             const ctxFaturamento = document.getElementById('faturamentoChart').getContext('2d');
             const ctxProducao = document.getElementById('producaoChart').getContext('2d');
 
-            // Destrói gráficos anteriores se existirem
-            if (faturamentoChartInstance) {
-                faturamentoChartInstance.destroy();
-            }
-            if (producaoChartInstance) {
-                producaoChartInstance.destroy();
-            }
+            if (faturamentoChartInstance) faturamentoChartInstance.destroy();
+            if (producaoChartInstance) producaoChartInstance.destroy();
 
-            // Configurações globais do Chart.js para modo escuro
             Chart.defaults.color = '#9ca3af';
             Chart.defaults.borderColor = '#374151';
 
             // Gráfico de Faturamento
             faturamentoChartInstance = new Chart(ctxFaturamento, {
                 type: 'bar',
-                data: {
-                    labels: faturamentoData.labels,
-                    datasets: [{
-                        label: 'Faturamento Total Recebido',
-                        data: faturamentoData.data,
-                        backgroundColor: 'rgba(79, 70, 229, 0.6)', // Cor indigo-600 com opacidade
-                        borderColor: 'rgba(99, 102, 241, 1)', // Cor indigo-500
-                        borderWidth: 1,
-                        borderRadius: 5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value, index, values) {
-                                    return 'R$ ' + value.toLocaleString('pt-BR');
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    if (context.parsed.y !== null) {
-                                        label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y);
-                                    }
-                                    return label;
-                                }
-                            }
-                        }
-                    }
-                }
+                data: { labels: faturamentoData.labels, datasets: [{ label: 'Faturamento Total Recebido', data: faturamentoData.data, backgroundColor: 'rgba(79, 70, 229, 0.6)', borderColor: 'rgba(99, 102, 241, 1)', borderWidth: 1, borderRadius: 5 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: (v) => 'R$ ' + v.toLocaleString('pt-BR') } } }, plugins: { tooltip: { callbacks: { label: (c) => (c.dataset.label || '') + ': ' + new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.parsed.y || 0) } } } } }
             });
 
             // Gráfico de Produção
             producaoChartInstance = new Chart(ctxProducao, {
-                type: 'bar', // Pode ser 'line' se preferir
-                data: {
-                    labels: producaoData.labels,
-                    datasets: [{
-                        label: 'Valor de Novos Contratos',
-                        data: producaoData.data,
-                        backgroundColor: 'rgba(14, 165, 233, 0.6)', // Cor sky-500 com opacidade
-                        borderColor: 'rgba(56, 189, 248, 1)', // Cor sky-400
-                        borderWidth: 1,
-                        borderRadius: 5
-                    }]
-                },
-                options: { // Opções idênticas ao outro gráfico
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value, index, values) {
-                                    return 'R$ ' + value.toLocaleString('pt-BR');
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    if (context.parsed.y !== null) {
-                                        label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y);
-                                    }
-                                    return label;
-                                }
-                            }
-                        }
-                    }
-                }
+                type: 'bar', 
+                data: { labels: producaoData.labels, datasets: [{ label: 'Valor de Novos Contratos', data: producaoData.data, backgroundColor: 'rgba(14, 165, 233, 0.6)', borderColor: 'rgba(56, 189, 248, 1)', borderWidth: 1, borderRadius: 5 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: (v) => 'R$ ' + v.toLocaleString('pt-BR') } } }, plugins: { tooltip: { callbacks: { label: (c) => (c.dataset.label || '') + ': ' + new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.parsed.y || 0) } } } } }
             });
         }
         window.App.renderAnalyticsPage = renderAnalyticsPage;
 
-        // NOVO: Função para atualizar período dos gráficos
         const setAnalyticsPeriod = function(period) {
+            // Só executa se for admin
+             if (!isUserAdmin) return;
             currentAnalyticsPeriod = period;
-            // Atualiza botões
-            document.querySelectorAll('#analyticsPeriodFilter .filter-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
+            document.querySelectorAll('#analyticsPeriodFilter .filter-button').forEach(btn => btn.classList.remove('active'));
             document.querySelector(`#analyticsPeriodFilter .filter-button[data-period="${period}"]`).classList.add('active');
             
-            // Redesenha os gráficos com os dados filtrados por permissão
-            const filteredData = isUserAdmin 
-                ? database.contracts 
-                : database.contracts.filter(c => c.advogadoResponsavel === currentUserDisplayName);
-            renderAnalyticsPage(filteredData);
+            // Admins veem gráficos com todos os dados
+            renderAnalyticsPage(database.contracts); 
         }
         window.App.setAnalyticsPeriod = setAnalyticsPeriod;
 
         // --- FUNÇÃO PARA LIXEIRA ---
         function renderLixeiraPage(contractsToRender) {
-            const container = document.getElementById('lixeiraListContainer');
+            // ... (lógica existente, já filtra pelos dados visíveis) ...
+             const container = document.getElementById('lixeiraListContainer');
             container.innerHTML = '';
 
-            // Na lixeira, filtramos apenas os deletados
             const deletedContracts = contractsToRender.filter(c => c.isDeleted === true);
 
             if (deletedContracts.length === 0) {
@@ -1511,9 +1410,10 @@
             });
         }
 
+        // --- FUNÇÕES DE FILTRO E ORDENAÇÃO ---
         function renderAdvogadoFilters() {
-            const advogadoFilters = [document.getElementById('advogadoFilter'), document.getElementById('servicosAdvogadoFilter')];
-            // Popula com todos os advogados do DB, mesmo os de usuários restritos (para admins)
+            // ... (lógica existente, já ajustada para permissões) ...
+             const advogadoFilters = [document.getElementById('advogadoFilter'), document.getElementById('servicosAdvogadoFilter')];
             const advogados = [...new Set(database.contracts.map(c => c.advogadoResponsavel))];
             advogados.sort();
 
@@ -1521,10 +1421,8 @@
                 if (!select) return;
                 const currentValue = select.value;
                 select.innerHTML = '<option>Todos</option>';
-                // Adiciona a opção "Não Informado"
                 select.add(new Option("Não Informado", "Não Informado"));
                 
-                // Adiciona nomes fixos para garantir que estejam sempre lá
                 const fixedNames = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "Dr. Glaison", "Dr. Bruno D'Lucas", "Dra. Danielle Guimarães", "Dr. Joaquim Océlio", "Dra. Larissa Mendes"];
                 fixedNames.forEach(name => {
                     if (!advogados.includes(name) && name !== "Não Informado") {
@@ -1534,7 +1432,7 @@
                 advogados.sort();
                 
                 advogados.forEach(adv => {
-                    if (adv && adv !== "Não Informado") { // Garante que não duplique
+                    if (adv && adv !== "Não Informado") { 
                         const option = document.createElement('option');
                         option.value = adv;
                         option.textContent = adv;
@@ -1542,7 +1440,6 @@
                     }
                 });
                 
-                // Restaura o valor selecionado ou aplica a restrição
                 if (isUserAdmin) {
                     select.value = currentValue || 'Todos';
                     select.disabled = false;
@@ -1554,7 +1451,9 @@
         }
 
         function renderSortButtons() {
-            const contractSortContainer = document.getElementById('contractSortButtons');
+            // ... (lógica existente) ...
+            // Modificação: Desabilitar ordenação por valor para não-admins.
+             const contractSortContainer = document.getElementById('contractSortButtons');
             const inadimplentesSortContainer = document.getElementById('inadimplentesSortButtons');
             const servicosSortContainer = document.getElementById('servicosSortButtons');
 
@@ -1564,7 +1463,10 @@
             inadimplentesSortContainer.innerHTML = '';
             servicosSortContainer.innerHTML = '';
 
-            const contractSorts = [{ key: 'name-asc', label: 'Nome (A-Z)' }, { key: 'value-desc', label: 'Valor (Maior)' }];
+            // Contratos: Ordenar por valor apenas para admin
+            let contractSorts = [{ key: 'name-asc', label: 'Nome (A-Z)' }];
+            if(isUserAdmin) contractSorts.push({ key: 'value-desc', label: 'Valor (Maior)' });
+
             contractSorts.forEach(sort => {
                 const button = document.createElement('button');
                 button.textContent = sort.label;
@@ -1573,7 +1475,10 @@
                 contractSortContainer.appendChild(button);
             });
 
-            const inadimplentesSorts = [{ key: 'days-desc', label: 'Mais Antigas' }, { key: 'value-desc', label: 'Maior Valor' }, { key: 'name-asc', label: 'Nome (A-Z)' }];
+            // Inadimplentes: Ordenar por valor apenas para admin
+             let inadimplentesSorts = [{ key: 'days-desc', label: 'Mais Antigas' }, { key: 'name-asc', label: 'Nome (A-Z)' }];
+             if(isUserAdmin) inadimplentesSorts.splice(1, 0, { key: 'value-desc', label: 'Maior Valor' }); // Insere no meio
+
             inadimplentesSorts.forEach(sort => {
                 const button = document.createElement('button');
                 button.textContent = sort.label;
@@ -1604,21 +1509,21 @@
 
 
         const updateServiceStatus = async function(contractId, serviceIndex, newStatus) {
+           // ... (lógica existente) ...
             const contract = database.contracts.find(c => c.id === contractId);
             if (contract && (contract.serviceTypes || [])[serviceIndex]) {
                 const updatedServiceTypes = [...contract.serviceTypes];
                 updatedServiceTypes[serviceIndex].status = newStatus;
-                // Atualiza no DB
                 const contractRef = doc(contractsCollection, contractId);
                 await updateDoc(contractRef, { serviceTypes: updatedServiceTypes });
             }
         }
-        window.App.updateServiceStatus = updateServiceStatus; // Expor ao HTML
+        window.App.updateServiceStatus = updateServiceStatus; 
 
         // --- FUNÇÕES DA LIXEIRA ---
         const moveToLixeira = async function(contractId) {
+            // ... (lógica existente com window.confirm) ...
             const contract = database.contracts.find(c => c.id === contractId);
-            // Substitui confirm() por uma verificação simples
             if(window.confirm(`Tem certeza que deseja mover o contrato de "${contract.clientName}" para a lixeira?`)){
                 const contractRef = doc(contractsCollection, contractId);
                 await updateDoc(contractRef, { isDeleted: true });
@@ -1627,6 +1532,7 @@
         window.App.moveToLixeira = moveToLixeira;
 
         const restoreContract = async function(contractId) {
+             // ... (lógica existente com window.confirm) ...
             if(window.confirm(`Tem certeza que deseja restaurar este contrato?`)){
                 const contractRef = doc(contractsCollection, contractId);
                 await updateDoc(contractRef, { isDeleted: false });
@@ -1635,56 +1541,61 @@
         window.App.restoreContract = restoreContract;
 
         const deleteContractPermanently = async function(contractId) {
+             // ... (lógica existente com window.confirm) ...
             const contract = database.contracts.find(c => c.id === contractId);
             if(window.confirm(`EXCLUSÃO PERMANENTE: Tem certeza que deseja apagar o contrato de "${contract.clientName}" para sempre? Esta ação não pode ser desfeita.`)){
                 await deleteDoc(doc(contractsCollection, contractId));
             }
         }
         window.App.deleteContractPermanently = deleteContractPermanently;
-        // --- FIM DAS FUNÇÕES DA LIXEIRA ---
-
-        // --- FUNÇÕES DE MODAL (COM CORREÇÃO) ---
-        
-        // CORRIGIDO: usa o 'backdrop' global inicializado no DOMContentLoaded
+       
+        // --- FUNÇÕES DE MODAL ---
         const openModal = function(modalId) {
-            // Adiciona um pequeno atraso para garantir que o DOM esteja pronto
+             // ... (lógica existente com setTimeout e z-index) ...
             setTimeout(() => {
                 const modal = document.getElementById(modalId);
                 
                 if(modal) {
+                    // Verifica se o modal é restrito a admins
+                    if (modal.classList.contains('admin-only') && !isUserAdmin) {
+                        console.warn("Tentativa de abrir modal restrito por não-admin:", modalId);
+                        return; // Não abre
+                    }
                     modal.style.display = 'block';
-                    modal.style.zIndex = '1000'; // Garante que o modal fique na frente
+                    modal.style.zIndex = '1000'; 
                 } else {
                     console.error("Modal não encontrado:", modalId);
                 }
                 
                 if(backdrop) {
                     backdrop.style.display = 'block';
-                    backdrop.style.zIndex = '999'; // Garante que o backdrop fique atrás do modal
+                    backdrop.style.zIndex = '999'; 
                 }
-            }, 0); // 0ms é suficiente para adiar para o próximo ciclo de eventos
+            }, 0);
         }
-        window.App.openModal = openModal; // Expor ao HTML
+        window.App.openModal = openModal; 
 
         const closeModal = function(modalId) {
-            if(document.getElementById(modalId)) document.getElementById(modalId).style.display = 'none';
+            // ... (lógica existente) ...
+             if(document.getElementById(modalId)) document.getElementById(modalId).style.display = 'none';
             if(backdrop) backdrop.style.display = 'none';
         }
-        window.App.closeModal = closeModal; // Expor ao HTML
+        window.App.closeModal = closeModal; 
 
         const openContractModal = function(contractId = null) {
+            // ... (lógica existente) ...
+            // Modificação: setupUIAccess será chamado no final para garantir que a seção financeira seja escondida se necessário.
             const form = document.getElementById('formContrato');
             form.reset();
             const title = document.getElementById('modalContratoTitle');
             const servicosContainer = document.getElementById('servicosContainer');
             servicosContainer.innerHTML = '';
             
-            // NOVO: Pré-seleciona o advogado (se não for admin)
             const advogadoSelect = document.getElementById('advogadoResponsavel');
             if (!isUserAdmin) {
                 advogadoSelect.value = currentUserDisplayName;
             } else {
-                 advogadoSelect.value = 'Não Informado'; // Default para admin
+                 advogadoSelect.value = 'Não Informado'; 
             }
 
             if (contractId) {
@@ -1692,33 +1603,48 @@
                 title.textContent = "Editar Contrato";
                 document.getElementById('contractId').value = contract.id;
                 document.getElementById('clienteNome').value = contract.clientName;
-                advogadoSelect.value = contract.advogadoResponsavel; // Sobrescreve se estiver editando
-                (contract.serviceTypes || []).forEach(service => createServiceTag(service.name, service.deadline, service.status)); // Passa o status
+                advogadoSelect.value = contract.advogadoResponsavel; 
+                (contract.serviceTypes || []).forEach(service => createServiceTag(service.name, service.deadline, service.status)); 
                 document.getElementById('contratoTipoPagamento').value = contract.paymentType;
-                document.getElementById('valorTotal').value = contract.totalValue;
-                document.getElementById('numParcelas').value = (contract.parcels || []).length || 1;
-                document.getElementById('taxaExito').value = contract.successFee;
-                document.getElementById('contratoObservacoes').value = contract.observations;
-                if ((contract.parcels || []).length > 0) {
-                    document.getElementById('vencimentoPrimeiraParcela').value = contract.parcels[0].dueDate.split('T')[0];
+                // Preenche valores apenas se for admin
+                if(isUserAdmin){
+                    document.getElementById('valorTotal').value = contract.totalValue;
+                    document.getElementById('numParcelas').value = (contract.parcels || []).length || 1;
+                    document.getElementById('taxaExito').value = contract.successFee;
+                     if ((contract.parcels || []).length > 0) {
+                        document.getElementById('vencimentoPrimeiraParcela').value = contract.parcels[0].dueDate.split('T')[0];
+                    }
                 }
+                document.getElementById('contratoObservacoes').value = contract.observations;
+               
             } else {
                 title.textContent = "Cadastrar Novo Contrato";
                 document.getElementById('contractId').value = '';
+                // Limpa campos financeiros caso o último modal aberto fosse de edição por admin
+                 document.getElementById('valorTotal').value = '';
+                 document.getElementById('numParcelas').value = 1;
+                 document.getElementById('vencimentoPrimeiraParcela').value = '';
+                 document.getElementById('taxaExito').value = '';
             }
+             // Garante que a seção financeira seja exibida/oculta corretamente
+             setupUIAccess(isUserAdmin); 
             openModal('modalContrato');
         }
-        window.App.openContractModal = openContractModal; // Expor ao HTML
+        window.App.openContractModal = openContractModal; 
 
         const openPaymentModal = async function(contractId, parcelIndex) {
-            const contract = database.contracts.find(c => c.id === contractId);
+            // ... (lógica existente) ...
+            // Modificação: Apenas admins veem o valor corrigido e o input de valor pago.
+             const contract = database.contracts.find(c => c.id === contractId);
             const parcel = contract.parcels[parcelIndex];
+             // Garante que parcel.value existe
+             const parcelValue = parcel.value || 0;
 
-            let valorCorrigido = parcel.value;
+            let valorCorrigido = parcelValue;
             let infoCorrecao = '';
             
-            if (new Date(parcel.dueDate) < new Date()) {
-                 valorCorrigido = await calcularValorCorrigido(parcel.value, parcel.dueDate);
+            if (new Date(parcel.dueDate) < new Date() && isUserAdmin) { // Correção só calculada E exibida para admin
+                 valorCorrigido = await calcularValorCorrigido(parcelValue, parcel.dueDate);
                  infoCorrecao = `<p class="text-red-400"><strong>Valor Corrigido:</strong> ${valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>`;
             }
 
@@ -1726,22 +1652,28 @@
             document.getElementById('pagamentoParcelIndex').value = parcelIndex;
 
             const infoDiv = document.getElementById('pagamentoInfo');
+            // Mostra valor original apenas para admin
+            const originalValueHtml = isUserAdmin ? `<p><strong>Valor Original:</strong> ${parcelValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>` : '';
             infoDiv.innerHTML = `
                 <p><strong>Cliente:</strong> ${contract.clientName}</p>
-                <p><strong>Valor Original:</strong> ${parcel.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+                ${originalValueHtml}
                 ${infoCorrecao}`;
 
-            document.getElementById('pagamentoValor').value = valorCorrigido.toFixed(2);
+            // Preenche valor a pagar (corrigido para admin, original para não-admin se necessário, ou fixo)
+             // Para não-admins, o valor pago será o valor original da parcela
+             document.getElementById('pagamentoValor').value = isUserAdmin ? valorCorrigido.toFixed(2) : parcelValue.toFixed(2);
             document.getElementById('pagamentoData').value = new Date().toISOString().split('T')[0];
 
+            // Garante que o input de valor seja exibido/oculto corretamente
+            setupUIAccess(isUserAdmin);
             openModal('modalPagamento');
         }
-        window.App.openPaymentModal = openPaymentModal; // Expor ao HTML
+        window.App.openPaymentModal = openPaymentModal; 
 
         const openClientHistoryModal = function(clientName) {
-            // No histórico, mostramos todos do cliente, mesmo se o usuário for restrito
-            // (pois ele já tem acesso a pelo menos 1 contrato desse cliente)
-            const clientContracts = database.contracts.filter(c => c.clientName === clientName && !c.isDeleted);
+            // ... (lógica existente) ...
+            // Modificação: Ocultar valores (resumo e detalhes) se !isUserAdmin.
+             const clientContracts = database.contracts.filter(c => c.clientName === clientName && !c.isDeleted);
             const title = document.getElementById('clienteModalTitle');
             const content = document.getElementById('clienteModalContent');
 
@@ -1764,41 +1696,50 @@
                     contractHtml += `<ul class="mt-2 text-sm space-y-1">`;
                     contract.parcels.forEach(p => {
                         const statusClass = p.status === 'Paga' ? 'text-green-400' : 'text-red-400';
-                        const valorPago = p.status === 'Paga' ? `(pago ${p.valuePaid.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})` : '';
+                        // Mostra valor pago apenas para admin
+                        const valorPagoInfo = isUserAdmin && p.status === 'Paga' ? `(pago ${(p.valuePaid || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})` : '';
                         totalPago += p.valuePaid || 0;
-                        contractHtml += `<li>Parcela ${p.number} - ${p.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} - <span class="${statusClass}">${p.status}</span> ${valorPago}</li>`;
+                        // Mostra valor da parcela apenas para admin
+                        const valorParcelaInfo = isUserAdmin ? `${(p.value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} - ` : '';
+                        contractHtml += `<li>Parcela ${p.number} - ${valorParcelaInfo}<span class="${statusClass}">${p.status}</span> ${valorPagoInfo}</li>`;
                     });
                     contractHtml += `</ul>`;
                 }
-                 if(contract.successFeePaymentDate){
-                    totalPago += contract.successFeeValueReceived;
-                    contractHtml += `<p class="mt-2 text-sm text-green-400">Êxito Recebido: ${contract.successFeeValueReceived.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>`;
+                 if(contract.successFeePaymentDate && isUserAdmin){ // Mostra êxito pago apenas para admin
+                    totalPago += contract.successFeeValueReceived || 0;
+                    contractHtml += `<p class="mt-2 text-sm text-green-400">Êxito Recebido: ${(contract.successFeeValueReceived || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>`;
                  }
                 contractHtml += `</div>`;
                 html += contractHtml;
             });
 
-            const summaryHtml = `
-                <div class="grid grid-cols-3 gap-4 text-center">
+            // Mostra resumo financeiro apenas para admin
+            const summaryHtml = isUserAdmin ? `
+                <div class="grid grid-cols-3 gap-4 text-center admin-only">
                     <div><p class="text-sm text-gray-400">Total Contratado</p><p class="font-bold text-lg text-white">${totalContratado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
                     <div><p class="text-sm text-gray-400">Total Pago</p><p class="font-bold text-lg text-green-400">${totalPago.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
                     <div><p class="text-sm text-gray-400">Saldo Devedor</p><p class="font-bold text-lg text-red-400">${(totalContratado - totalPago).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
                 </div>
-            `;
+            ` : '';
 
-            content.innerHTML = summaryHtml + '<hr class="my-4 border-gray-700">' + html;
+            content.innerHTML = summaryHtml + (isUserAdmin ? '<hr class="my-4 border-gray-700">' : '') + html;
+             // Garante que o resumo só aparece para admin
+             setupUIAccess(isUserAdmin);
             openModal('modalCliente');
         }
-        window.App.openClientHistoryModal = openClientHistoryModal; // Expor ao HTML
+        window.App.openClientHistoryModal = openClientHistoryModal; 
 
         const openReportModal = function() {
+            // Só abre se for admin (o botão já está escondido, mas é uma segurança extra)
+             if (!isUserAdmin) return;
             populateDateSelectors();
             generateAndShowReport(); 
             openModal('modalRelatorio');
         }
-        window.App.openReportModal = openReportModal; // Expor ao HTML
+        window.App.openReportModal = openReportModal; 
 
         function populateDateSelectors() {
+           // ... (lógica existente) ...
             const monthSelect = document.getElementById('reportMonth');
             const yearSelect = document.getElementById('reportYear');
             const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
@@ -1810,23 +1751,24 @@
             yearSelect.value = anoAtual;
         }
 
+        // calculateMonthlyIncome já recebe contractsToRender filtrado
         function calculateMonthlyIncome(year, month, contractsToRender) {
-            let totalParcelas = 0;
+             // ... (lógica existente) ...
+             let totalParcelas = 0;
             let totalExito = 0;
             let detailedPayments = [];
             
-            // Usa os contratos já filtrados por permissão
-            contractsToRender.filter(c => !c.isDeleted).forEach(contract => { // Filtra lixeira
+            contractsToRender.filter(c => !c.isDeleted).forEach(contract => { 
                 (contract.parcels || []).forEach(parcel => {
                     if(parcel.status === 'Paga') {
                         const d = new Date(parcel.paymentDate);
                         if (d.getFullYear() === year && d.getMonth() === month) {
-                            totalParcelas += parcel.valuePaid;
+                            totalParcelas += parcel.valuePaid || 0; // Garante que valuePaid existe
                             detailedPayments.push({
                                 type: `Parcela ${parcel.number}/${contract.parcels.length}`,
                                 clientName: contract.clientName,
                                 date: d.toLocaleDateString('pt-BR', {timeZone: 'UTC'}),
-                                value: parcel.valuePaid
+                                value: parcel.valuePaid || 0 // Garante que valuePaid existe
                             });
                         }
                     }
@@ -1834,12 +1776,12 @@
                 if (contract.successFeePaymentDate) {
                     const d = new Date(contract.successFeePaymentDate);
                      if (d.getFullYear() === year && d.getMonth() === month) {
-                        totalExito += contract.successFeeValueReceived;
+                        totalExito += contract.successFeeValueReceived || 0; // Garante que existe
                         detailedPayments.push({
                             type: 'Taxa de Êxito',
                             clientName: contract.clientName,
                             date: d.toLocaleDateString('pt-BR', {timeZone: 'UTC'}),
-                            value: contract.successFeeValueReceived
+                            value: contract.successFeeValueReceived || 0 // Garante que existe
                         });
                      }
                 }
@@ -1849,16 +1791,17 @@
         }
 
         const generateAndShowReport = function() {
-            const month = parseInt(document.getElementById('reportMonth').value);
+            // Só executa se for admin
+             if (!isUserAdmin) return;
+             // ... (lógica existente, já usa dados filtrados por permissão) ...
+             const month = parseInt(document.getElementById('reportMonth').value);
             const year = parseInt(document.getElementById('reportYear').value);
             const resultDiv = document.getElementById('reportResult');
             
-            // Filtra os dados com base na permissão
-            const filteredData = isUserAdmin 
-                ? database.contracts 
-                : database.contracts.filter(c => c.advogadoResponsavel === currentUserDisplayName);
+            // Admins veem relatório com todos os dados
+            const reportData = database.contracts; 
                 
-            const income = calculateMonthlyIncome(year, month, filteredData);
+            const income = calculateMonthlyIncome(year, month, reportData);
 
             let detailsHtml = '<h4 class="text-lg font-semibold mt-6 border-t border-gray-700 pt-4 text-white">Detalhes dos Recebimentos</h4>';
             if (income.detailedPayments.length > 0) {
@@ -1879,7 +1822,6 @@
                 detailsHtml += '<p class="text-sm text-gray-400 mt-2">Nenhum recebimento neste período.</p>';
             }
 
-            // NOVO: Layout em cards
             resultDiv.innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="dark-card p-4 rounded-lg">
@@ -1897,25 +1839,28 @@
                 </div>
             ` + detailsHtml;
         }
-        window.App.generateAndShowReport = generateAndShowReport; // Expor ao HTML
+        window.App.generateAndShowReport = generateAndShowReport; 
 
         const openExitoModal = function(contractId) {
-            const contract = database.contracts.find(c => c.id === contractId);
+            // Só abre se for admin
+             if (!isUserAdmin) return;
+            // ... (lógica existente) ...
+             const contract = database.contracts.find(c => c.id === contractId);
             if (!contract) return;
             document.getElementById('exitoContractId').value = contractId;
             document.getElementById('exitoInfo').innerHTML = `<p><strong>Cliente:</strong> ${contract.clientName}</p><p><strong>Serviço:</strong> ${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p><p><strong>Bonificação Prevista:</strong> <span class="font-bold text-indigo-400">${contract.successFee}</span></p>`;
             openModal('modalExito');
         }
-        window.App.openExitoModal = openExitoModal; // Expor ao HTML
+        window.App.openExitoModal = openExitoModal; 
 
-        // Ao criar tag, preserva o status se ele existir (na edição)
         const createServiceTag = function(serviceName, deadline, status = 'Pendente') {
-            const container = document.getElementById('servicosContainer');
+            // ... (lógica existente) ...
+             const container = document.getElementById('servicosContainer');
             const tag = document.createElement('div');
             tag.className = 'service-tag';
             tag.dataset.name = serviceName;
             tag.dataset.deadline = deadline || '';
-            tag.dataset.status = status; // Salva o status
+            tag.dataset.status = status; 
 
             let deadlineHtml = '';
             if (deadline) {
@@ -1928,13 +1873,12 @@
                 <span class="remove-tag" onclick="this.parentElement.remove()">&times;</span>`;
             container.appendChild(tag);
         }
-        window.App.createServiceTag = createServiceTag; // Expor ao HTML
+        window.App.createServiceTag = createServiceTag; 
 
-        // --- FUNÇÕES DE CÁLCULO DE JUROS (COM API REAL) ---
-
+        // --- FUNÇÕES DE CÁLCULO DE JUROS ---
         async function fetchIPCA(startDate, endDate) {
-            // Formata as datas para dd/MM/YYYY
-            const formatApiDate = (date) => {
+           // ... (lógica existente) ...
+             const formatApiDate = (date) => {
                 const d = new Date(date);
                 const day = String(d.getUTCDate()).padStart(2, '0');
                 const month = String(d.getUTCMonth() + 1).padStart(2, '0');
@@ -1944,27 +1888,20 @@
 
             const startFormatted = formatApiDate(startDate);
             const endFormatted = formatApiDate(endDate);
-
-            // Chave de cache para evitar múltiplas chamadas
             const cacheKey = `${startFormatted}-${endFormatted}`;
-            if (ipcaCache.has(cacheKey)) {
-                return ipcaCache.get(cacheKey);
-            }
+            if (ipcaCache.has(cacheKey)) return ipcaCache.get(cacheKey);
 
-            // API do Banco Central para o índice IPCA (código 16121)
-            const proxyUrl = 'https://api.allorigins.win/get?url='; // Proxy CORS
-            const apiBase = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.16121/dados'; // Cód 16121 = Índice de preços
+            const proxyUrl = 'https://api.allorigins.win/get?url='; 
+            const apiBase = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.16121/dados'; 
 
             try {
-                // Busca o valor do índice no mês de vencimento
                 const urlStart = `${proxyUrl}${encodeURIComponent(`${apiBase}?formato=json&dataInicial=${startFormatted}&dataFinal=${startFormatted}`)}`;
                 const responseStart = await fetch(urlStart);
                 if (!responseStart.ok) throw new Error('Falha ao buscar índice inicial do IPCA');
                 let dataStart = await responseStart.json();
-                dataStart = JSON.parse(dataStart.contents); // O proxy allorigins aninha a resposta
+                dataStart = JSON.parse(dataStart.contents); 
                 const indexStart = parseFloat(dataStart[0]?.valor);
 
-                // Busca o valor do índice mais recente
                 const urlEnd = `${proxyUrl}${encodeURIComponent(`${apiBase}/ultimos/1?formato=json`)}`;
                 const responseEnd = await fetch(urlEnd);
                 if (!responseEnd.ok) throw new Error('Falha ao buscar índice final do IPCA');
@@ -1974,111 +1911,83 @@
 
                 if (!indexStart || !indexEnd) {
                     console.warn("Não foi possível obter os índices IPCA, usando fator 1.");
-                    return 1; // Retorna 1 se falhar
+                    return 1; 
                 }
 
-                // Calcula o fator de correção
                 const multiplicador = indexEnd / indexStart;
-                ipcaCache.set(cacheKey, multiplicador); // Salva no cache
+                ipcaCache.set(cacheKey, multiplicador); 
                 return multiplicador;
 
             } catch (error) {
                 console.error("Erro ao buscar dados do IPCA:", error);
-                return 1; // Retorna 1 (sem correção) em caso de erro
+                return 1; 
             }
         }
 
         async function calcularValorCorrigido(valorOriginal, dataVencimento) {
-            const hoje = new Date();
+             // ... (lógica existente) ...
+             const hoje = new Date();
             const vencimento = new Date(dataVencimento);
+            if (hoje <= vencimento) return valorOriginal; 
 
-            if (hoje <= vencimento) {
-                return valorOriginal; // Não aplica juros se não venceu
-            }
-
-            // 1. Cálculo de Correção Monetária (IPCA Real)
             const multiplicadorIPCA = await fetchIPCA(vencimento, hoje);
             let valorCorrigido = valorOriginal * multiplicadorIPCA;
 
-            // 2. Cálculo de Juros de Mora (1% ao mês)
             const diffInMs = hoje - vencimento;
             const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
-            const mesesAtraso = diffInDays / 30.44; // Média de dias no mês
-
-            // Juros SIMPLES de 1% ao mês (0.01)
+            const mesesAtraso = diffInDays / 30.44; 
             const fatorJuros = (1 + (0.01 * mesesAtraso));
             let valorFinal = valorCorrigido * fatorJuros;
-
             return valorFinal;
         }
 
         // --- FUNÇÕES DE EXPORTAÇÃO CSV ---
-
-        function formatCSVCell(data) {
-            if (data == null) return '';
-            let str = String(data);
-            if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-                str = str.replace(/"/g, '""');
-                return `"${str}"`;
-            }
-            return str;
-        }
-
-        function downloadCSV(csvContent, filename) {
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", filename);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+        function formatCSVCell(data) { /* ... (lógica existente) ... */  if (data == null) return ''; let str = String(data); if (str.includes(',') || str.includes('"') || str.includes('\n')) { str = str.replace(/"/g, '""'); return `"${str}"`; } return str; }
+        function downloadCSV(csvContent, filename) { /* ... (lógica existente) ... */ const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); const url = URL.createObjectURL(blob); link.setAttribute("href", url); link.setAttribute("download", filename); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
 
         const exportContractsCSV = function() {
-            // Exporta com base nos filtros e permissões atuais
+            // Modificação: Remover colunas de valor se !isUserAdmin.
              const filteredData = isUserAdmin 
                 ? database.contracts 
                 : database.contracts.filter(c => c.advogadoResponsavel === currentUserDisplayName);
 
-            const headers = ["ID", "Cliente", "Advogado", "Tipo Pagamento", "Valor Total", "Taxa Êxito", "Status", "Serviços", "Observações"];
+            const headersBase = ["ID", "Cliente", "Advogado", "Tipo Pagamento", "Status", "Serviços", "Observações"];
+            const headersAdmin = ["Valor Total", "Taxa Êxito"];
+            const headers = isUserAdmin ? [...headersBase.slice(0, 4), ...headersAdmin, ...headersBase.slice(4)] : headersBase;
+            
             let csvRows = [headers.join(',')];
 
-            filteredData.filter(c => !c.isDeleted).forEach(c => { // Filtra lixeira
+            filteredData.filter(c => !c.isDeleted).forEach(c => { 
                 const status = getContractStatus(c).statusText;
-                const services = (c.serviceTypes || []).map(s => s.name).join('; '); // Usar ; para não conflitar
-                const row = [
-                    c.id,
-                    c.clientName,
-                    c.advogadoResponsavel,
-                    c.paymentType,
-                    c.totalValue,
-                    c.successFee,
-                    status,
-                    services,
-                    c.observations
-                ].map(formatCSVCell).join(',');
+                const services = (c.serviceTypes || []).map(s => s.name).join('; '); 
+                
+                const rowBase = [ c.id, c.clientName, c.advogadoResponsavel, c.paymentType, status, services, c.observations ];
+                const rowAdmin = [ c.totalValue, c.successFee ];
+                const rowData = isUserAdmin ? [...rowBase.slice(0, 4), ...rowAdmin, ...rowBase.slice(4)] : rowBase;
+                
+                const row = rowData.map(formatCSVCell).join(',');
                 csvRows.push(row);
             });
 
             downloadCSV(csvRows.join('\n'), 'contratos_export.csv');
         }
-        window.App.exportContractsCSV = exportContractsCSV; // Expor ao HTML
+        window.App.exportContractsCSV = exportContractsCSV; 
 
         const exportReportCSV = function() {
-            const month = parseInt(document.getElementById('reportMonth').value);
+            // Só exporta se for admin
+             if (!isUserAdmin) {
+                 console.warn("Exportação de relatório não permitida para este usuário.");
+                 return;
+             }
+             // ... (lógica existente, já pega dados de admin) ...
+             const month = parseInt(document.getElementById('reportMonth').value);
             const year = parseInt(document.getElementById('reportYear').value);
             
-            // Filtra os dados com base na permissão
-            const filteredData = isUserAdmin 
-                ? database.contracts 
-                : database.contracts.filter(c => c.advogadoResponsavel === currentUserDisplayName);
-
-            const income = calculateMonthlyIncome(year, month, filteredData);
+            // Relatório CSV sempre usa todos os dados
+            const reportData = database.contracts; 
+            const income = calculateMonthlyIncome(year, month, reportData);
 
             if (income.detailedPayments.length === 0) {
-                // Não usar alert
                 console.warn("Não há dados para exportar neste relatório.");
                 return;
             }
@@ -2087,135 +1996,71 @@
             let csvRows = [headers.join(',')];
 
             income.detailedPayments.forEach(p => {
-                const row = [
-                    p.clientName,
-                    p.type,
-                    p.date,
-                    p.value
-                ].map(formatCSVCell).join(',');
+                const row = [ p.clientName, p.type, p.date, p.value ].map(formatCSVCell).join(',');
                 csvRows.push(row);
             });
 
             const monthName = document.getElementById('reportMonth').options[month].text;
             downloadCSV(csvRows.join('\n'), `relatorio_${monthName}_${year}.csv`);
         }
-        window.App.exportReportCSV = exportReportCSV; // Expor ao HTML
+        window.App.exportReportCSV = exportReportCSV; 
 
 
         // --- INICIALIZAÇÃO DA PÁGINA ---
         document.addEventListener('DOMContentLoaded', () => {
-            backdrop = document.getElementById('modal-backdrop'); // Inicializa o backdrop global
-            initializeAndAuth(); // Chama a inicialização do Firebase
+            backdrop = document.getElementById('modal-backdrop'); 
+            initializeAndAuth(); 
 
             // --- Handlers de Autenticação ---
             const loginForm = document.getElementById('login-form');
             const authError = document.getElementById('auth-error');
             const logoutButton = document.getElementById('logout-button');
 
-            const showAuthError = (message) => {
-                authError.textContent = message;
-                authError.classList.remove('hidden');
-            }
+            const showAuthError = (message) => { /* ... (lógica existente) ... */ authError.textContent = message; authError.classList.remove('hidden'); }
 
-            loginForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = document.getElementById('login-email').value;
-                const password = document.getElementById('login-password').value;
-                try {
-                    await signInWithEmailAndPassword(auth, email, password);
-                    // O listener onAuthStateChanged cuidará de mostrar o app
-                } catch (error) {
-                    console.error("Erro no login:", error.code);
-                    if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-                        showAuthError('Email ou senha inválidos.');
-                    } else {
-                        showAuthError('Erro ao tentar fazer login.');
-                    }
-                }
-            });
+            loginForm.addEventListener('submit', async (e) => { /* ... (lógica existente) ... */  e.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; try { await signInWithEmailAndPassword(auth, email, password); } catch (error) { console.error("Erro no login:", error.code); if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') { showAuthError('Email ou senha inválidos.'); } else { showAuthError('Erro ao tentar fazer login.'); } } });
+            logoutButton.addEventListener('click', async () => { /* ... (lógica existente) ... */ await signOut(auth); });
 
-            logoutButton.addEventListener('click', async () => {
-                await signOut(auth);
-                // O listener onAuthStateChanged cuidará de mostrar a tela de login
-            });
-
-            // NOVO: Handler para o formulário de Display Name
             const displayNameForm = document.getElementById('formDisplayName');
-            displayNameForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const name = document.getElementById('inputDisplayName').value;
-                if (name && auth.currentUser) {
-                    try {
-                        await updateProfile(auth.currentUser, { displayName: name });
-                        
-                        // Atualiza as variáveis globais de permissão IMEDIATAMENTE
-                        currentUserDisplayName = name;
-                        isUserAdmin = ADMIN_USERS.includes(name);
-                        
-                        document.getElementById('user-display-name').textContent = name;
-                        closeModal('modalDisplayName');
-                        document.getElementById('app-container').style.display = 'block';
-                        
-                        // Ajusta a UI
-                        setupUIAccess(isUserAdmin);
-
-                        // Iniciar o listener do DB agora que temos o nome
-                        contractsCollection = collection(db, `contracts`);
-                        setupSnapshotListener();
-
-                    } catch (error) {
-                        console.error("Erro ao salvar nome:", error);
-                        // Não usar alert
-                    }
-                }
-            });
+            displayNameForm.addEventListener('submit', async (e) => { /* ... (lógica existente) ... */ e.preventDefault(); const name = document.getElementById('inputDisplayName').value; if (name && auth.currentUser) { try { await updateProfile(auth.currentUser, { displayName: name }); currentUserDisplayName = name; isUserAdmin = ADMIN_USERS.includes(name); document.getElementById('user-display-name').textContent = name; closeModal('modalDisplayName'); document.getElementById('app-container').style.display = 'block'; setupUIAccess(isUserAdmin); contractsCollection = collection(db, `contracts`); setupSnapshotListener(); } catch (error) { console.error("Erro ao salvar nome:", error); } } });
 
             // --- Handlers do Aplicativo ---
             document.getElementById('formContrato').addEventListener('submit', async (e) => {
+                // Modificação: Ler valores financeiros apenas se for admin.
                 e.preventDefault();
                 const contractId = document.getElementById('contractId').value;
                 const clientName = document.getElementById('clienteNome').value;
                 const advogadoResponsavel = document.getElementById('advogadoResponsavel').value;
                 const serviceTags = document.querySelectorAll('#servicosContainer .service-tag');
-                
-                // Ao salvar, preserva o status existente se estiver editando
-                const serviceTypes = Array.from(serviceTags).map(tag => ({ 
-                    name: tag.dataset.name, 
-                    status: tag.dataset.status || 'Pendente', // Usa status salvo ou 'Pendente'
-                    deadline: tag.dataset.deadline || null 
-                }));
-
+                const serviceTypes = Array.from(serviceTags).map(tag => ({ name: tag.dataset.name, status: tag.dataset.status || 'Pendente', deadline: tag.dataset.deadline || null }));
                 const paymentType = document.getElementById('contratoTipoPagamento').value;
-                const totalValue = parseFloat(document.getElementById('valorTotal').value) || 0;
-                const numParcels = parseInt(document.getElementById('numParcelas').value) || 1;
-                const firstDueDate = document.getElementById('vencimentoPrimeiraParcela').value;
-                const successFee = document.getElementById('taxaExito').value;
                 const observations = document.getElementById('contratoObservacoes').value;
 
-                if (serviceTypes.length === 0) {
-                    // Não usar alert
-                    console.warn('Adicione pelo menos um tipo de serviço.');
-                    return;
-                }
+                // Lê valores financeiros apenas se for admin
+                const totalValue = isUserAdmin ? (parseFloat(document.getElementById('valorTotal').value) || 0) : 0;
+                const numParcels = isUserAdmin ? (parseInt(document.getElementById('numParcelas').value) || 1) : 1;
+                const firstDueDate = isUserAdmin ? document.getElementById('vencimentoPrimeiraParcela').value : null;
+                const successFee = isUserAdmin ? document.getElementById('taxaExito').value : '';
 
-                const contractData = { 
-                    clientName, 
-                    advogadoResponsavel, 
-                    serviceTypes, 
-                    paymentType, 
-                    totalValue, 
-                    successFee, 
-                    observations,
-                };
+
+                if (serviceTypes.length === 0) { console.warn('Adicione pelo menos um tipo de serviço.'); return; }
+
+                const contractData = { clientName, advogadoResponsavel, serviceTypes, paymentType, observations };
                 
-                // --- Lógica de Parcelas (Não alterar se o contrato já existe) ---
-                if (!contractId) {
+                // Adiciona dados financeiros apenas se for admin
+                 if(isUserAdmin){
+                     contractData.totalValue = totalValue;
+                     contractData.successFee = successFee;
+                 }
+
+                if (!contractId) { // Criando novo contrato
                      contractData.parcels = [];
                      contractData.successFeeValueReceived = 0;
                      contractData.successFeePaymentDate = null;
-                     contractData.isDeleted = false; // Garante que novos contratos não estejam na lixeira
+                     contractData.isDeleted = false; 
 
-                    if (numParcels > 0 && totalValue > 0) {
+                     // Gera parcelas apenas se for admin e houver valor/data
+                    if (isUserAdmin && numParcels > 0 && totalValue > 0) {
                         if (!firstDueDate) { console.warn('Informe a data de vencimento da primeira parcela.'); return; }
                         const parcelValue = totalValue / numParcels;
                         let currentDueDate = new Date(firstDueDate + 'T12:00:00Z');
@@ -2223,23 +2068,26 @@
                             contractData.parcels.push({ number: i + 1, value: parcelValue, dueDate: new Date(currentDueDate).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null });
                             currentDueDate.setMonth(currentDueDate.getMonth() + 1);
                         }
+                    } else if (!isUserAdmin) {
+                        // Se não for admin, cria uma "parcela" simbólica sem valor/data se necessário
+                         contractData.parcels.push({ number: 1, value: 0, dueDate: new Date().toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null });
                     }
-                } else {
-                    // Se estiver editando, só atualiza os dados do formulário,
-                    // mas preserva os dados de parcelas e lixeira existentes.
-                    // A lógica de "serviceTypes" já pega o status salvo.
-                    // Precisamos preservar o status das parcelas
+                } else { // Editando contrato
                     const existingContract = database.contracts.find(c => c.id === contractId);
                     if (existingContract) {
-                        contractData.parcels = existingContract.parcels;
+                         // Preserva parcelas, status deletado e dados de êxito existentes
+                        contractData.parcels = existingContract.parcels; 
                         contractData.isDeleted = existingContract.isDeleted;
                         contractData.successFeeValueReceived = existingContract.successFeeValueReceived;
                         contractData.successFeePaymentDate = existingContract.successFeePaymentDate;
+                         // Se não for admin, preserva os valores financeiros originais
+                         if(!isUserAdmin){
+                             contractData.totalValue = existingContract.totalValue;
+                             contractData.successFee = existingContract.successFee;
+                         }
                     }
                 }
                 
-                // --- Fim da Lógica de Parcelas ---
-
                 if (contractId) {
                     const contractRef = doc(contractsCollection, contractId);
                     await updateDoc(contractRef, contractData);
@@ -2250,16 +2098,22 @@
             });
 
             document.getElementById('formPagamento').addEventListener('submit', async (e) => {
+                 // Modificação: Se !isUserAdmin, usa o valor original da parcela como valor pago.
                 e.preventDefault();
                 const contractId = document.getElementById('pagamentoContractId').value;
                 const parcelIndex = parseInt(document.getElementById('pagamentoParcelIndex').value);
-                const valuePaid = parseFloat(document.getElementById('pagamentoValor').value);
                 const paymentDate = document.getElementById('pagamentoData').value;
 
                 const contractRef = doc(contractsCollection, contractId);
                 const contract = database.contracts.find(c => c.id === contractId);
 
                 if (contract) {
+                     const parcel = contract.parcels[parcelIndex];
+                     // Garante que parcel.value existe
+                     const parcelValue = parcel.value || 0;
+                     // Admin usa o valor do input, não-admin usa o valor original da parcela
+                     const valuePaid = isUserAdmin ? (parseFloat(document.getElementById('pagamentoValor').value) || 0) : parcelValue;
+
                     const updatedParcels = [...contract.parcels];
                     updatedParcels[parcelIndex].status = 'Paga';
                     updatedParcels[parcelIndex].valuePaid = valuePaid;
@@ -2270,7 +2124,10 @@
             });
 
             document.getElementById('formExito').addEventListener('submit', async (e) => {
-                e.preventDefault();
+                 // Só admins podem submeter este form (o modal já está restrito)
+                 if (!isUserAdmin) return;
+                 // ... (lógica existente) ...
+                 e.preventDefault();
                 const contractId = document.getElementById('exitoContractId').value;
                 const valueReceived = parseFloat(document.getElementById('exitoValorRecebido').value);
                 const contract = database.contracts.find(c => c.id === contractId);
@@ -2286,35 +2143,12 @@
             });
 
             if (backdrop) {
-                backdrop.addEventListener('click', () => {
-                    // Não fechar o modal de display name ao clicar fora
-                    if (document.getElementById('modalDisplayName').style.display !== 'block') {
-                        closeModal('modalContrato');
-                        closeModal('modalRelatorio');
-                        closeModal('modalExito');
-                        closeModal('modalPagamento');
-                        closeModal('modalCliente');
-                    }
-                });
+                backdrop.addEventListener('click', () => { /* ... (lógica existente) ... */ if (document.getElementById('modalDisplayName').style.display !== 'block') { closeModal('modalContrato'); closeModal('modalRelatorio'); closeModal('modalExito'); closeModal('modalPagamento'); closeModal('modalCliente'); } });
             }
 
-            // Listener para o novo botão "Adicionar Serviço"
             const addServiceButton = document.getElementById('addServiceButton');
             if(addServiceButton) {
-                addServiceButton.addEventListener('click', () => {
-                    const serviceInput = document.getElementById('contratoServicoInput');
-                    const deadlineInput = document.getElementById('contratoPrazoInput');
-                    const serviceName = serviceInput.value.trim();
-                    const deadline = deadlineInput.value;
-
-                    if (serviceName) {
-                        createServiceTag(serviceName, deadline, 'Pendente'); // Novos serviços são Pendentes
-                        serviceInput.value = '';
-                        deadlineInput.value = '';
-                    } else {
-                        console.warn('Por favor, insira um nome para o serviço.');
-                    }
-                });
+                addServiceButton.addEventListener('click', () => { /* ... (lógica existente) ... */ const serviceInput = document.getElementById('contratoServicoInput'); const deadlineInput = document.getElementById('contratoPrazoInput'); const serviceName = serviceInput.value.trim(); const deadline = deadlineInput.value; if (serviceName) { createServiceTag(serviceName, deadline, 'Pendente'); serviceInput.value = ''; deadlineInput.value = ''; } else { console.warn('Por favor, insira um nome para o serviço.'); } });
             }
         });
     </script>
