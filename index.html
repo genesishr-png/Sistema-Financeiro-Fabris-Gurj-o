@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Biblioteca de Gráficos (mantida caso seja usada em outro lugar, como relatórios) -->
+    <!-- Biblioteca de Gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -208,9 +208,6 @@
         body.is-admin .flex.admin-only { display: flex; } /* Ajuste para flex containers */
         body:not(.is-admin) .non-admin-hidden { display: none; }
 
-        /* Estilo para container dos canvas para recriação - REMOVIDO */
-        /* .canvas-container { ... } */
-
     </style>
 </head>
 <body class="text-gray-300"> <!-- Classe is-admin será adicionada via JS -->
@@ -304,13 +301,8 @@
                 <button onclick="window.App.openReportModal()" class="admin-only bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
                     <i class="fas fa-chart-line"></i> Relatório Mensal
                 </button>
-                <!-- REMOVIDO: Botão Ver Gráficos -->
-                <!-- <button onclick="window.App.showPage('page-analytics')" class="admin-only bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
+                <button onclick="window.App.showPage('page-analytics')" class="admin-only bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
                     <i class="fas fa-chart-bar"></i> Ver Gráficos
-                </button> -->
-                <!-- ADICIONADO: Botão Ajustes (Admin) -->
-                <button onclick="console.log('Botão Ajustes (Admin) clicado!')" class="admin-only bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2 text-sm">
-                    <i class="fas fa-cog"></i> Ajustes (Admin)
                 </button>
             </div>
 
@@ -401,8 +393,31 @@
              <div id="servicosListContainer" class="space-y-6"></div>
         </div>
 
-        <!-- Conteúdo da Página: Análise Gráfica (Admin Only) - REMOVIDO -->
-        <!-- <div id="page-analytics" class="hidden admin-only"> ... </div> -->
+        <!-- Conteúdo da Página: Análise Gráfica (Admin Only) -->
+        <div id="page-analytics" class="hidden admin-only">
+             <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-white">Análise Gráfica</h2>
+                 <div id="analyticsPeriodFilter" class="flex gap-1">
+                    <button onclick="window.App.setAnalyticsPeriod('12m')" class="filter-button active" data-period="12m">Últimos 12 Meses</button>
+                    <button onclick="window.App.setAnalyticsPeriod('thisYear')" class="filter-button" data-period="thisYear">Este Ano</button>
+                    <button onclick="window.App.setAnalyticsPeriod('lastYear')" class="filter-button" data-period="lastYear">Ano Passado</button>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="dark-card p-6 rounded-lg shadow-lg">
+                    <h3 class="text-lg font-semibold text-white mb-4">Recebimentos Totais</h3>
+                    <div class="h-96">
+                        <canvas id="faturamentoChart"></canvas>
+                    </div>
+                </div>
+                <div class="dark-card p-6 rounded-lg shadow-lg">
+                    <h3 class="text-lg font-semibold text-white mb-4">Produção (Novos Contratos)</h3>
+                    <div class="h-96">
+                        <canvas id="producaoChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Conteúdo da Página: Lixeira -->
         <div id="page-lixeira" class="hidden">
@@ -612,17 +627,15 @@
         let currentInadimplentesSort = 'days-desc';
         let currentServicosSort = 'name-asc';
         let ipcaCache = new Map();
-        // REMOVIDO: Variáveis dos gráficos
-        // let faturamentoChartInstance = null;
-        // let producaoChartInstance = null;
+        let faturamentoChartInstance = null;
+        let producaoChartInstance = null;
         let backdrop;
         let contractListPage = 0;
         const CONTRACTS_PER_PAGE = 30;
         const ADMIN_USERS = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "D'Arc"]; // Usernames dos admins
         let currentUserDisplayName = null;
         let isUserAdmin = false;
-        // REMOVIDO: Variável de período dos gráficos
-        // let currentAnalyticsPeriod = '12m';
+        let currentAnalyticsPeriod = '12m';
 
         // --- Initialization and Authentication ---
         async function initializeAndAuth() {
@@ -736,8 +749,7 @@
 
         const showPage = (pageId) => {
             // Esconde todas as páginas e desativa tabs
-            // REMOVIDO: 'page-analytics' da lista
-            ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-lixeira'].forEach(id => {
+            ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-analytics', 'page-lixeira'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.add('hidden');
             });
@@ -745,19 +757,24 @@
                 const tab = document.getElementById(id);
                 if (tab) tab.classList.remove('active');
             });
+             // Tratamento especial para o ícone da lixeira
+             const lixeiraIcon = document.getElementById('tab-lixeira');
+             if (lixeiraIcon) lixeiraIcon.classList.remove('active');
 
-            // REMOVIDO: Lógica de limpar/destruir gráficos
 
-            // Mostra a página clicada
+            // Mostra a página clicada (respeitando admin-only se necessário)
             const targetPage = document.getElementById(pageId);
             if (targetPage) {
-                // REMOVIDO: Verificação admin para page-analytics pois ela não existe mais
+                if(targetPage.classList.contains('admin-only') && !isUserAdmin) {
+                     console.warn("Acesso negado a ", pageId);
+                     showPage('page-dashboard'); // Volta pro dashboard
+                     return;
+                 }
                 targetPage.classList.remove('hidden');
             }
 
             // Ativa a tab correspondente
-            // REMOVIDO: Condição especial para tab-analytics
-            const tabId = `tab-${pageId.split('-')[1]}`;
+            const tabId = pageId === 'page-lixeira' ? 'tab-lixeira' : `tab-${pageId.split('-')[1]}`; // Lixeira usa o ícone
             const targetTab = document.getElementById(tabId);
             if (targetTab) targetTab.classList.add('active');
 
@@ -772,7 +789,8 @@
                 renderInadimplentesPage(filteredData);
             } else if (pageId === 'page-servicos') {
                 renderServicosPage(filteredData);
-            // REMOVIDO: Else if para page-analytics
+            } else if (pageId === 'page-analytics' && isUserAdmin) { // Só renderiza se for admin
+                renderAnalyticsPage(filteredData);
             } else if (pageId === 'page-lixeira') {
                 renderLixeiraPage(allFilteredData); // Lixeira usa dados incluindo deletados
             }
@@ -802,7 +820,8 @@
                 await renderInadimplentesPage(filteredData);
             } else if (pageId === 'page-servicos') {
                 renderServicosPage(filteredData);
-            // REMOVIDO: Else if para page-analytics
+            } else if (pageId === 'page-analytics' && isUserAdmin) {
+                renderAnalyticsPage(filteredData);
             } else if (pageId === 'page-lixeira') {
                 renderLixeiraPage(allFilteredData);
             }
@@ -929,7 +948,7 @@
 
         function createExitoCard(contract) {
              const taxaExitoDisplay = isUserAdmin ? contract.successFee : '[Restrito]';
-             return `
+            return `
                 <div class="dark-card p-4 rounded-lg shadow-md border-l-4 border-indigo-400">
                     <p class="font-bold text-white">${contract.clientName}</p>
                     <p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
@@ -978,20 +997,21 @@
             }
 
             // Paginação
-            const startIndex = 0;
+            const startIndex = 0; // Sempre começa do início na renderização
             const endIndex = (contractListPage + 1) * CONTRACTS_PER_PAGE;
             const paginatedContracts = filteredContracts.slice(startIndex, endIndex);
 
             loadMoreContainer.style.display = filteredContracts.length > paginatedContracts.length ? 'block' : 'none';
 
-            if (paginatedContracts.length === 0) {
+            if (paginatedContracts.length === 0 && contractListPage === 0) { // Mostra mensagem apenas se for a primeira página e vazia
                 listContainer.innerHTML = '<div class="dark-card p-4 rounded-lg shadow-md text-center text-gray-400 py-4">Nenhum contrato encontrado.</div>';
                 return;
             }
 
+            // Limpa o container apenas se for reset OU a primeira página
             if (resetList || contractListPage === 0) listContainer.innerHTML = '';
 
-            let html = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">`;
+            let html = (contractListPage === 0) ? `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">` : ''; // Abre o grid só na primeira página
             paginatedContracts.forEach(contract => {
                 const { statusText, statusColor, borderColor } = getContractStatus(contract);
                 let servicesHtml = (contract.serviceTypes || []).map(s => `<span class="service-tag-small">${s.name}</span>`).join('');
@@ -1028,14 +1048,22 @@
                         </div>
                     </div>`;
             });
-            html += `</div>`;
-            listContainer.innerHTML = html;
+            if (contractListPage === 0) html += `</div>`; // Fecha o grid só na primeira página
+
+            // Adiciona o HTML ao container correto
+            if (contractListPage === 0) {
+                 listContainer.innerHTML = html;
+            } else {
+                 // Adiciona os novos cards ao grid existente
+                 const grid = listContainer.querySelector('.grid');
+                 if(grid) grid.insertAdjacentHTML('beforeend', html);
+            }
         }
         window.App.renderContractList = renderContractList;
 
         const loadMoreContracts = function() {
             contractListPage++;
-            renderContractList(false);
+            renderContractList(false); // Renderiza sem limpar
         }
         window.App.loadMoreContracts = loadMoreContracts;
 
@@ -1146,8 +1174,8 @@
              }
 
              if (activeContracts.length === 0) {
-                  container.innerHTML = `<div class="text-center py-10"><div class="inline-block dark-card text-indigo-400 p-6 rounded-lg shadow-md"><i class="fas fa-coffee fa-3x mb-3"></i><p class="font-bold text-xl">Nenhum contrato ativo encontrado.</p><p class="text-sm text-gray-400">Nenhum resultado para a busca ou todos os trabalhos estão concluídos.</p></div></div>`;
-                  return;
+                 container.innerHTML = `<div class="text-center py-10"><div class="inline-block dark-card text-indigo-400 p-6 rounded-lg shadow-md"><i class="fas fa-coffee fa-3x mb-3"></i><p class="font-bold text-xl">Nenhum contrato ativo encontrado.</p><p class="text-sm text-gray-400">Nenhum resultado para a busca ou todos os trabalhos estão concluídos.</p></div></div>`;
+                 return;
              }
 
              activeContracts.forEach(contract => {
@@ -1198,34 +1226,122 @@
 
                  container.innerHTML += `
                       <div class="dark-card p-5 rounded-lg shadow-lg">
-                           <div class="flex justify-between items-start">
-                                <h3 class="font-bold text-xl text-indigo-300 mb-4">${contract.clientName}</h3>
-                                <p class="text-sm text-gray-400"><i class="fas fa-user-tie mr-1"></i> ${contract.advogadoResponsavel}</p>
-                           </div>
-                           <div class="space-y-4 mb-4">
+                          <div class="flex justify-between items-start">
+                               <h3 class="font-bold text-xl text-indigo-300 mb-4">${contract.clientName}</h3>
+                               <p class="text-sm text-gray-400"><i class="fas fa-user-tie mr-1"></i> ${contract.advogadoResponsavel}</p>
+                          </div>
+                          <div class="space-y-4 mb-4">
                                ${financialProgressBar}
                                <div>
                                    <div class="flex justify-between text-sm mb-1 text-gray-300"><label>Progresso dos Serviços</label><span class="font-medium text-indigo-300">${serviceProgress.toFixed(0)}%</span></div>
                                    <div class="progress-bar-bg h-3 w-full"><div class="progress-bar bg-indigo-500" style="width: ${serviceProgress}%"></div></div>
                                </div>
-                           </div>
-                           <div class="border-t border-gray-700 pt-3">
+                          </div>
+                          <div class="border-t border-gray-700 pt-3">
                                <h4 class="font-semibold text-sm mb-2 text-gray-400">Serviços do Contrato:</h4>
                                <ul class="space-y-1">${servicesHtml}</ul>
-                           </div>
+                          </div>
                       </div>`;
              });
         }
         window.App.renderServicosPage = renderServicosPage;
 
-        // --- Analytics Functions (Admin Only) - REMOVIDO ---
-        // function getAnnualChartData(...) { ... }
-        // function getAnnualProducaoData(...) { ... }
-        // function renderAnalyticsPage(...) { ... }
-        // window.App.renderAnalyticsPage = renderAnalyticsPage;
-        // const setAnalyticsPeriod = function(...) { ... }
-        // window.App.setAnalyticsPeriod = setAnalyticsPeriod;
-        // window.App.setChartPeriod = setAnalyticsPeriod; // Alias
+        // --- Analytics Functions (Admin Only) ---
+        function getAnnualChartData(period, contractsToRender) {
+             if (!isUserAdmin) return { labels: [], data: [] }; // Retorna vazio se não for admin
+            const labels = [], data = [];
+            const meses = ["Jan", "Fev", "Mar", "Abr", "Maio", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+            const hoje = new Date();
+             if (period === '12m') { /* ... */
+                 for (let i = 11; i >= 0; i--) {
+                     const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+                     labels.push(`${meses[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}`);
+                     const income = calculateMonthlyIncome(d.getFullYear(), d.getMonth(), contractsToRender);
+                     data.push(income.totalGeral);
+                 }
+            } else if (period === 'thisYear') { /* ... */
+                 for (let i = 0; i < 12; i++) {
+                     labels.push(meses[i]);
+                     const income = calculateMonthlyIncome(hoje.getFullYear(), i, contractsToRender);
+                     data.push(income.totalGeral);
+                 }
+            } else if (period === 'lastYear') { /* ... */
+                 const lastYear = hoje.getFullYear() - 1;
+                 for (let i = 0; i < 12; i++) {
+                     labels.push(meses[i]);
+                     const income = calculateMonthlyIncome(lastYear, i, contractsToRender);
+                     data.push(income.totalGeral);
+                 }
+            }
+             return { labels, data };
+        }
+
+        function getAnnualProducaoData(period, contractsToRender) {
+             if (!isUserAdmin) return { labels: [], data: [] }; // Retorna vazio se não for admin
+            const labels = [], data = [];
+            const meses = ["Jan", "Fev", "Mar", "Abr", "Maio", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+            const hoje = new Date();
+            let yearToScan, startRange, endRange;
+             if (period === '12m') { /* ... */
+                 for (let i = 11; i >= 0; i--) { const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1); labels.push(`${meses[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}`); }
+                  startRange = new Date(hoje.getFullYear(), hoje.getMonth() - 11, 1);
+                  endRange = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+            } else if (period === 'thisYear') { /* ... */
+                 yearToScan = hoje.getFullYear(); labels.push(...meses);
+                  startRange = new Date(yearToScan, 0, 1); endRange = new Date(yearToScan, 11, 31);
+            } else if (period === 'lastYear') { /* ... */
+                 yearToScan = hoje.getFullYear() - 1; labels.push(...meses);
+                  startRange = new Date(yearToScan, 0, 1); endRange = new Date(yearToScan, 11, 31);
+            }
+             const monthlyProduction = new Array(12).fill(0);
+             startRange.setHours(0,0,0,0); endRange.setHours(23,59,59,999);
+             contractsToRender.filter(c => c.parcels && c.parcels.length > 0).forEach(contract => {
+                 const firstDueDate = new Date(contract.parcels[0].dueDate);
+                 if (firstDueDate >= startRange && firstDueDate <= endRange) {
+                     let dataIndex;
+                     if (period === '12m') { const monthDiff = (endRange.getFullYear() - firstDueDate.getFullYear()) * 12 + (endRange.getMonth() - firstDueDate.getMonth()); dataIndex = 11 - monthDiff; }
+                     else { dataIndex = firstDueDate.getMonth(); }
+                     if (dataIndex >= 0 && dataIndex < 12) monthlyProduction[dataIndex] += (contract.totalValue || 0);
+                 }
+             });
+             return { labels, data: monthlyProduction };
+        }
+
+        function renderAnalyticsPage(contractsToRender) {
+             if (!isUserAdmin) return; // Não renderiza se não for admin
+
+             // Destroi instâncias antigas se existirem
+             if (faturamentoChartInstance) faturamentoChartInstance.destroy();
+             if (producaoChartInstance) producaoChartInstance.destroy();
+             faturamentoChartInstance = null;
+             producaoChartInstance = null;
+
+             const faturamentoData = getAnnualChartData(currentAnalyticsPeriod, contractsToRender);
+             const producaoData = getAnnualProducaoData(currentAnalyticsPeriod, contractsToRender);
+             const ctxFaturamento = document.getElementById('faturamentoChart');
+             const ctxProducao = document.getElementById('producaoChart');
+
+             // Verifica se os elementos canvas existem antes de usar
+             if (!ctxFaturamento || !ctxProducao) {
+                 console.error("Elementos canvas para gráficos não encontrados!");
+                 return;
+             }
+
+             Chart.defaults.color = '#9ca3af'; Chart.defaults.borderColor = '#374151';
+             faturamentoChartInstance = new Chart(ctxFaturamento, { type: 'bar', data: { labels: faturamentoData.labels, datasets: [{ label: 'Faturamento Total Recebido', data: faturamentoData.data, backgroundColor: 'rgba(79, 70, 229, 0.6)', borderColor: 'rgba(99, 102, 241, 1)', borderWidth: 1, borderRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: (v) => 'R$ ' + v.toLocaleString('pt-BR') } } }, plugins: { tooltip: { callbacks: { label: (c) => (c.dataset.label || '') + ': ' + new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.parsed.y) } } } } });
+             producaoChartInstance = new Chart(ctxProducao, { type: 'bar', data: { labels: producaoData.labels, datasets: [{ label: 'Valor de Novos Contratos', data: producaoData.data, backgroundColor: 'rgba(14, 165, 233, 0.6)', borderColor: 'rgba(56, 189, 248, 1)', borderWidth: 1, borderRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: (v) => 'R$ ' + v.toLocaleString('pt-BR') } } }, plugins: { tooltip: { callbacks: { label: (c) => (c.dataset.label || '') + ': ' + new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.parsed.y) } } } } });
+        }
+        window.App.renderAnalyticsPage = renderAnalyticsPage;
+
+        const setAnalyticsPeriod = function(period) {
+             if (!isUserAdmin) return; // Ação apenas para admin
+             currentAnalyticsPeriod = period;
+             document.querySelectorAll('#analyticsPeriodFilter .filter-button').forEach(btn => btn.classList.remove('active'));
+             document.querySelector(`#analyticsPeriodFilter .filter-button[data-period="${period}"]`).classList.add('active');
+             renderAnalyticsPage(getFilteredContracts(false)); // Re-renderiza com dados filtrados
+        }
+        window.App.setAnalyticsPeriod = setAnalyticsPeriod;
+        window.App.setChartPeriod = setAnalyticsPeriod; // Alias
 
         // --- Lixeira Functions ---
         function renderLixeiraPage(contractsToRender) {
@@ -1242,7 +1358,7 @@
                  // Botão de exclusão permanente apenas para admin
                  const deleteButton = isUserAdmin ? `
                      <button onclick="window.App.deleteContractPermanently('${contract.id}')" class="w-full bg-red-800 hover:bg-red-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2">
-                         <i class="fas fa-times-circle"></i> Excluir Prmt.
+                          <i class="fas fa-times-circle"></i> Excluir Prmt.
                      </button>` : '';
 
                  container.innerHTML += `
@@ -1250,106 +1366,15 @@
                           <p class="font-bold text-lg text-white">${contract.clientName}</p>
                           <p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
                           <div class="border-t border-gray-700 pt-3 mt-3 flex gap-2">
-                              <button onclick="window.App.restoreContract('${contract.id}')" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2">
-                                  <i class="fas fa-undo"></i> Restaurar
-                              </button>
-                              ${deleteButton}
+                               <button onclick="window.App.restoreContract('${contract.id}')" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2">
+                                   <i class="fas fa-undo"></i> Restaurar
+                               </button>
+                               ${deleteButton}
                           </div>
                       </div>`;
              });
         }
 
-        function renderAdvogadoFilters() {
-             // Popula filtros principais (visíveis apenas para admin)
-             const advogados = [...new Set(database.contracts.map(c => c.advogadoResponsavel))].sort();
-             const filterSelects = [document.getElementById('advogadoFilter'), document.getElementById('servicosAdvogadoFilter')];
-
-             filterSelects.forEach(select => {
-                 if (!select) return;
-                 const currentValue = select.value;
-                 select.innerHTML = '<option value="Todos">Todos</option>'; // 'Todos' só funciona para admin
-                 select.add(new Option("Não Informado", "Não Informado"));
-
-                 const fixedNames = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "Dr. Glaison", "Dr. Bruno D'Lucas", "Dra. Danielle Guimarães", "Dr. Joaquim Océlio", "Dra. Larissa Mendes"];
-                 const allNames = new Set([...fixedNames, ...advogados]);
-
-                 [...allNames].filter(adv => adv && adv !== "Não Informado" && adv !== "Todos").sort().forEach(adv => {
-                     select.add(new Option(adv, adv));
-                 });
-
-                 select.value = isUserAdmin ? (currentValue || 'Todos') : currentUserDisplayName;
-                 select.disabled = !isUserAdmin;
-             });
-        }
-        // Popula o select de advogado no modal de contrato
-        function populateAdvogadoSelectModal() {
-             const select = document.getElementById('advogadoResponsavel');
-             if (!select) return;
-             const currentValue = select.value; // Salva o valor atual se estiver editando
-
-             select.innerHTML = ''; // Limpa antes de popular
-             select.add(new Option("Não Informado", "Não Informado"));
-
-             const advogados = [...new Set(database.contracts.map(c => c.advogadoResponsavel))].sort();
-             const fixedNames = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "Dr. Glaison", "Dr. Bruno D'Lucas", "Dra. Danielle Guimarães", "Dr. Joaquim Océlio", "Dra. Larissa Mendes"];
-             const allNames = new Set([...fixedNames, ...advogados]);
-
-             [...allNames].filter(adv => adv && adv !== "Não Informado").sort().forEach(adv => {
-                 select.add(new Option(adv, adv));
-             });
-
-             // Restaura o valor ou define o padrão
-             select.value = currentValue && currentValue !== 'Não Informado' ? currentValue : (isUserAdmin ? 'Não Informado' : currentUserDisplayName);
-             select.disabled = !isUserAdmin && !!currentUserDisplayName; // Desabilita se não for admin e já tiver um nome
-        }
-
-        function renderSortButtons() {
-            // ... (Lógica de renderizar botões como estava) ...
-             const contractSortContainer = document.getElementById('contractSortButtons');
-             const inadimplentesSortContainer = document.getElementById('inadimplentesSortButtons');
-             const servicosSortContainer = document.getElementById('servicosSortButtons');
-             if(!contractSortContainer || !inadimplentesSortContainer || !servicosSortContainer) return;
-             contractSortContainer.innerHTML = ''; inadimplentesSortContainer.innerHTML = ''; servicosSortContainer.innerHTML = '';
-
-             // Contratos: Ordenar por valor só para admin
-             const contractSorts = [{ key: 'name-asc', label: 'Nome (A-Z)' }];
-             if(isUserAdmin) contractSorts.push({ key: 'value-desc', label: 'Valor (Maior)' });
-             contractSorts.forEach(sort => { /* ... criar botão ... */
-                const button = document.createElement('button'); button.textContent = sort.label; button.className = `sort-button ${currentContractSort === sort.key ? 'active' : ''}`;
-                button.onclick = () => { currentContractSort = sort.key; contractListPage = 0; renderContractList(true); renderSortButtons(); };
-                contractSortContainer.appendChild(button);
-             });
-
-             // Inadimplentes: Ordenar por valor só para admin
-             const inadimplentesSorts = [{ key: 'days-desc', label: 'Mais Antigas' }, { key: 'name-asc', label: 'Nome (A-Z)' }];
-             if(isUserAdmin) inadimplentesSorts.push({ key: 'value-desc', label: 'Maior Valor' });
-             inadimplentesSorts.forEach(sort => { /* ... criar botão ... */
-                 const button = document.createElement('button'); button.textContent = sort.label; button.className = `sort-button ${currentInadimplentesSort === sort.key ? 'active' : ''}`;
-                 button.onclick = () => { currentInadimplentesSort = sort.key; renderInadimplentesPage(getFilteredContracts(false)); renderSortButtons(); };
-                 inadimplentesSortContainer.appendChild(button);
-             });
-
-             // Serviços: Ordenação não muda
-             const servicosSorts = [{ key: 'name-asc', label: 'Cliente (A-Z)' }, { key: 'adv-asc', label: 'Advogado (A-Z)' }];
-             servicosSorts.forEach(sort => { /* ... criar botão ... */
-                 const button = document.createElement('button'); button.textContent = sort.label; button.className = `sort-button ${currentServicosSort === sort.key ? 'active' : ''}`;
-                 button.onclick = () => { currentServicosSort = sort.key; renderServicosPage(getFilteredContracts(false)); renderSortButtons(); };
-                 servicosSortContainer.appendChild(button);
-             });
-        }
-
-        const updateServiceStatus = async function(contractId, serviceIndex, newStatus) { /* ... como estava ... */
-             const contract = database.contracts.find(c => c.id === contractId);
-             if (contract && (contract.serviceTypes || [])[serviceIndex]) {
-                 const updatedServiceTypes = [...contract.serviceTypes];
-                 updatedServiceTypes[serviceIndex].status = newStatus;
-                 const contractRef = doc(contractsCollection, contractId);
-                 await updateDoc(contractRef, { serviceTypes: updatedServiceTypes });
-             }
-        }
-        window.App.updateServiceStatus = updateServiceStatus;
-
-        // --- Lixeira Functions ---
         const moveToLixeira = async function(contractId) { /* ... como estava ... */
              const contract = database.contracts.find(c => c.id === contractId);
              // TODO: Substituir window.confirm por um modal
@@ -1386,16 +1411,20 @@
         const openModal = function(modalId) { /* ... como estava ... */
              setTimeout(() => {
                  const modal = document.getElementById(modalId);
-                 if(modal) { modal.style.display = 'block'; modal.style.zIndex = '1000'; }
+                 if(modal) { modal.style.display = 'block'; modal.style.zIndex = '1000'; } // Z-index maior
                  else { console.error("Modal não encontrado:", modalId); }
-                 if(backdrop) { backdrop.style.display = 'block'; backdrop.style.zIndex = '999'; }
+                 if(backdrop) { backdrop.style.display = 'block'; backdrop.style.zIndex = '999'; } // Z-index menor
              }, 0);
         }
         window.App.openModal = openModal;
 
         const closeModal = function(modalId) { /* ... como estava ... */
              if(document.getElementById(modalId)) document.getElementById(modalId).style.display = 'none';
-             if(backdrop) backdrop.style.display = 'none';
+             // Fecha o backdrop apenas se não houver outros modais abertos
+             const anyModalOpen = Array.from(document.querySelectorAll('.modal')).some(m => m.style.display === 'block');
+             if(backdrop && !anyModalOpen) {
+                  backdrop.style.display = 'none';
+             }
         }
         window.App.closeModal = closeModal;
 
@@ -1421,7 +1450,22 @@
                      document.getElementById('numParcelas').value = (contract.parcels || []).length || 1;
                      document.getElementById('taxaExito').value = contract.successFee || '';
                      if ((contract.parcels || []).length > 0) {
-                         document.getElementById('vencimentoPrimeiraParcela').value = contract.parcels[0].dueDate.split('T')[0];
+                          // Garante que a data está no formato YYYY-MM-DD
+                         try {
+                              const dateString = contract.parcels[0].dueDate.split('T')[0];
+                              if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+                                   document.getElementById('vencimentoPrimeiraParcela').value = dateString;
+                              } else {
+                                   console.warn(`Formato de data inválido recuperado do Firestore: ${contract.parcels[0].dueDate}`);
+                                   document.getElementById('vencimentoPrimeiraParcela').value = ''; // Limpa se inválido
+                              }
+                         } catch (e) {
+                              console.error("Erro ao processar data da primeira parcela:", e);
+                              document.getElementById('vencimentoPrimeiraParcela').value = ''; // Limpa em caso de erro
+                         }
+
+                     } else {
+                          document.getElementById('vencimentoPrimeiraParcela').value = ''; // Limpa se não houver parcelas
                      }
                  }
              } else {
@@ -1429,6 +1473,13 @@
                  document.getElementById('contractId').value = '';
                  // Define advogado padrão
                  advogadoSelect.value = isUserAdmin ? 'Não Informado' : currentUserDisplayName;
+                 // Limpa campos financeiros ao criar novo
+                 if(isUserAdmin){
+                     document.getElementById('valorTotal').value = '';
+                     document.getElementById('numParcelas').value = '1';
+                     document.getElementById('taxaExito').value = '';
+                     document.getElementById('vencimentoPrimeiraParcela').value = '';
+                 }
              }
              // Habilita/desabilita campos financeiros
              setupUIAccess(isUserAdmin);
@@ -1444,8 +1495,14 @@
             let valorCorrigido = parcel.value;
             let infoCorrecao = '';
             if (new Date(parcel.dueDate) < new Date()) {
-                valorCorrigido = await calcularValorCorrigido(parcel.value, parcel.dueDate);
-                if(isUserAdmin) infoCorrecao = `<p class="text-red-400"><strong>Valor Corrigido:</strong> ${valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>`;
+                 try {
+                      valorCorrigido = await calcularValorCorrigido(parcel.value, parcel.dueDate);
+                      if(isUserAdmin) infoCorrecao = `<p class="text-red-400"><strong>Valor Corrigido:</strong> ${valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>`;
+                 } catch (e) {
+                      console.error("Erro ao calcular valor corrigido:", e);
+                      infoCorrecao = '<p class="text-red-500">Erro ao calcular correção.</p>';
+                      valorCorrigido = parcel.value; // Usa valor original em caso de erro
+                 }
             }
 
             document.getElementById('pagamentoContractId').value = contractId;
@@ -1458,7 +1515,7 @@
                  ${infoCorrecao}`;
 
             const valorInput = document.getElementById('pagamentoValor');
-            valorInput.value = isUserAdmin ? valorCorrigido.toFixed(2) : parcel.value.toFixed(2); // Usa original se não for admin
+            valorInput.value = isUserAdmin ? (typeof valorCorrigido === 'number' ? valorCorrigido.toFixed(2) : parcel.value.toFixed(2)) : parcel.value.toFixed(2); // Usa original se não for admin ou se correção falhar
             valorInput.disabled = !isUserAdmin; // Desabilita valor se não for admin
 
             document.getElementById('pagamentoData').value = new Date().toISOString().split('T')[0];
@@ -1481,9 +1538,9 @@
 
                  let contractHtml = `<div class="bg-gray-700 p-4 rounded-lg ${contract.isDeleted ? 'opacity-60 border-l-4 border-gray-500' : ''}">`;
                  contractHtml += `<div class="flex justify-between items-start">
-                                     <h3 class="font-bold text-lg text-white">${(contract.serviceTypes || []).map(s => s.name).join(', ')} <span class="text-base font-normal text-gray-400">- ${contract.paymentType}</span></h3>
-                                     ${contract.isDeleted ? '<span class="text-xs bg-red-900/50 text-red-300 px-2 py-1 rounded-full font-semibold">Excluído</span>' : ''}
-                                 </div>`;
+                                      <h3 class="font-bold text-lg text-white">${(contract.serviceTypes || []).map(s => s.name).join(', ')} <span class="text-base font-normal text-gray-400">- ${contract.paymentType}</span></h3>
+                                      ${contract.isDeleted ? '<span class="text-xs bg-red-900/50 text-red-300 px-2 py-1 rounded-full font-semibold">Excluído</span>' : ''}
+                                  </div>`;
                  contractHtml += `<p class="text-sm text-gray-400 mb-2">Adv: ${contract.advogadoResponsavel}</p>`;
 
                  if (contract.observations) contractHtml += `<blockquote class="text-sm mt-2 p-2 bg-gray-600/50 rounded-md text-gray-300 border-l-4 border-indigo-500 pl-4"><strong>Obs:</strong> ${contract.observations}</blockquote>`;
@@ -1527,18 +1584,19 @@
         const openReportModal = function() {
             if (!isUserAdmin) return; // Ação apenas para admin
             populateDateSelectors();
-            generateAndShowReport();
+            // CORRIGIDO: Não gera o relatório ao abrir
+            document.getElementById('reportResult').innerHTML = '<p class="text-center text-gray-400 italic">Selecione o mês e ano e clique em "Gerar Relatório".</p>';
             openModal('modalRelatorio');
         }
         window.App.openReportModal = openReportModal;
 
         function populateDateSelectors() { /* ... como estava ... */
-            const monthSelect = document.getElementById('reportMonth'); const yearSelect = document.getElementById('reportYear');
-             const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-             const anoAtual = new Date().getFullYear(); if (monthSelect.options.length > 0) return;
-             meses.forEach((mes, index) => { monthSelect.add(new Option(mes, index)); });
-             for (let i = anoAtual; i >= anoAtual - 5; i--) { yearSelect.add(new Option(i, i)); }
-             monthSelect.value = new Date().getMonth(); yearSelect.value = anoAtual;
+             const monthSelect = document.getElementById('reportMonth'); const yearSelect = document.getElementById('reportYear');
+              const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+              const anoAtual = new Date().getFullYear(); if (monthSelect.options.length > 0) return;
+              meses.forEach((mes, index) => { monthSelect.add(new Option(mes, index)); });
+              for (let i = anoAtual; i >= anoAtual - 5; i--) { yearSelect.add(new Option(i, i)); }
+              monthSelect.value = new Date().getMonth(); yearSelect.value = anoAtual;
         }
 
         function calculateMonthlyIncome(year, month, contractsToRender) {
@@ -1607,24 +1665,27 @@
         async function fetchIPCA(startDate, endDate) { /* ... como estava ... */
              const formatApiDate = (d) => `${String(new Date(d).getUTCDate()).padStart(2, '0')}/${String(new Date(d).getUTCMonth() + 1).padStart(2, '0')}/${new Date(d).getUTCFullYear()}`;
              const startF = formatApiDate(startDate), endF = formatApiDate(endDate); const cacheKey = `${startF}-${endF}`; if (ipcaCache.has(cacheKey)) return ipcaCache.get(cacheKey);
-             const proxy = 'https://api.allorigins.win/get?url='; const api = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.16121/dados';
+             const proxy = 'https://api.allorigins.win/get?url='; const api = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.16121/dados'; // Era 16121, mudou para 433 (IPCA)
              try {
-                 const rS = await fetch(`${proxy}${encodeURIComponent(`${api}?formato=json&dataInicial=${startF}&dataFinal=${startF}`)}`); if (!rS.ok) throw Error('...'); let dS = await rS.json(); dS = JSON.parse(dS.contents); const iS = parseFloat(dS[0]?.valor);
-                 const rE = await fetch(`${proxy}${encodeURIComponent(`${api}/ultimos/1?formato=json`)}`); if (!rE.ok) throw Error('...'); let dE = await rE.json(); dE = JSON.parse(dE.contents); const iE = parseFloat(dE[0]?.valor);
-                 if (!iS || !iE) { console.warn("IPCA indexes not found, using factor 1."); return 1; }
+                 const rS = await fetch(`${proxy}${encodeURIComponent(`${api}?formato=json&dataInicial=${startF}&dataFinal=${startF}`)}`); if (!rS.ok) throw Error('Erro API Start'); let dS = await rS.json(); dS = JSON.parse(dS.contents); const iS = parseFloat(dS[0]?.valor);
+                 const rE = await fetch(`${proxy}${encodeURIComponent(`${api}/ultimos/1?formato=json`)}`); if (!rE.ok) throw Error('Erro API End'); let dE = await rE.json(); dE = JSON.parse(dE.contents); const iE = parseFloat(dE[0]?.valor);
+                 if (!iS || !iE || iS === 0) { console.warn("Índices não encontrados, usando fator 1."); ipcaCache.set(cacheKey, 1); return 1; }
                  const mult = iE / iS; ipcaCache.set(cacheKey, mult); return mult;
-             } catch (e) { console.error("IPCA fetch error:", e); return 1; }
+             } catch (e) { console.error("Erro fetch IPCA:", e); return 1; }
         }
-        async function calcularValorCorrigido(valorOriginal, dataVencimento) { /* ... como estava ... */
-             const hoje = new Date(); const venc = new Date(dataVencimento); if (hoje <= venc) return valorOriginal;
+        async function calcularValorCorrigido(valorOriginal, dataVencimentoStr) { /* ... como estava ... */
+             const hoje = new Date(); const venc = new Date(dataVencimentoStr); if (hoje <= venc) return valorOriginal;
              const ipcaMult = await fetchIPCA(venc, hoje); let valorCorr = valorOriginal * ipcaMult;
              const diffMs = hoje - venc; const diffDays = diffMs / 86400000; const mesesAtr = diffDays / 30.44;
-             const jurosFat = (1 + (0.01 * mesesAtr)); return valorCorr * jurosFat;
+             const jurosFat = (1 + (0.01 * mesesAtr)); // Juros 1% a.m. pro rata
+             const multa = valorCorr * 0.02; // Multa 2%
+             return valorCorr * jurosFat + multa;
         }
+
 
         // --- CSV Export Functions ---
         function formatCSVCell(data) { /* ... como estava ... */ if (data == null) return ''; let s = String(data); if (s.includes(',') || s.includes('"') || s.includes('\n')) { s = s.replace(/"/g, '""'); return `"${s}"`; } return s; }
-        function downloadCSV(csvContent, filename) { /* ... como estava ... */ const b = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const l = document.createElement("a"); const u = URL.createObjectURL(b); l.href = u; l.download = filename; l.style.visibility = 'hidden'; document.body.appendChild(l); l.click(); document.body.removeChild(l); }
+        function downloadCSV(csvContent, filename) { /* ... como estava ... */ const b = new Blob(["\uFEFF"+csvContent], { type: 'text/csv;charset=utf-8;' }); const l = document.createElement("a"); const u = URL.createObjectURL(b); l.href = u; l.download = filename; l.style.visibility = 'hidden'; document.body.appendChild(l); l.click(); document.body.removeChild(l); }
 
         const exportContractsCSV = function() { /* ... como estava, usa getFilteredContracts ... */
              const headers = ["ID", "Cliente", "Advogado", "Tipo Pagamento", "Valor Total", "Taxa Êxito", "Status", "Serviços", "Observações"]; let csvRows = [headers.join(',')];
@@ -1639,12 +1700,16 @@
 
         const exportReportCSV = function() {
             if (!isUserAdmin) return; // Ação apenas para admin
-            // ... (resto da lógica como estava, usa getFilteredContracts) ...
              const month = parseInt(document.getElementById('reportMonth').value); const year = parseInt(document.getElementById('reportYear').value);
              const income = calculateMonthlyIncome(year, month, getFilteredContracts(false));
-             if (income.detailedPayments.length === 0) { console.warn("No data to export."); return; }
+             if (income.detailedPayments.length === 0) { console.warn("Nenhum dado para exportar."); return; } // TODO: Usar modal de aviso
              const headers = ["Cliente", "Tipo", "Data", "Valor"]; let csvRows = [headers.join(',')];
              income.detailedPayments.forEach(p => { const row = [ p.clientName, p.type, p.date, p.value ].map(formatCSVCell).join(','); csvRows.push(row); });
+             // Adiciona totais ao final
+             csvRows.push(''); // Linha em branco
+             csvRows.push(`Total Parcelas,,${formatCSVCell(income.totalParcelas)}`);
+             csvRows.push(`Total Êxito,,${formatCSVCell(income.totalExito)}`);
+             csvRows.push(`TOTAL GERAL,,${formatCSVCell(income.totalGeral)}`);
              const monthName = document.getElementById('reportMonth').options[month].text;
              downloadCSV(csvRows.join('\n'), `relatorio_${monthName}_${year}.csv`);
         }
@@ -1692,7 +1757,7 @@
                  const serviceTags = document.querySelectorAll('#servicosContainer .service-tag');
                  const serviceTypes = Array.from(serviceTags).map(tag => ({ name: tag.dataset.name, status: tag.dataset.status || 'Pendente', deadline: tag.dataset.deadline || null }));
 
-                 if (serviceTypes.length === 0) { console.warn('Adicione pelo menos um serviço.'); return; }
+                 if (serviceTypes.length === 0) { console.warn('Adicione pelo menos um serviço.'); return; } // TODO: Usar modal
 
                  const contractData = {
                      clientName: document.getElementById('clienteNome').value,
@@ -1716,43 +1781,94 @@
                      if (isUserAdmin) { // Parcelas só podem ser criadas por admin
                          const totalValue = contractData.totalValue;
                          const numParcels = parseInt(document.getElementById('numParcelas').value) || 1;
-                         const firstDueDate = document.getElementById('vencimentoPrimeiraParcela').value;
+                         const firstDueDateStr = document.getElementById('vencimentoPrimeiraParcela').value;
 
                          if (numParcels > 0 && totalValue > 0) {
-                             if (!firstDueDate) { console.warn('Informe data da 1ª parcela.'); return; }
-                             const parcelValue = totalValue / numParcels;
-                             let currentDueDate = new Date(firstDueDate + 'T12:00:00Z');
-                             for (let i = 0; i < numParcels; i++) {
-                                 contractData.parcels.push({ number: i + 1, value: parcelValue, dueDate: new Date(currentDueDate).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null });
-                                 currentDueDate.setMonth(currentDueDate.getMonth() + 1);
-                             }
+                             if (!firstDueDateStr) { console.warn('Informe data da 1ª parcela.'); return; } // TODO: Usar modal
+                              try {
+                                   const parcelValue = totalValue / numParcels;
+                                   let currentDueDate = new Date(firstDueDateStr + 'T12:00:00Z'); // Adiciona T12:00:00Z para evitar problemas de fuso
+                                   if (isNaN(currentDueDate.getTime())) throw new Error("Data inválida");
+
+                                   for (let i = 0; i < numParcels; i++) {
+                                       contractData.parcels.push({ number: i + 1, value: parcelValue, dueDate: new Date(currentDueDate).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null });
+                                       currentDueDate.setUTCMonth(currentDueDate.getUTCMonth() + 1); // Usa setUTCMonth
+                                   }
+                              } catch(e) { console.error("Erro ao processar datas das parcelas:", e); return; /* TODO: Usar modal de erro */ }
+                         } else if (numParcels === 1 && totalValue === 0 && firstDueDateStr) {
+                              // Caso especial: Sem valor fixo, apenas taxa de êxito, mas com data de vencimento (para controle?)
+                               try {
+                                    let dueDate = new Date(firstDueDateStr + 'T12:00:00Z');
+                                    if (isNaN(dueDate.getTime())) throw new Error("Data inválida");
+                                    contractData.parcels.push({ number: 1, value: 0, dueDate: dueDate.toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null });
+                               } catch(e) { console.error("Erro ao processar data da parcela única:", e); return; /* TODO: Usar modal de erro */ }
                          }
                      }
                      await addDoc(contractsCollection, contractData);
 
                  } else { // Editando contrato existente
-                    const existingContract = database.contracts.find(c => c.id === contractId);
-                    // Mantém dados financeiros e de parcelas se não for admin editando
-                    if (!isUserAdmin && existingContract) {
+                     const existingContract = database.contracts.find(c => c.id === contractId);
+                     // Mantém dados financeiros e de parcelas se não for admin editando
+                     if (!isUserAdmin && existingContract) {
                          contractData.totalValue = existingContract.totalValue;
                          contractData.successFee = existingContract.successFee;
-                         contractData.parcels = existingContract.parcels;
+                         contractData.parcels = existingContract.parcels; // Mantém parcelas existentes
                          contractData.successFeeValueReceived = existingContract.successFeeValueReceived;
                          contractData.successFeePaymentDate = existingContract.successFeePaymentDate;
-                    } else if (isUserAdmin && existingContract) {
-                         // Se admin edita, mas não informou valor/parcela, mantém o que existia
-                         // (Assume que não quer zerar, apenas não mexeu nesses campos)
-                          contractData.parcels = existingContract.parcels; // Mantém parcelas existentes ao editar
-                          contractData.successFeeValueReceived = existingContract.successFeeValueReceived;
-                          contractData.successFeePaymentDate = existingContract.successFeePaymentDate;
-                          // A criação de novas parcelas na edição precisaria de lógica adicional (não implementado)
-                    }
-                     contractData.isDeleted = existingContract?.isDeleted || false; // Mantém status da lixeira
-                     const contractRef = doc(contractsCollection, contractId);
-                     await updateDoc(contractRef, contractData);
+                     } else if (isUserAdmin && existingContract) {
+                         // Se admin edita, precisa verificar se pode alterar parcelas (se alguma já foi paga)
+                         const hasPaidParcel = (existingContract.parcels || []).some(p => p.status === 'Paga');
+                         const numParcelsInput = parseInt(document.getElementById('numParcelas').value) || 1;
+                         const firstDueDateInput = document.getElementById('vencimentoPrimeiraParcela').value;
+                         const originalNumParcels = (existingContract.parcels || []).length;
+                         const originalFirstDueDate = (existingContract.parcels && existingContract.parcels[0]?.dueDate) ? existingContract.parcels[0].dueDate.split('T')[0] : '';
+                         const totalValueInput = parseFloat(document.getElementById('valorTotal').value) || 0;
+
+                         // Verifica se houve mudança que exigiria recálculo das parcelas
+                         const needsRecalc = totalValueInput !== existingContract.totalValue ||
+                                             numParcelsInput !== originalNumParcels ||
+                                             firstDueDateInput !== originalFirstDueDate;
+
+                         if (needsRecalc && hasPaidParcel) {
+                              console.warn("Não é possível alterar dados financeiros/parcelas se alguma parcela já foi paga."); // TODO: Usar modal
+                              // Mantém os dados originais se não puder alterar
+                              contractData.totalValue = existingContract.totalValue;
+                              contractData.parcels = existingContract.parcels;
+                         } else if (needsRecalc) {
+                              // Recalcula parcelas se não houver pagas e dados mudaram
+                              contractData.parcels = []; // Limpa parcelas antigas
+                              if (numParcelsInput > 0 && totalValueInput > 0 && firstDueDateInput) {
+                                   try {
+                                        const parcelValue = totalValueInput / numParcelsInput;
+                                        let currentDueDate = new Date(firstDueDateInput + 'T12:00:00Z');
+                                        if (isNaN(currentDueDate.getTime())) throw new Error("Data inválida");
+                                        for (let i = 0; i < numParcelsInput; i++) {
+                                             contractData.parcels.push({ number: i + 1, value: parcelValue, dueDate: new Date(currentDueDate).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null });
+                                             currentDueDate.setUTCMonth(currentDueDate.getUTCMonth() + 1);
+                                        }
+                                   } catch(e) { console.error(e); return; /* TODO: Usar modal erro */ }
+                              } else if (numParcelsInput === 1 && totalValueInput === 0 && firstDueDateInput) {
+                                   try {
+                                        let dueDate = new Date(firstDueDateInput + 'T12:00:00Z');
+                                        if (isNaN(dueDate.getTime())) throw new Error("Data inválida");
+                                        contractData.parcels.push({ number: 1, value: 0, dueDate: dueDate.toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null });
+                                   } catch(e) { console.error(e); return; /* TODO: Usar modal erro */ }
+                              }
+                         } else {
+                              // Se não precisa recalcular, mantém as parcelas originais
+                              contractData.parcels = existingContract.parcels;
+                         }
+                         // Mantém dados de pagamento de êxito
+                         contractData.successFeeValueReceived = existingContract.successFeeValueReceived;
+                         contractData.successFeePaymentDate = existingContract.successFeePaymentDate;
+                     }
+                      contractData.isDeleted = existingContract?.isDeleted || false; // Mantém status da lixeira
+                      const contractRef = doc(contractsCollection, contractId);
+                      await updateDoc(contractRef, contractData);
                  }
                  closeModal('modalContrato');
             });
+
 
             document.getElementById('formPagamento').addEventListener('submit', async (e) => {
                  e.preventDefault();
@@ -1760,9 +1876,16 @@
                  const parcelIndex = parseInt(document.getElementById('pagamentoParcelIndex').value);
                  // Usa o valor do input se for admin, senão usa o valor original da parcela
                  const valuePaid = isUserAdmin
-                                     ? parseFloat(document.getElementById('pagamentoValor').value)
-                                     : database.contracts.find(c => c.id === contractId)?.parcels[parcelIndex]?.value || 0;
-                 const paymentDate = document.getElementById('pagamentoData').value;
+                                 ? parseFloat(document.getElementById('pagamentoValor').value)
+                                 : database.contracts.find(c => c.id === contractId)?.parcels[parcelIndex]?.value || 0;
+                 const paymentDateStr = document.getElementById('pagamentoData').value;
+
+                 // Validação da data
+                 if (!paymentDateStr || !/^\d{4}-\d{2}-\d{2}$/.test(paymentDateStr)) {
+                     console.warn('Data de pagamento inválida.'); // TODO: Usar modal
+                     return;
+                 }
+                 const paymentDate = new Date(paymentDateStr + 'T12:00:00Z'); // Adiciona T12:00:00Z
 
                  const contractRef = doc(contractsCollection, contractId);
                  const contract = database.contracts.find(c => c.id === contractId);
@@ -1771,11 +1894,11 @@
                      const updatedParcels = [...contract.parcels];
                      updatedParcels[parcelIndex].status = 'Paga';
                      updatedParcels[parcelIndex].valuePaid = valuePaid; // Salva o valor pago
-                     updatedParcels[parcelIndex].paymentDate = new Date(paymentDate + 'T12:00:00Z').toISOString();
+                     updatedParcels[parcelIndex].paymentDate = paymentDate.toISOString(); // Salva como ISO string
                      await updateDoc(contractRef, { parcels: updatedParcels });
                      closeModal('modalPagamento');
                  } else {
-                     console.warn("Valor de pagamento inválido.");
+                     console.warn("Valor de pagamento inválido."); // TODO: Usar modal
                  }
             });
 
@@ -1790,7 +1913,7 @@
                  if (contract) {
                      // Verifica se valor é válido apenas se for admin
                      if (isUserAdmin && (isNaN(valueReceived) || valueReceived <= 0)) {
-                         console.warn('Valor de êxito inválido.');
+                         console.warn('Valor de êxito inválido.'); // TODO: Usar modal
                          return;
                      }
                      await updateDoc(doc(contractsCollection, contractId), {
@@ -1803,21 +1926,42 @@
 
             if (backdrop) {
                 backdrop.addEventListener('click', () => { /* ... como estava, fecha modais exceto display name ... */
-                     if (document.getElementById('modalDisplayName').style.display !== 'block') { closeModal('modalContrato'); closeModal('modalRelatorio'); closeModal('modalExito'); closeModal('modalPagamento'); closeModal('modalCliente'); }
-                });
+                     // Fecha apenas o modal mais alto que não seja o de display name
+                     let topModal = null;
+                     let maxZ = 0;
+                     document.querySelectorAll('.modal').forEach(m => {
+                          if (m.style.display === 'block') {
+                               const z = parseInt(m.style.zIndex || '0');
+                               if (z >= maxZ) { // >= para pegar o último se tiverem o mesmo z-index
+                                    maxZ = z;
+                                    topModal = m;
+                               }
+                          }
+                     });
+                     if (topModal && topModal.id !== 'modalDisplayName') {
+                          closeModal(topModal.id);
+                     }
+                 });
             }
 
             // --- Service Tag Handler ---
             const addServiceButton = document.getElementById('addServiceButton');
             if(addServiceButton) {
-                addServiceButton.addEventListener('click', () => { /* ... como estava ... */
-                    const serviceInput = document.getElementById('contratoServicoInput'); const deadlineInput = document.getElementById('contratoPrazoInput');
-                    const serviceName = serviceInput.value.trim(); const deadline = deadlineInput.value;
-                    if (serviceName) { createServiceTag(serviceName, deadline, 'Pendente'); serviceInput.value = ''; deadlineInput.value = ''; }
-                    else { console.warn('Insira um nome para o serviço.'); }
-                });
+                 const handleAddService = () => { /* ... como estava ... */
+                      const serviceInput = document.getElementById('contratoServicoInput'); const deadlineInput = document.getElementById('contratoPrazoInput');
+                      const serviceName = serviceInput.value.trim(); const deadline = deadlineInput.value;
+                      if (serviceName) { createServiceTag(serviceName, deadline, 'Pendente'); serviceInput.value = ''; deadlineInput.value = ''; serviceInput.focus(); }
+                      else { console.warn('Insira um nome para o serviço.'); serviceInput.focus(); } // TODO: Usar modal
+                 };
+                 addServiceButton.addEventListener('click', handleAddService);
+                 // Adiciona listener para Enter também
+                 const serviceInput = document.getElementById('contratoServicoInput');
+                 const deadlineInput = document.getElementById('contratoPrazoInput');
+                 if(serviceInput) serviceInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') { e.preventDefault(); handleAddService(); } });
+                 if(deadlineInput) deadlineInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') { e.preventDefault(); handleAddService(); } });
             }
         });
     </script>
 </body>
 </html>
+
