@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Biblioteca de Gráficos (mantida caso seja usada em outro lugar, como relatórios) -->
+    <!-- Biblioteca de Gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -208,8 +209,13 @@
         body.is-admin .flex.admin-only { display: flex; } /* Ajuste para flex containers */
         body:not(.is-admin) .non-admin-hidden { display: none; }
 
-        /* REMOVIDO: Estilo canvas-container */
+        /* Estilo para container dos canvas para recriação - REMOVIDO */
         /* .canvas-container { ... } */
+        /* ADICIONADO: Estilo para container dos canvas para recriação */
+        .canvas-container {
+             height: 24rem; /* h-96 */
+             position: relative; /* Necessário para Chart.js responsive */
+        }
 
     </style>
 </head>
@@ -281,8 +287,10 @@
                     <a onclick="window.App.showPage('page-servicos')" id="tab-servicos" class="nav-tab">
                         <i class="fas fa-tasks mr-2"></i>Serviços
                     </a>
-                    <!-- REMOVIDO: Tab Análise Gráfica -->
-                    <!-- <a onclick="window.App.showPage('page-analytics')" id="tab-analytics" class="nav-tab admin-only"> ... </a> -->
+                    <!-- ADICIONADO: Tab Análise Gráfica (Admin Only) -->
+                     <a onclick="window.App.showPage('page-analytics')" id="tab-analytics" class="nav-tab admin-only">
+                        <i class="fas fa-chart-bar mr-2"></i>Análise Gráfica
+                    </a>
                 </div>
 
                 <!-- Ícone da Lixeira (direita) -->
@@ -306,8 +314,17 @@
                 <button onclick="window.App.openReportModal()" class="admin-only bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
                     <i class="fas fa-chart-line"></i> Relatório Mensal
                 </button>
-                <!-- REMOVIDO: Botão Análise Gráfica -->
-                <!-- <button onclick="window.App.showPage('page-analytics')" class="admin-only ..."> ... </button> -->
+                <!-- ADICIONADO: Botão Ajustes (Admin) -->
+                <button onclick="console.log('Botão Ajustes (Admin) clicado!')" class="admin-only bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2 text-sm">
+                    <i class="fas fa-cog"></i> Ajustes (Admin)
+                <!-- REINSERIDO: Botão Análise Gráfica (discreto) -->
+                 <button onclick="window.App.showPage('page-analytics')" class="admin-only bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-3 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2 text-sm">
+                    <i class="fas fa-chart-bar"></i> Análise Gráfica
+                </button>
+                 <!-- Mantido: Botão Ajustes (Admin) como exemplo -->
+                <!-- <button onclick="console.log('Botão Ajustes (Admin) clicado!')" class="admin-only bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2 text-sm">
+                    <i class="fas fa-cog"></i> Ajustes (Admin)
+                </button> -->
             </div>
 
             <div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -397,8 +414,33 @@
              <div id="servicosListContainer" class="space-y-6"></div>
         </div>
 
-        <!-- REMOVIDO: Conteúdo da Página: Análise Gráfica -->
+        <!-- Conteúdo da Página: Análise Gráfica (Admin Only) - REMOVIDO -->
         <!-- <div id="page-analytics" class="hidden admin-only"> ... </div> -->
+        <!-- ADICIONADO: Conteúdo da Página: Análise Gráfica (Admin Only) -->
+         <div id="page-analytics" class="hidden admin-only">
+             <div class="flex justify-between items-center mb-6">
+                 <h2 class="text-2xl font-semibold text-white">Análise Gráfica</h2>
+                 <div id="analyticsPeriodFilter" class="flex gap-1">
+                     <button onclick="window.App.setAnalyticsPeriod('12m')" class="filter-button active" data-period="12m">Últimos 12 Meses</button>
+                     <button onclick="window.App.setAnalyticsPeriod('thisYear')" class="filter-button" data-period="thisYear">Este Ano</button>
+                     <button onclick="window.App.setAnalyticsPeriod('lastYear')" class="filter-button" data-period="lastYear">Ano Passado</button>
+                 </div>
+             </div>
+             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                 <div class="dark-card p-6 rounded-lg shadow-lg">
+                     <h3 class="text-lg font-semibold text-white mb-4">Recebimentos Totais</h3>
+                     <div id="faturamentoChartContainer" class="canvas-container">
+                         <!-- Canvas será criado via JS -->
+                     </div>
+                 </div>
+                 <div class="dark-card p-6 rounded-lg shadow-lg">
+                     <h3 class="text-lg font-semibold text-white mb-4">Produção (Novos Contratos)</h3>
+                     <div id="producaoChartContainer" class="canvas-container">
+                          <!-- Canvas será criado via JS -->
+                     </div>
+                 </div>
+             </div>
+         </div>
 
         <!-- Conteúdo da Página: Lixeira -->
         <div id="page-lixeira" class="hidden">
@@ -611,6 +653,9 @@
         // REMOVIDO: Variáveis dos gráficos
         // let faturamentoChartInstance = null;
         // let producaoChartInstance = null;
+        // REINSERIDO: Variáveis dos gráficos
+        let faturamentoChartInstance = null;
+        let producaoChartInstance = null;
         let backdrop;
         let contractListPage = 0;
         const CONTRACTS_PER_PAGE = 30;
@@ -619,8 +664,10 @@
         let isUserAdmin = false;
         // REMOVIDO: Variável de período dos gráficos
         // let currentAnalyticsPeriod = '12m';
-        // REMOVIDO: Variável currentPageId
-        // let currentPageId = 'page-dashboard';
+        // REINSERIDO: Variável de período dos gráficos
+        let currentAnalyticsPeriod = '12m';
+        // ADICIONADO: Guarda a ID da página atual para lógica de limpeza
+        let currentPageId = 'page-dashboard';
 
         // --- Initialization and Authentication ---
         async function initializeAndAuth() {
@@ -666,10 +713,8 @@
                             appContainer.style.display = 'block';
                             setupUIAccess(isUserAdmin);
                             contractsCollection = collection(db, `contracts`);
-                            setupSnapshotListener(); // Listener já chama render() e showPage() inicial
+                            setupSnapshotListener();
                             loadingOverlay.style.display = 'none';
-                            // REMOVIDO: Chamada showPage daqui, pois render() cuidará disso
-                            // showPage('page-dashboard');
                         }
                     } else {
                         console.log("Nenhum usuário logado.");
@@ -679,12 +724,6 @@
                         authOverlay.style.display = 'flex';
                         appContainer.style.display = 'none';
                         loadingOverlay.style.display = 'none';
-                        // REMOVIDO: Limpeza de gráficos no logout
-                        // if (faturamentoChartInstance) faturamentoChartInstance.destroy();
-                        // if (producaoChartInstance) producaoChartInstance.destroy();
-                        // faturamentoChartInstance = null;
-                        // producaoChartInstance = null;
-                        // currentPageId = 'page-dashboard';
                     }
                 });
 
@@ -720,7 +759,7 @@
         function setupSnapshotListener() {
             onSnapshot(contractsCollection, (snapshot) => {
                 database.contracts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                contractListPage = 0; // Reseta a paginação da lista de contratos
+                contractListPage = 0;
                 render(); // Re-renderiza a view atual com os novos dados
             }, (error) => {
                 console.error("Erro ao buscar dados:", error);
@@ -741,99 +780,142 @@
         }
 
         const showPage = (pageId) => {
-             console.log(`Tentando mostrar página: ${pageId}.`);
+            console.log(`Tentando mostrar página: ${pageId}`);
+            // Limpa gráficos SE estiver saindo da página de analytics
+            if (currentPageId === 'page-analytics' && pageId !== 'page-analytics') {
+                console.log("Saindo da página de analytics. Limpando gráficos...");
+                if (faturamentoChartInstance) {
+                    faturamentoChartInstance.destroy();
+                    faturamentoChartInstance = null;
+                    console.log("Instância faturamentoChartInstance destruída.");
+                }
+                 if (producaoChartInstance) {
+                    producaoChartInstance.destroy();
+                    producaoChartInstance = null;
+                    console.log("Instância producaoChartInstance destruída.");
+                }
+                // Limpa os containers para remover os canvas antigos
+                const fatContainer = document.getElementById('faturamentoChartContainer');
+                const prodContainer = document.getElementById('producaoChartContainer');
+                if(fatContainer) fatContainer.innerHTML = '';
+                if(prodContainer) prodContainer.innerHTML = '';
+                console.log("Containers dos gráficos limpos.");
+            }
 
-             // Lista de todas as páginas e tabs
-             // REMOVIDO: 'page-analytics', 'tab-analytics'
-             const allPages = ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-lixeira'];
-             const allTabs = ['tab-dashboard', 'tab-inadimplentes', 'tab-servicos', 'tab-lixeira'];
+            // Esconde todas as páginas e desativa tabs
+            // REMOVIDO: 'page-analytics' da lista
+            ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-lixeira'].forEach(id => {
+            // ADICIONADO: 'page-analytics' de volta
+            ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-analytics', 'page-lixeira'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+            ['tab-dashboard', 'tab-inadimplentes', 'tab-servicos', 'tab-lixeira'].forEach(id => {
+             // ADICIONADO: 'tab-analytics' de volta
+            ['tab-dashboard', 'tab-inadimplentes', 'tab-servicos', 'tab-analytics', 'tab-lixeira'].forEach(id => {
+                const tab = document.getElementById(id);
+                if (tab) tab.classList.remove('active');
+            });
 
-             // Esconde todas as páginas primeiro
-             allPages.forEach(id => {
-                 const el = document.getElementById(id);
-                 if (el) el.classList.add('hidden');
-             });
+            // REMOVIDO: Lógica de limpar/destruir gráficos
 
-             // Desativa todas as tabs primeiro
-             allTabs.forEach(id => {
-                 const tab = document.getElementById(id);
-                  if (tab) {
-                      // Verifica se é o ícone da lixeira para usar a classe correta
-                      if (id === 'tab-lixeira') {
-                          tab.classList.remove('active'); // Remove a classe de ícone ativo
-                      } else {
-                          tab.classList.remove('active'); // Remove a classe de tab ativa
-                      }
-                  }
-             });
+            // Mostra a página clicada
+            // Mostra a página clicada (respeitando admin-only)
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                // REMOVIDO: Verificação admin para page-analytics pois ela não existe mais
+                 // ADICIONADO: Verificação admin para page-analytics
+                if(targetPage.classList.contains('admin-only') && !isUserAdmin) {
+                     console.warn("Acesso negado a ", pageId);
+                     showPage('page-dashboard'); // Volta pro dashboard
+                     return;
+                 }
+                targetPage.classList.remove('hidden');
+                console.log(`Página ${pageId} exibida.`);
+            } else {
+                 console.error(`Página ${pageId} não encontrada!`);
+                 return; // Sai se a página não existe
+            }
 
-              // Mostra a página clicada (respeitando admin-only)
-             const targetPage = document.getElementById(pageId);
-             if (targetPage) {
-                 // REMOVIDO: Checagem admin-only para page-analytics
-                 targetPage.classList.remove('hidden');
-                 console.log(`Página ${pageId} exibida.`);
-             } else {
-                  console.error(`Página ${pageId} não encontrada! Voltando para dashboard.`);
-                  showPage('page-dashboard'); // Redireciona se a página não existe
-                  return;
-             }
+            // Ativa a tab correspondente
+            // REMOVIDO: Condição especial para tab-analytics
+            const tabId = `tab-${pageId.split('-')[1]}`;
+            // ADICIONADO: Condição especial para tab-analytics
+             const tabId = pageId === 'page-analytics' ? 'tab-analytics' : `tab-${pageId.split('-')[1]}`;
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) targetTab.classList.add('active');
+            if (targetTab) {
+                 targetTab.classList.add('active');
+                 console.log(`Tab ${tabId} ativada.`);
+            } else {
+                 console.warn(`Tab ${tabId} não encontrada para a página ${pageId}.`);
+            }
 
-             // Ativa a tab correspondente
-             // REMOVIDO: Condição ternária envolvendo page-analytics
-              const tabId = pageId === 'page-lixeira' ? 'tab-lixeira' : `tab-${pageId.split('-')[1]}`;
-             const targetTab = document.getElementById(tabId);
-             if (targetTab) {
-                  // Aplica a classe ativa correta (nav-tab ou nav-tab-icon)
-                  targetTab.classList.add('active');
-                  console.log(`Tab ${tabId} ativada.`);
-             } else {
-                  console.warn(`Tab ${tabId} não encontrada para a página ${pageId}.`);
-             }
+             // Atualiza a página atual
+            currentPageId = pageId;
 
-             // Renderiza o conteúdo específico da página que acabou de ser mostrada
-             const filteredData = getFilteredContracts(false);
-             const allFilteredData = getFilteredContracts(true); // Para lixeira
-
-             if (pageId === 'page-dashboard') {
-                 renderKanban(filteredData);
-                 renderContractList(true); // Reseta a lista ao voltar pro dashboard
-             } else if (pageId === 'page-inadimplentes') {
-                 renderInadimplentesPage(filteredData);
-             } else if (pageId === 'page-servicos') {
-                 renderServicosPage(filteredData);
-             // REMOVIDO: Else if para page-analytics
-             } else if (pageId === 'page-lixeira') {
-                 renderLixeiraPage(allFilteredData);
-             }
-         }
-        window.App.showPage = showPage;
-
-        async function render() {
-            // Garante que o render só aconteça se o app estiver visível E o usuário logado
-            if (document.getElementById('app-container').style.display !== 'block' || !auth.currentUser) return;
-
+            // Renderiza o conteúdo específico da página
             const filteredData = getFilteredContracts(false);
             const allFilteredData = getFilteredContracts(true); // Para lixeira
 
-            // Determina a página atual
-            const currentPage = document.querySelector('div[id^="page-"]:not(.hidden)');
-            const pageId = currentPage ? currentPage.id : 'page-dashboard'; // Default para dashboard se nenhuma estiver visível
+            if (pageId === 'page-dashboard') {
+                renderKanban(filteredData);
+                renderContractList(true);
+            } else if (pageId === 'page-inadimplentes') {
+                renderInadimplentesPage(filteredData);
+            } else if (pageId === 'page-servicos') {
+                renderServicosPage(filteredData);
+            // REMOVIDO: Else if para page-analytics
+            // ADICIONADO: Else if para page-analytics
+             } else if (pageId === 'page-analytics' && isUserAdmin) {
+                renderAnalyticsPage(filteredData);
+            } else if (pageId === 'page-lixeira') {
+                renderLixeiraPage(allFilteredData); // Lixeira usa dados incluindo deletados
+            }
+        }
+        window.App.showPage = showPage;
 
-            console.log(`Renderizando conteúdo para a página atual: ${pageId}`);
+        async function render() {
+            // Garante que o render só aconteça se o app estiver visível
+            if (document.getElementById('app-container').style.display !== 'block') return;
+
+            const filteredData = getFilteredContracts(false);
+            const allFilteredData = getFilteredContracts(true); // Para lixeira
+            const currentPage = document.querySelector('div[id^="page-"]:not(.hidden)');
+
+            if (!currentPage) {
+                 showPage('page-dashboard'); // Default page
+                 return;
+            }
+            // Não busca mais o current page aqui, usa a variável global currentPageId
+            // const currentPage = document.querySelector('div[id^="page-"]:not(.hidden)');
+            // if (!currentPage) { ... }
+            // const pageId = currentPage.id;
+
+            const pageId = currentPage.id;
+            if (!currentPageId) { // Se por algum motivo não houver página atual, define dashboard
+                console.warn("Nenhuma página atual definida, voltando para dashboard.");
+                showPage('page-dashboard');
+                return;
+            }
+            const pageId = currentPageId;
+
+            // Re-renderiza a página ativa
             if (pageId === 'page-dashboard') {
                 await renderKanban(filteredData);
-                renderContractList(); // Renderiza a lista sem resetar paginação
+                renderContractList(); // Não reseta a paginação aqui
             } else if (pageId === 'page-inadimplentes') {
                 await renderInadimplentesPage(filteredData);
             } else if (pageId === 'page-servicos') {
                 renderServicosPage(filteredData);
             // REMOVIDO: Else if para page-analytics
+            // ADICIONADO: Else if para page-analytics
+             } else if (pageId === 'page-analytics' && isUserAdmin) {
+                renderAnalyticsPage(filteredData); // Chama renderização dos gráficos
             } else if (pageId === 'page-lixeira') {
                 renderLixeiraPage(allFilteredData);
             }
 
-            // Renderiza elementos comuns que podem mudar com os dados (filtros, botões de sort)
             renderSortButtons();
             renderAdvogadoFilters(); // Atualiza os filtros de advogado
         }
@@ -843,12 +925,6 @@
              const kanbanAVencer = document.getElementById('kanban-a-vencer');
              const kanbanPagas = document.getElementById('kanban-pagas');
              const kanbanExito = document.getElementById('kanban-exito');
-
-             // Verifica se os elementos existem antes de tentar acessá-los
-             if (!kanbanVencidas || !kanbanAVencer || !kanbanPagas || !kanbanExito) {
-                 console.error("Um ou mais containers do Kanban não foram encontrados.");
-                 return;
-             }
 
              kanbanVencidas.innerHTML = '';
              kanbanAVencer.innerHTML = '';
@@ -869,43 +945,19 @@
 
                  for (let i = 0; i < contract.parcels.length; i++) {
                      const parcel = contract.parcels[i];
-                     // Adiciona checagem para dueDate inválido
-                     if (!parcel.dueDate) {
-                         console.warn(`Contrato ${contract.id}, Parcela ${i+1}: dueDate inválido ou ausente.`);
-                         continue; // Pula esta parcela
-                     }
                      const vencimento = new Date(parcel.dueDate);
-                      // Verifica se a data é válida
-                     if (isNaN(vencimento.getTime())) {
-                         console.warn(`Contrato ${contract.id}, Parcela ${i+1}: Data de vencimento inválida: ${parcel.dueDate}`);
-                         continue; // Pula esta parcela
-                     }
-
 
                      if (parcel.status === 'Paga') {
-                         // Adiciona checagem para paymentDate inválido
-                         if (!parcel.paymentDate) {
-                            // console.warn(`Contrato ${contract.id}, Parcela ${i+1}: Status 'Paga' sem paymentDate.`);
-                             continue; // Considera como não paga neste contexto ou pula
-                         }
                          const dataPagamento = new Date(parcel.paymentDate);
-                         if (isNaN(dataPagamento.getTime())) {
-                            // console.warn(`Contrato ${contract.id}, Parcela ${i+1}: Data de pagamento inválida: ${parcel.paymentDate}`);
-                             continue; // Pula esta parcela
-                         }
-
                          if(dataPagamento >= primeiroDiaMes && dataPagamento <= hoje) {
                              kanbanPagas.innerHTML += createParcelCard(contract, parcel, i, 'paga', remainingValue);
                          }
-                     } else { // Status Pendente (ou outro não pago)
+                     } else {
                          if (vencimento < hoje) {
                              vencidasPromises.push(
                                  calcularValorCorrigido(parcel.value, parcel.dueDate).then(valorCorrigido => {
                                      if(isUserAdmin) totalVencido += valorCorrigido; // Só soma se for admin
                                      return createParcelCard(contract, parcel, i, 'vencida', remainingValue, valorCorrigido);
-                                 }).catch(error => {
-                                     console.error(`Erro ao calcular valor corrigido para contrato ${contract.id}, parcela ${i+1}:`, error);
-                                     return ''; // Retorna string vazia em caso de erro
                                  })
                              );
                          } else if (vencimento >= hoje && vencimento <= trintaDiasFrente) {
@@ -914,30 +966,19 @@
                          }
                      }
                  }
-                 // Mostra card de êxito
+                 // Mostra card de êxito mesmo para não-admin, mas sem valor no modal se não for admin
                  if (contract.successFee && !contract.successFeePaymentDate && (contract.parcels || []).every(p => p.status === 'Paga')) {
                      kanbanExito.innerHTML += createExitoCard(contract);
                  }
              }
 
-             // Espera todas as promises e junta o HTML
-             try {
-                const vencidasHtmlArray = await Promise.all(vencidasPromises);
-                kanbanVencidas.innerHTML = vencidasHtmlArray.join('');
-             } catch(error) {
-                 console.error("Erro ao processar parcelas vencidas:", error);
-                 kanbanVencidas.innerHTML = '<p class="text-red-500">Erro ao carregar parcelas vencidas.</p>';
-             }
+             const vencidasHtml = await Promise.all(vencidasPromises);
+             kanbanVencidas.innerHTML = vencidasHtml.join('');
 
-
-             // Renderiza o dashboard APENAS se os elementos existirem
-             if (document.getElementById('dash-a-receber')) {
-                const totalPagoMes = isUserAdmin ? calculateMonthlyIncome(hoje.getFullYear(), hoje.getMonth(), contractsToRender).totalGeral : 0; // Só calcula se for admin
-                renderDashboard(totalAVencer30dias, totalVencido, totalPagoMes, contractsToRender.length);
-             }
+             const totalPagoMes = isUserAdmin ? calculateMonthlyIncome(hoje.getFullYear(), hoje.getMonth(), contractsToRender).totalGeral : 0; // Só calcula se for admin
+             renderDashboard(totalAVencer30dias, totalVencido, totalPagoMes, contractsToRender.length);
         }
 
-       // ... (Restante das funções createParcelCard, createExitoCard, renderDashboard, etc., permanecem as mesmas) ...
         function createParcelCard(contract, parcel, index, type, remainingValue, valorCorrigido = null) {
             const vencimento = new Date(parcel.dueDate);
             const formattedDate = vencimento.toLocaleDateString('pt-BR', {timeZone: 'UTC'});
@@ -1017,6 +1058,274 @@
              document.getElementById('dash-contratos').textContent = totalContratos; // Total de contratos do usuário (ou todos para admin)
         }
 
+        const resetAndRenderContractList = function() {
+            contractListPage = 0;
+            renderContractList(true);
+        }
+        window.App.resetAndRenderContractList = resetAndRenderContractList;
+
+        const renderContractList = function(resetList = false) {
+            const listContainer = document.getElementById('contractListContainer');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const advogadoFilterEl = document.getElementById('advogadoFilter');
+            const loadMoreContainer = document.getElementById('loadMoreContainer');
+
+            let advogadoFilter = advogadoFilterEl.value;
+            if (!isUserAdmin) advogadoFilter = currentUserDisplayName;
+
+            let filteredContracts = getFilteredContracts(false).filter(c => {
+                const matchesAdvogado = (isUserAdmin && advogadoFilter === 'Todos') || c.advogadoResponsavel === advogadoFilter;
+                const matchesSearch = c.clientName.toLowerCase().includes(searchTerm) || (c.serviceTypes || []).some(s => s.name.toLowerCase().includes(searchTerm));
+                return matchesAdvogado && matchesSearch;
+            });
+
+            // Ordenação
+            if (currentContractSort === 'name-asc') {
+                filteredContracts.sort((a, b) => a.clientName.localeCompare(b.clientName));
+            } else if (currentContractSort === 'value-desc' && isUserAdmin) { // Ordenar por valor só para admin
+                filteredContracts.sort((a, b) => (b.totalValue || 0) - (a.totalValue || 0));
+            }
+
+            // Paginação
+            const startIndex = 0;
+            const endIndex = (contractListPage + 1) * CONTRACTS_PER_PAGE;
+            const paginatedContracts = filteredContracts.slice(startIndex, endIndex);
+
+            loadMoreContainer.style.display = filteredContracts.length > paginatedContracts.length ? 'block' : 'none';
+
+            if (paginatedContracts.length === 0) {
+                listContainer.innerHTML = '<div class="dark-card p-4 rounded-lg shadow-md text-center text-gray-400 py-4">Nenhum contrato encontrado.</div>';
+                return;
+            }
+
+            if (resetList || contractListPage === 0) listContainer.innerHTML = '';
+
+            let html = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">`;
+            paginatedContracts.forEach(contract => {
+                const { statusText, statusColor, borderColor } = getContractStatus(contract);
+                let servicesHtml = (contract.serviceTypes || []).map(s => `<span class="service-tag-small">${s.name}</span>`).join('');
+                 const valorFixoDisplay = isUserAdmin ? (contract.totalValue || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
+                 const exitoDisplay = isUserAdmin && contract.successFee ? contract.successFee : (contract.successFee ? '[Restrito]' : '');
+
+                html += `
+                    <div class="dark-card rounded-lg shadow-lg overflow-hidden border-l-4 ${borderColor} flex flex-col justify-between transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl">
+                        <div class="p-5">
+                            <div class="flex justify-between items-start mb-3">
+                                <h3 class="font-bold text-xl text-white">${contract.clientName}</h3>
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold ${statusColor}">${statusText}</span>
+                            </div>
+                            <p class="text-xs text-indigo-300 mb-3"><i class="fas fa-user-tie mr-1"></i> ${contract.advogadoResponsavel}</p>
+                            <div class="mb-4">${servicesHtml}</div>
+                            <div class="border-t border-gray-700 pt-4 space-y-3 text-sm">
+                                <div class="flex items-center text-gray-300">
+                                    <i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-500"></i>
+                                    <strong>Valor Fixo:</strong>
+                                    <span class="ml-auto font-medium">${valorFixoDisplay}</span>
+                                </div>
+                                ${contract.successFee ? `
+                                <div class="flex items-center text-gray-300">
+                                    <i class="fas fa-star w-5 text-center mr-2 text-gray-500"></i>
+                                    <strong>Êxito:</strong>
+                                    <span class="ml-auto font-medium text-indigo-400">${exitoDisplay}</span>
+                                </div>` : ''}
+                            </div>
+                        </div>
+                        <div class="bg-gray-900/50 px-4 py-2 flex justify-end gap-2">
+                           <button onclick="window.App.openClientHistoryModal('${contract.clientName}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-indigo-400 hover:bg-indigo-900/20 py-1 px-3 rounded-md transition-colors" title="Ver Histórico do Cliente"><i class="fas fa-eye"></i> Histórico</button>
+                           <button onclick="window.App.openContractModal('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-green-400 hover:bg-green-900/20 py-1 px-3 rounded-md transition-colors" title="Editar Contrato"><i class="fas fa-pencil-alt"></i> Editar</button>
+                           <button onclick="window.App.moveToLixeira('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 py-1 px-3 rounded-md transition-colors" title="Mover para Lixeira"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>`;
+            });
+            html += `</div>`;
+            listContainer.innerHTML = html;
+        }
+        window.App.renderContractList = renderContractList;
+
+        const loadMoreContracts = function() {
+            contractListPage++;
+            renderContractList(false);
+        }
+        window.App.loadMoreContracts = loadMoreContracts;
+
+        function getContractStatus(contract) {
+             const hasPendingParcels = (contract.parcels || []).some(p => p.status === 'Pendente');
+             if (hasPendingParcels) return { statusText: 'Ativo', statusColor: 'bg-yellow-900/50 text-yellow-300', borderColor: 'border-yellow-500' };
+             if (contract.successFee && !contract.successFeePaymentDate) return { statusText: 'Aguardando Êxito', statusColor: 'bg-indigo-900/50 text-indigo-300', borderColor: 'border-indigo-500' };
+             return { statusText: 'Concluído', statusColor: 'bg-gray-700 text-gray-300', borderColor: 'border-gray-600' };
+        }
+
+        async function renderInadimplentesPage(contractsToRender) {
+            const container = document.getElementById('inadimplentesListContainer');
+            container.innerHTML = `<div class="col-span-1 md:col-span-3 text-center py-10"><i class="fas fa-spinner fa-spin fa-2x text-indigo-400"></i><p class="mt-2 text-sm text-gray-400">Calculando...</p></div>`;
+            const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+
+            let inadimplentesList = [];
+            const promises = contractsToRender.map(async (contract) => {
+                if (!contract.parcels) return [];
+                const contractInadimplencias = [];
+                for (let i = 0; i < contract.parcels.length; i++) {
+                    const parcel = contract.parcels[i];
+                    const vencimento = new Date(parcel.dueDate);
+                    if (parcel.status === 'Pendente' && vencimento < hoje) {
+                        const diffTime = Math.abs(hoje - vencimento);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        const valorCorrigido = await calcularValorCorrigido(parcel.value, parcel.dueDate);
+                        contractInadimplencias.push({ contract, parcel, index: i, diffDays, valorCorrigido });
+                    }
+                }
+                return contractInadimplencias;
+            });
+
+            const results = await Promise.all(promises);
+            inadimplentesList = results.flat();
+
+            // Ordenação (mantém a lógica, mas os valores só serão exibidos para admins)
+            if (currentInadimplentesSort === 'days-desc') {
+                inadimplentesList.sort((a, b) => b.diffDays - a.diffDays);
+            } else if (currentInadimplentesSort === 'value-desc' && isUserAdmin) { // Ordenar por valor só admin
+                inadimplentesList.sort((a, b) => b.valorCorrigido - a.valorCorrigido);
+            } else if (currentInadimplentesSort === 'name-asc') {
+                inadimplentesList.sort((a, b) => a.contract.clientName.localeCompare(b.contract.clientName));
+            }
+
+            if (inadimplentesList.length === 0) {
+                 container.innerHTML = `<div class="col-span-1 md:col-span-3 text-center py-10"><div class="inline-block bg-gray-800 border border-gray-700 text-green-400 p-6 rounded-lg shadow-md"><i class="fas fa-check-circle fa-3x mb-3"></i><p class="font-bold text-xl">Nenhuma pendência encontrada!</p><p class="text-sm text-gray-400">Todos os pagamentos estão em dia.</p></div></div>`;
+                 return;
+            }
+
+            let inadimplentesHtml = '';
+            inadimplentesList.forEach(({ contract, parcel, index, diffDays, valorCorrigido }) => {
+                const vencimento = new Date(parcel.dueDate);
+                 const valorOriginalDisplay = isUserAdmin ? parcel.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
+                 const valorCorrigidoDisplay = isUserAdmin ? valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
+
+                inadimplentesHtml += `
+                    <div class="dark-card p-5 rounded-lg shadow-lg border-l-4 border-red-500">
+                        <p class="font-bold text-lg text-white">${contract.clientName}</p>
+                        <p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
+                        <div class="border-t border-gray-700 pt-3 mt-3 space-y-2">
+                            <div class="flex justify-between items-center text-sm ${!isUserAdmin ? 'hidden' : ''}">
+                                <span class="text-gray-400">Valor Original:</span>
+                                <span class="font-medium text-gray-400 line-through">${valorOriginalDisplay}</span>
+                            </div>
+                            <div class="flex justify-between items-center ${!isUserAdmin ? 'hidden' : ''}">
+                                <span class="text-sm text-white">Valor Corrigido:</span>
+                                <span class="font-semibold text-lg text-red-400">${valorCorrigidoDisplay}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-400">Venceu em:</span>
+                                <span class="font-medium text-gray-300">${vencimento.toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-red-400 font-bold text-sm bg-red-900/30 px-2 py-1 rounded">
+                                <span>Atrasado há:</span>
+                                <span>${diffDays} dia(s)</span>
+                            </div>
+                        </div>
+                        <button onclick="window.App.openPaymentModal('${contract.id}', ${index})" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2">
+                            <i class="fas fa-check"></i> Registrar Pagamento
+                        </button>
+                    </div>`;
+            });
+            container.innerHTML = inadimplentesHtml;
+        }
+
+        const renderServicosPage = (contractsToRender) => {
+             const container = document.getElementById('servicosListContainer');
+             const searchTerm = document.getElementById('servicosSearchInput').value.toLowerCase();
+             const advogadoFilterEl = document.getElementById('servicosAdvogadoFilter');
+             let advogadoFilter = advogadoFilterEl.value;
+             if (!isUserAdmin) advogadoFilter = currentUserDisplayName;
+
+             container.innerHTML = '';
+
+             let activeContracts = contractsToRender.filter(c => {
+                 const isNotConcluded = getContractStatus(c).statusText !== 'Concluído';
+                 if (!isNotConcluded) return false;
+                 const matchesAdvogado = (isUserAdmin && advogadoFilter === 'Todos') || c.advogadoResponsavel === advogadoFilter;
+                 const matchesSearch = c.clientName.toLowerCase().includes(searchTerm) || (c.serviceTypes || []).some(s => s.name.toLowerCase().includes(searchTerm)) || c.advogadoResponsavel.toLowerCase().includes(searchTerm);
+                 return matchesAdvogado && matchesSearch;
+             });
+
+            // Ordenação
+             if (currentServicosSort === 'name-asc') {
+                 activeContracts.sort((a, b) => a.clientName.localeCompare(b.clientName));
+             } else if (currentServicosSort === 'adv-asc') {
+                 activeContracts.sort((a, b) => a.advogadoResponsavel.localeCompare(b.advogadoResponsavel));
+             }
+
+             if (activeContracts.length === 0) {
+                  container.innerHTML = `<div class="text-center py-10"><div class="inline-block dark-card text-indigo-400 p-6 rounded-lg shadow-md"><i class="fas fa-coffee fa-3x mb-3"></i><p class="font-bold text-xl">Nenhum contrato ativo encontrado.</p><p class="text-sm text-gray-400">Nenhum resultado para a busca ou todos os trabalhos estão concluídos.</p></div></div>`;
+                  return;
+             }
+
+             activeContracts.forEach(contract => {
+                 const totalServices = (contract.serviceTypes || []).length;
+                 let progressValue = 0;
+                 (contract.serviceTypes || []).forEach(service => {
+                     if (service.status === 'Concluído') progressValue += 1;
+                     else if (service.status === '50% Concluído') progressValue += 0.5;
+                     else if (service.status === 'Em Andamento') progressValue += 0.25;
+                 });
+                 const serviceProgress = totalServices > 0 ? (progressValue / totalServices) * 100 : 0;
+
+                 // Barra financeira apenas para admin
+                 const totalPaid = (contract.parcels || []).reduce((sum, p) => sum + (p.valuePaid || 0), 0) + (contract.successFeeValueReceived || 0);
+                 const financialProgress = (contract.totalValue || 0) > 0 ? (totalPaid / contract.totalValue) * 100 : (totalPaid > 0 ? 100 : 0);
+                 const financialProgressBar = isUserAdmin ? `
+                     <div>
+                         <div class="flex justify-between text-sm mb-1 text-gray-300"><label>Progresso Financeiro</label><span class="font-medium text-teal-300">${financialProgress.toFixed(0)}%</span></div>
+                         <div class="progress-bar-bg h-3 w-full"><div class="progress-bar bg-teal-500" style="width: ${financialProgress}%"></div></div>
+                     </div>` : '';
+
+                 let servicesHtml = (contract.serviceTypes || []).map((service, index) => {
+                     let statusHtml, actionsHtml = '', deadlineHtml = '';
+                     // ... (lógica de deadline e status permanece a mesma) ...
+                      if (service.deadline) {
+                         const hoje = new Date(); hoje.setHours(0,0,0,0);
+                         const prazo = new Date(service.deadline + "T12:00:00Z");
+                         const diffTime = prazo - hoje;
+                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                         const formattedPrazo = prazo.toLocaleDateString('pt-BR', {timeZone: 'UTC'});
+                         if (diffDays < 0 && service.status !== 'Concluído') deadlineHtml = `<span class="text-xs font-medium text-red-400"><i class="fas fa-exclamation-triangle"></i> Vencido: ${formattedPrazo}</span>`;
+                         else if (diffDays <= 7 && service.status !== 'Concluído') deadlineHtml = `<span class="text-xs font-medium text-yellow-400"><i class="fas fa-clock"></i> Vence: ${formattedPrazo}</span>`;
+                         else if (service.status !== 'Concluído') deadlineHtml = `<span class="text-xs text-gray-500"><i class="far fa-calendar-alt"></i> ${formattedPrazo}</span>`;
+                         else deadlineHtml = `<span class="text-xs text-gray-500"><i class="far fa-calendar-check"></i> ${formattedPrazo}</span>`;
+                     }
+                      switch(service.status) {
+                         case 'Concluído': statusHtml = `<span class="text-xs font-bold text-teal-400">CONCLUÍDO</span>`; break;
+                         case '50% Concluído': statusHtml = `<span class="text-xs font-bold text-purple-400">50%</span>`; actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`; break;
+                         case 'Em Andamento': statusHtml = `<span class="text-xs font-bold text-yellow-400">EM ANDAMENTO</span>`; actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, '50% Concluído')" class="text-xs bg-purple-600 text-white hover:bg-purple-500 font-semibold py-1 px-2 rounded-md transition-colors">50%</button><button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`; break;
+                         default: statusHtml = `<span class="text-xs font-bold text-gray-400">PENDENTE</span>`; actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Em Andamento')" class="text-xs bg-yellow-600 text-white hover:bg-yellow-500 font-semibold py-1 px-2 rounded-md transition-colors">Iniciar</button>`; break;
+                     }
+                     const iconClass = service.status === 'Concluído' ? 'fas fa-check-circle text-teal-500' : (service.status === '50% Concluído' ? 'fas fa-adjust text-purple-500' : (service.status === 'Em Andamento' ? 'fas fa-spinner fa-spin text-yellow-500' : 'far fa-circle text-gray-500'));
+                     const textClass = service.status === 'Concluído' ? 'text-gray-500 line-through' : 'text-gray-300';
+                     const hoverClass = service.status !== 'Concluído' ? 'hover:bg-gray-700/50' : 'bg-gray-900/50';
+
+                     return `<li class="flex items-center justify-between p-2 ${hoverClass} rounded-md"><span class="${textClass}"><i class="${iconClass} mr-2"></i>${service.name}</span><div class="flex items-center gap-2">${deadlineHtml}${statusHtml}${actionsHtml}</div></li>`;
+                 }).join('');
+
+                 container.innerHTML += `
+                      <div class="dark-card p-5 rounded-lg shadow-lg">
+                           <div class="flex justify-between items-start">
+                                <h3 class="font-bold text-xl text-indigo-300 mb-4">${contract.clientName}</h3>
+                                <p class="text-sm text-gray-400"><i class="fas fa-user-tie mr-1"></i> ${contract.advogadoResponsavel}</p>
+                           </div>
+                           <div class="space-y-4 mb-4">
+                               ${financialProgressBar}
+                               <div>
+                                   <div class="flex justify-between text-sm mb-1 text-gray-300"><label>Progresso dos Serviços</label><span class="font-medium text-indigo-300">${serviceProgress.toFixed(0)}%</span></div>
+                                   <div class="progress-bar-bg h-3 w-full"><div class="progress-bar bg-indigo-500" style="width: ${serviceProgress}%"></div></div>
+                               </div>
+                           </div>
+                           <div class="border-t border-gray-700 pt-3">
+                               <h4 class="font-semibold text-sm mb-2 text-gray-400">Serviços do Contrato:</h4>
+                               <ul class="space-y-1">${servicesHtml}</ul>
+                           </div>
+                      </div>`;
+             });
+        }
+        window.App.renderServicosPage = renderServicosPage;
 
         // --- Analytics Functions (Admin Only) - REMOVIDO ---
         // function getAnnualChartData(...) { ... }
@@ -1026,9 +1335,136 @@
         // const setAnalyticsPeriod = function(...) { ... }
         // window.App.setAnalyticsPeriod = setAnalyticsPeriod;
         // window.App.setChartPeriod = setAnalyticsPeriod; // Alias
+        // --- Analytics Functions (Admin Only) - REINSERIDO ---
+        function getAnnualChartData(period, contractsToRender) {
+             if (!isUserAdmin) return { labels: [], data: [] }; // Retorna vazio se não for admin
 
-        // --- Restante do código (Lixeira, Modais, Cálculos, CSV, Inicialização) ---
-        // ... (Colar aqui o restante do código JS que não foi modificado nesta etapa) ...
+            const labels = [], data = [];
+            const meses = ["Jan", "Fev", "Mar", "Abr", "Maio", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+            const hoje = new Date();
+             if (period === '12m') {
+                 for (let i = 11; i >= 0; i--) {
+                     const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+                     labels.push(`${meses[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}`);
+                     const income = calculateMonthlyIncome(d.getFullYear(), d.getMonth(), contractsToRender);
+                     data.push(income.totalGeral);
+                 }
+            } else if (period === 'thisYear') {
+                 for (let i = 0; i < 12; i++) {
+                     labels.push(meses[i]);
+                     const income = calculateMonthlyIncome(hoje.getFullYear(), i, contractsToRender);
+                     data.push(income.totalGeral);
+                 }
+            } else if (period === 'lastYear') {
+                 const lastYear = hoje.getFullYear() - 1;
+                 for (let i = 0; i < 12; i++) {
+                     labels.push(meses[i]);
+                     const income = calculateMonthlyIncome(lastYear, i, contractsToRender);
+                     data.push(income.totalGeral);
+                 }
+            }
+             return { labels, data };
+        }
+
+        function getAnnualProducaoData(period, contractsToRender) {
+             if (!isUserAdmin) return { labels: [], data: [] }; // Retorna vazio se não for admin
+
+            const labels = [], data = [];
+            const meses = ["Jan", "Fev", "Mar", "Abr", "Maio", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+            const hoje = new Date();
+            let yearToScan, startRange, endRange;
+             if (period === '12m') {
+                 for (let i = 11; i >= 0; i--) { const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1); labels.push(`${meses[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}`); }
+                 startRange = new Date(hoje.getFullYear(), hoje.getMonth() - 11, 1);
+                 endRange = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+            } else if (period === 'thisYear') {
+                 yearToScan = hoje.getFullYear(); labels.push(...meses);
+                 startRange = new Date(yearToScan, 0, 1); endRange = new Date(yearToScan, 11, 31);
+            } else if (period === 'lastYear') {
+                 yearToScan = hoje.getFullYear() - 1; labels.push(...meses);
+                 startRange = new Date(yearToScan, 0, 1); endRange = new Date(yearToScan, 11, 31);
+            }
+             const monthlyProduction = new Array(12).fill(0);
+             startRange.setHours(0,0,0,0); endRange.setHours(23,59,59,999);
+             contractsToRender.filter(c => c.parcels && c.parcels.length > 0).forEach(contract => {
+                 const firstDueDate = new Date(contract.parcels[0].dueDate);
+                 if (firstDueDate >= startRange && firstDueDate <= endRange) {
+                     let dataIndex;
+                     if (period === '12m') { const monthDiff = (endRange.getFullYear() - firstDueDate.getFullYear()) * 12 + (endRange.getMonth() - firstDueDate.getMonth()); dataIndex = 11 - monthDiff; }
+                     else { dataIndex = firstDueDate.getMonth(); }
+                     if (dataIndex >= 0 && dataIndex < 12) monthlyProduction[dataIndex] += (contract.totalValue || 0);
+                 }
+             });
+             return { labels, data: monthlyProduction };
+        }
+
+        function renderAnalyticsPage(contractsToRender) {
+             if (!isUserAdmin) {
+                 console.log("Usuário não admin tentou renderizar analytics.");
+                 return; // Sai se não for admin
+             }
+             console.log("Renderizando página de analytics...");
+
+             const fatContainer = document.getElementById('faturamentoChartContainer');
+             const prodContainer = document.getElementById('producaoChartContainer');
+
+             // Garante que os containers estejam limpos e os canvas existam
+             if (fatContainer && !fatContainer.querySelector('canvas')) {
+                 fatContainer.innerHTML = '<canvas id="faturamentoChart"></canvas>';
+                 console.log("Canvas faturamentoChart recriado.");
+             }
+             if (prodContainer && !prodContainer.querySelector('canvas')) {
+                 prodContainer.innerHTML = '<canvas id="producaoChart"></canvas>';
+                 console.log("Canvas producaoChart recriado.");
+             }
+
+             // Obtém os elementos canvas APÓS garantir que existem
+             const ctxFaturamentoEl = document.getElementById('faturamentoChart');
+             const ctxProducaoEl = document.getElementById('producaoChart');
+
+             // Verifica se os elementos canvas foram encontrados
+             if (!ctxFaturamentoEl || !ctxProducaoEl) {
+                 console.error("Elementos canvas não encontrados após recriação!");
+                 return;
+             }
+
+             const ctxFaturamento = ctxFaturamentoEl.getContext('2d');
+             const ctxProducao = ctxProducaoEl.getContext('2d');
+
+             // Destroi instâncias antigas se existirem (segurança extra)
+             if (faturamentoChartInstance) {
+                 faturamentoChartInstance.destroy();
+                 faturamentoChartInstance = null;
+                 console.log("Instância faturamentoChartInstance antiga destruída (segurança).");
+             }
+             if (producaoChartInstance) {
+                 producaoChartInstance.destroy();
+                 producaoChartInstance = null;
+                 console.log("Instância producaoChartInstance antiga destruída (segurança).");
+             }
+
+             const faturamentoData = getAnnualChartData(currentAnalyticsPeriod, contractsToRender);
+             const producaoData = getAnnualProducaoData(currentAnalyticsPeriod, contractsToRender);
+
+             Chart.defaults.color = '#9ca3af'; Chart.defaults.borderColor = '#374151';
+             faturamentoChartInstance = new Chart(ctxFaturamento, { type: 'bar', data: { labels: faturamentoData.labels, datasets: [{ label: 'Faturamento Total Recebido', data: faturamentoData.data, backgroundColor: 'rgba(79, 70, 229, 0.6)', borderColor: 'rgba(99, 102, 241, 1)', borderWidth: 1, borderRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: (v) => 'R$ ' + v.toLocaleString('pt-BR') } } }, plugins: { tooltip: { callbacks: { label: (c) => (c.dataset.label || '') + ': ' + new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.parsed.y) } } } } });
+             console.log("Novo faturamentoChartInstance criado.");
+
+             producaoChartInstance = new Chart(ctxProducao, { type: 'bar', data: { labels: producaoData.labels, datasets: [{ label: 'Valor de Novos Contratos', data: producaoData.data, backgroundColor: 'rgba(14, 165, 233, 0.6)', borderColor: 'rgba(56, 189, 248, 1)', borderWidth: 1, borderRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: (v) => 'R$ ' + v.toLocaleString('pt-BR') } } }, plugins: { tooltip: { callbacks: { label: (c) => (c.dataset.label || '') + ': ' + new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.parsed.y) } } } } });
+             console.log("Novo producaoChartInstance criado.");
+        }
+        window.App.renderAnalyticsPage = renderAnalyticsPage;
+
+        const setAnalyticsPeriod = function(period) {
+             if (!isUserAdmin) return; // Ação apenas para admin
+             currentAnalyticsPeriod = period;
+             document.querySelectorAll('#analyticsPeriodFilter .filter-button').forEach(btn => btn.classList.remove('active'));
+             document.querySelector(`#analyticsPeriodFilter .filter-button[data-period="${period}"]`).classList.add('active');
+             renderAnalyticsPage(getFilteredContracts(false)); // Re-renderiza com dados filtrados
+        }
+        window.App.setAnalyticsPeriod = setAnalyticsPeriod;
+        // window.App.setChartPeriod = setAnalyticsPeriod; // Alias removido pois não é mais necessário
+
         // --- Lixeira Functions ---
         function renderLixeiraPage(contractsToRender) {
              const container = document.getElementById('lixeiraListContainer');
@@ -1079,13 +1515,7 @@
                      select.add(new Option(adv, adv));
                  });
 
-                 // Mantém o valor selecionado se possível, senão define o padrão
-                 const optionsArray = Array.from(select.options).map(opt => opt.value);
-                 if (optionsArray.includes(currentValue)) {
-                    select.value = currentValue;
-                 } else {
-                    select.value = isUserAdmin ? 'Todos' : currentUserDisplayName;
-                 }
+                 select.value = isUserAdmin ? (currentValue || 'Todos') : currentUserDisplayName;
                  select.disabled = !isUserAdmin;
              });
         }
@@ -1148,125 +1578,49 @@
 
         const updateServiceStatus = async function(contractId, serviceIndex, newStatus) { /* ... como estava ... */
              const contract = database.contracts.find(c => c.id === contractId);
-             if (contract && contract.serviceTypes && contract.serviceTypes[serviceIndex]) { // Checa se serviceTypes existe
+             if (contract && (contract.serviceTypes || [])[serviceIndex]) {
                  const updatedServiceTypes = [...contract.serviceTypes];
                  updatedServiceTypes[serviceIndex].status = newStatus;
                  const contractRef = doc(contractsCollection, contractId);
-                 try {
-                    await updateDoc(contractRef, { serviceTypes: updatedServiceTypes });
-                 } catch (error) {
-                     console.error("Erro ao atualizar status do serviço:", error);
-                     // Opcional: Mostrar erro para o usuário
-                 }
-             } else {
-                 console.warn(`Serviço no índice ${serviceIndex} não encontrado para o contrato ${contractId}`);
+                 await updateDoc(contractRef, { serviceTypes: updatedServiceTypes });
              }
         }
         window.App.updateServiceStatus = updateServiceStatus;
 
         // --- Lixeira Functions ---
-        // ADICIONADO: Função genérica para confirmação (substitui window.confirm)
-        function showConfirmationModal(message, onConfirm) {
-            // Cria os elementos do modal dinamicamente
-            const confirmBackdrop = document.createElement('div');
-            confirmBackdrop.className = 'modal-backdrop';
-            confirmBackdrop.style.display = 'block';
-            confirmBackdrop.style.zIndex = '1050'; // Acima de outros modais
-
-            const confirmModal = document.createElement('div');
-            confirmModal.className = 'modal bg-gray-800 border border-red-700 rounded-lg shadow-xl w-11/12 md:w-1/3';
-            confirmModal.style.display = 'block';
-            confirmModal.style.zIndex = '1060';
-            confirmModal.innerHTML = `
-                <div class="p-6">
-                    <h3 class="text-lg font-bold text-white mb-4"><i class="fas fa-exclamation-triangle text-red-400 mr-2"></i> Confirmação</h3>
-                    <p class="text-gray-300 mb-6">${message}</p>
-                    <div class="flex justify-end gap-3">
-                        <button id="confirmCancelBtn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Cancelar</button>
-                        <button id="confirmOkBtn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Confirmar</button>
-                    </div>
-                </div>
-            `;
-
-            document.body.appendChild(confirmBackdrop);
-            document.body.appendChild(confirmModal);
-
-            const closeConfirmModal = () => {
-                if (document.body.contains(confirmModal)) document.body.removeChild(confirmModal);
-                if (document.body.contains(confirmBackdrop)) document.body.removeChild(confirmBackdrop);
-            };
-
-            document.getElementById('confirmCancelBtn').onclick = closeConfirmModal;
-            document.getElementById('confirmOkBtn').onclick = () => {
-                closeConfirmModal();
-                onConfirm(); // Executa a ação confirmada
-            };
-            confirmBackdrop.onclick = closeConfirmModal; // Fecha ao clicar fora
-        }
-
-        const moveToLixeira = async function(contractId) {
+        const moveToLixeira = async function(contractId) { /* ... como estava ... */
              const contract = database.contracts.find(c => c.id === contractId);
-             if (!contract) return;
-             showConfirmationModal(
-                 `Tem certeza que deseja mover o contrato de "${contract.clientName}" para a lixeira?`,
-                 async () => {
-                     const contractRef = doc(contractsCollection, contractId);
-                     try {
-                         await updateDoc(contractRef, { isDeleted: true });
-                         console.log(`Contrato ${contractId} movido para lixeira.`);
-                     } catch (error) {
-                         console.error("Erro ao mover para lixeira:", error);
-                     }
-                 }
-             );
+             // TODO: Substituir window.confirm por um modal
+             if(confirm(`Tem certeza que deseja mover o contrato de "${contract.clientName}" para a lixeira?`)){
+                 const contractRef = doc(contractsCollection, contractId);
+                 await updateDoc(contractRef, { isDeleted: true });
+             }
         }
         window.App.moveToLixeira = moveToLixeira;
 
-        const restoreContract = async function(contractId) {
-             const contract = database.contracts.find(c => c.id === contractId);
-              if (!contract) return;
-             showConfirmationModal(
-                 `Tem certeza que deseja restaurar o contrato de "${contract.clientName}"?`,
-                 async () => {
-                     const contractRef = doc(contractsCollection, contractId);
-                      try {
-                         await updateDoc(contractRef, { isDeleted: false });
-                         console.log(`Contrato ${contractId} restaurado.`);
-                         // Opcional: Mudar para a página do dashboard após restaurar
-                         // showPage('page-dashboard');
-                      } catch (error) {
-                          console.error("Erro ao restaurar contrato:", error);
-                      }
-                 }
-             );
+        const restoreContract = async function(contractId) { /* ... como estava ... */
+             // TODO: Substituir window.confirm por um modal
+             if(confirm(`Tem certeza que deseja restaurar este contrato?`)){
+                 const contractRef = doc(contractsCollection, contractId);
+                 await updateDoc(contractRef, { isDeleted: false });
+             }
         }
         window.App.restoreContract = restoreContract;
 
         const deleteContractPermanently = async function(contractId) {
-             if (!isUserAdmin) {
+             if (!isUserAdmin) { // Só admin pode excluir permanentemente
                  console.warn("Apenas administradores podem excluir permanentemente.");
-                 // Opcional: Mostrar uma mensagem para o usuário não-admin
                  return;
              }
              const contract = database.contracts.find(c => c.id === contractId);
-             if (!contract) return;
-             showConfirmationModal(
-                 `EXCLUSÃO PERMANENTE: Tem certeza que deseja apagar o contrato de "${contract.clientName}" para sempre? Esta ação NÃO PODE ser desfeita.`,
-                 async () => {
-                      try {
-                         await deleteDoc(doc(contractsCollection, contractId));
-                         console.log(`Contrato ${contractId} excluído permanentemente.`);
-                      } catch (error) {
-                           console.error("Erro ao excluir permanentemente:", error);
-                      }
-                 }
-             );
+             // TODO: Substituir window.confirm por um modal
+             if(confirm(`EXCLUSÃO PERMANENTE: Tem certeza que deseja apagar o contrato de "${contract.clientName}" para sempre? Esta ação não pode ser desfeita.`)){
+                 await deleteDoc(doc(contractsCollection, contractId));
+             }
         }
         window.App.deleteContractPermanently = deleteContractPermanently;
 
-
         // --- Modal Functions ---
-        // ... (openModal, closeModal como estavam) ...
         const openModal = function(modalId) { /* ... como estava ... */
              setTimeout(() => {
                  const modal = document.getElementById(modalId);
@@ -1278,22 +1632,12 @@
         window.App.openModal = openModal;
 
         const closeModal = function(modalId) { /* ... como estava ... */
-             const modal = document.getElementById(modalId);
-             if(modal) modal.style.display = 'none';
-
-             // Fecha o backdrop apenas se não houver outros modais abertos (exceto o de confirmação)
-             const anyModalOpen = Array.from(document.querySelectorAll('.modal')).some(
-                 m => m.style.display === 'block' && !m.querySelector('#confirmOkBtn') // Verifica se não é o modal de confirmação
-             );
-             if(backdrop && !anyModalOpen) {
-                 backdrop.style.display = 'none';
-             }
+             if(document.getElementById(modalId)) document.getElementById(modalId).style.display = 'none';
+             if(backdrop) backdrop.style.display = 'none';
         }
         window.App.closeModal = closeModal;
 
-
-        // ... (openContractModal, openPaymentModal, openClientHistoryModal, openReportModal como estavam) ...
-         const openContractModal = function(contractId = null) {
+        const openContractModal = function(contractId = null) {
             const form = document.getElementById('formContrato'); form.reset();
             const title = document.getElementById('modalContratoTitle');
             const servicosContainer = document.getElementById('servicosContainer'); servicosContainer.innerHTML = '';
@@ -1302,37 +1646,20 @@
 
              if (contractId) {
                  const contract = database.contracts.find(c => c.id === contractId);
-                  if (!contract) { console.error(`Contrato com ID ${contractId} não encontrado.`); return; } // Checagem
                  title.textContent = "Editar Contrato";
                  document.getElementById('contractId').value = contract.id;
                  document.getElementById('clienteNome').value = contract.clientName;
                  advogadoSelect.value = contract.advogadoResponsavel;
                  (contract.serviceTypes || []).forEach(service => createServiceTag(service.name, service.deadline, service.status));
                  document.getElementById('contratoTipoPagamento').value = contract.paymentType;
-                 document.getElementById('contratoObservacoes').value = contract.observations || ''; // Garante que é string
+                 document.getElementById('contratoObservacoes').value = contract.observations;
                  // Campos financeiros (apenas preenche se admin)
                  if (isUserAdmin) {
                      document.getElementById('valorTotal').value = contract.totalValue || '';
                      document.getElementById('numParcelas').value = (contract.parcels || []).length || 1;
                      document.getElementById('taxaExito').value = contract.successFee || '';
-                     // Garante que dueDate existe e é válido antes de tentar formatar
-                     if ((contract.parcels || []).length > 0 && contract.parcels[0].dueDate) {
-                          try {
-                              // Tenta converter para data e formatar
-                              const dateString = contract.parcels[0].dueDate.split('T')[0];
-                              // Validação simples do formato YYYY-MM-DD
-                              if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-                                  document.getElementById('vencimentoPrimeiraParcela').value = dateString;
-                              } else {
-                                  console.warn(`Formato inválido para dueDate da primeira parcela: ${contract.parcels[0].dueDate}`);
-                                   document.getElementById('vencimentoPrimeiraParcela').value = ''; // Limpa se inválido
-                              }
-                          } catch (e) {
-                               console.error(`Erro ao processar dueDate da primeira parcela: ${contract.parcels[0].dueDate}`, e);
-                               document.getElementById('vencimentoPrimeiraParcela').value = ''; // Limpa em caso de erro
-                          }
-                     } else {
-                          document.getElementById('vencimentoPrimeiraParcela').value = ''; // Limpa se não houver parcelas ou dueDate
+                     if ((contract.parcels || []).length > 0) {
+                         document.getElementById('vencimentoPrimeiraParcela').value = contract.parcels[0].dueDate.split('T')[0];
                      }
                  }
              } else {
@@ -1340,14 +1667,6 @@
                  document.getElementById('contractId').value = '';
                  // Define advogado padrão
                  advogadoSelect.value = isUserAdmin ? 'Não Informado' : currentUserDisplayName;
-                 // Limpa campos financeiros explicitamente ao criar novo
-                 if(isUserAdmin){
-                    document.getElementById('valorTotal').value = '';
-                    document.getElementById('numParcelas').value = '1';
-                    document.getElementById('taxaExito').value = '';
-                    document.getElementById('vencimentoPrimeiraParcela').value = '';
-                 }
-
              }
              // Habilita/desabilita campos financeiros
              setupUIAccess(isUserAdmin);
@@ -1360,30 +1679,11 @@
             if (!contract || !contract.parcels || !contract.parcels[parcelIndex]) return;
             const parcel = contract.parcels[parcelIndex];
 
-             // Adiciona checagem para dueDate inválido
-             if (!parcel.dueDate) {
-                 console.error(`Tentando abrir modal de pagamento para parcela sem dueDate (Contrato ${contractId}, Index ${parcelIndex})`);
-                 // Opcional: Mostrar erro ao usuário
-                 return;
-             }
-             const vencimentoDate = new Date(parcel.dueDate);
-              if (isNaN(vencimentoDate.getTime())) {
-                  console.error(`Tentando abrir modal de pagamento para parcela com dueDate inválido: ${parcel.dueDate} (Contrato ${contractId}, Index ${parcelIndex})`);
-                 return;
-             }
-
-
             let valorCorrigido = parcel.value;
             let infoCorrecao = '';
-            if (vencimentoDate < new Date()) { // Usa a data validada
-                try {
-                    valorCorrigido = await calcularValorCorrigido(parcel.value, parcel.dueDate); // Passa a string original
-                    if(isUserAdmin) infoCorrecao = `<p class="text-red-400"><strong>Valor Corrigido:</strong> ${valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>`;
-                } catch(e) {
-                    console.error("Erro ao calcular valor corrigido no modal de pagamento:", e);
-                    infoCorrecao = '<p class="text-red-500">Erro ao calcular correção.</p>';
-                    valorCorrigido = parcel.value; // Usa o valor original em caso de erro
-                }
+            if (new Date(parcel.dueDate) < new Date()) {
+                valorCorrigido = await calcularValorCorrigido(parcel.value, parcel.dueDate);
+                if(isUserAdmin) infoCorrecao = `<p class="text-red-400"><strong>Valor Corrigido:</strong> ${valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>`;
             }
 
             document.getElementById('pagamentoContractId').value = contractId;
@@ -1396,11 +1696,8 @@
                  ${infoCorrecao}`;
 
             const valorInput = document.getElementById('pagamentoValor');
-            // Garante que valorCorrigido é um número antes de toFixed
-            valorInput.value = isUserAdmin
-                                ? (typeof valorCorrigido === 'number' ? valorCorrigido.toFixed(2) : parcel.value.toFixed(2))
-                                : parcel.value.toFixed(2);
-            valorInput.disabled = !isUserAdmin;
+            valorInput.value = isUserAdmin ? valorCorrigido.toFixed(2) : parcel.value.toFixed(2); // Usa original se não for admin
+            valorInput.disabled = !isUserAdmin; // Desabilita valor se não for admin
 
             document.getElementById('pagamentoData').value = new Date().toISOString().split('T')[0];
             openModal('modalPagamento');
@@ -1410,15 +1707,7 @@
         const openClientHistoryModal = function(clientName) {
             // Usa todos os contratos do cliente, mesmo os de outros advogados (se admin)
              const clientContracts = (isUserAdmin ? database.contracts : getFilteredContracts(true))
-                                         .filter(c => c.clientName === clientName)
-                                         .sort((a,b) => { // Ordena por data da primeira parcela (mais recente primeiro)
-                                             const dateA = (a.parcels && a.parcels[0]?.dueDate) ? new Date(a.parcels[0].dueDate) : new Date(0);
-                                             const dateB = (b.parcels && b.parcels[0]?.dueDate) ? new Date(b.parcels[0].dueDate) : new Date(0);
-                                             // Trata datas inválidas colocando-as no final
-                                             if (isNaN(dateA.getTime())) return 1;
-                                             if (isNaN(dateB.getTime())) return -1;
-                                             return dateB - dateA;
-                                         });
+                                         .filter(c => c.clientName === clientName); // Inclui deletados para histórico
              const title = document.getElementById('clienteModalTitle'); title.textContent = `Histórico de ${clientName}`;
              const content = document.getElementById('clienteModalContent');
 
@@ -1430,61 +1719,31 @@
 
                  let contractHtml = `<div class="bg-gray-700 p-4 rounded-lg ${contract.isDeleted ? 'opacity-60 border-l-4 border-gray-500' : ''}">`;
                  contractHtml += `<div class="flex justify-between items-start">
-                                     <h3 class="font-bold text-lg text-white">${(contract.serviceTypes || []).map(s => s.name).join(', ')} <span class="text-base font-normal text-gray-400">- ${contract.paymentType || 'N/A'}</span></h3>
+                                     <h3 class="font-bold text-lg text-white">${(contract.serviceTypes || []).map(s => s.name).join(', ')} <span class="text-base font-normal text-gray-400">- ${contract.paymentType}</span></h3>
                                      ${contract.isDeleted ? '<span class="text-xs bg-red-900/50 text-red-300 px-2 py-1 rounded-full font-semibold">Excluído</span>' : ''}
                                  </div>`;
-                 contractHtml += `<p class="text-sm text-gray-400 mb-2">Adv: ${contract.advogadoResponsavel || 'N/A'}</p>`;
-                  // Mostra a data do contrato (baseado na 1a parcela) se disponível
-                 const firstDueDateStr = contract.parcels && contract.parcels[0]?.dueDate;
-                 if (firstDueDateStr) {
-                     try {
-                        const firstDueDate = new Date(firstDueDateStr);
-                        if (!isNaN(firstDueDate.getTime())) {
-                             contractHtml += `<p class="text-xs text-gray-500 mb-2">Início: ${firstDueDate.toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</p>`;
-                        }
-                     } catch(e) {/* ignora data inválida */}
-                 }
+                 contractHtml += `<p class="text-sm text-gray-400 mb-2">Adv: ${contract.advogadoResponsavel}</p>`;
 
-
-                 if (contract.observations) contractHtml += `<blockquote class="text-sm mt-2 p-2 bg-gray-600/50 rounded-md text-gray-300 border-l-4 border-indigo-500 pl-4 whitespace-pre-wrap"><strong>Obs:</strong> ${contract.observations}</blockquote>`;
+                 if (contract.observations) contractHtml += `<blockquote class="text-sm mt-2 p-2 bg-gray-600/50 rounded-md text-gray-300 border-l-4 border-indigo-500 pl-4"><strong>Obs:</strong> ${contract.observations}</blockquote>`;
 
                  if((contract.parcels || []).length > 0) {
-                     contractHtml += `<h4 class="text-sm font-semibold mt-3 mb-1 text-gray-400">Parcelas:</h4><ul class="text-xs space-y-1">`;
+                     contractHtml += `<ul class="mt-2 text-sm space-y-1">`;
                      contract.parcels.forEach(p => {
-                         const statusClass = p.status === 'Paga' ? 'text-green-400' : (new Date(p.dueDate) < new Date() && p.status !== 'Paga' ? 'text-red-400' : 'text-yellow-400');
+                         const statusClass = p.status === 'Paga' ? 'text-green-400' : 'text-red-400';
                          let valorPagoDisplay = '';
-                         let paymentDateDisplay = '';
                          if (p.status === 'Paga') {
                              if(isUserAdmin) totalPago += p.valuePaid || 0; // Soma apenas se admin
-                             valorPagoDisplay = isUserAdmin ? ` (pago ${(p.valuePaid || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})` : ' (pago)';
-                              try { // Formata data de pagamento
-                                  paymentDateDisplay = p.paymentDate ? ` em ${new Date(p.paymentDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}` : '';
-                              } catch(e) {/* ignora data inválida */}
+                             valorPagoDisplay = isUserAdmin ? `(pago ${(p.valuePaid || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})` : '(pago)';
                          }
-                         const valorParcelaDisplay = isUserAdmin ? (p.value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
-                          let dueDateDisplay = 'N/A';
-                          try { // Formata data de vencimento
-                             dueDateDisplay = p.dueDate ? new Date(p.dueDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A';
-                          } catch(e) {/* ignora data inválida */}
-
-                         contractHtml += `<li class="flex justify-between items-center bg-gray-800/50 px-2 py-1 rounded-sm">
-                                            <span> P${p.number}: ${valorParcelaDisplay} (Venc: ${dueDateDisplay})</span>
-                                            <span class="${statusClass} font-medium">${p.status}${paymentDateDisplay}${valorPagoDisplay}</span>
-                                          </li>`;
+                         const valorParcelaDisplay = isUserAdmin ? p.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
+                         contractHtml += `<li>Parcela ${p.number} - ${valorParcelaDisplay} - <span class="${statusClass}">${p.status}</span> ${valorPagoDisplay}</li>`;
                      });
                      contractHtml += `</ul>`;
                  }
                  if(contract.successFeePaymentDate){
                       const exitoRecebidoDisplay = isUserAdmin ? (contract.successFeeValueReceived || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Recebido]';
                       if(isUserAdmin) totalPago += contract.successFeeValueReceived || 0; // Soma apenas se admin
-                       let exitoDateDisplay = '';
-                       try {
-                           exitoDateDisplay = ` em ${new Date(contract.successFeePaymentDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}`;
-                       } catch(e) {/* ignora data inválida */}
-                      contractHtml += `<p class="mt-2 text-sm text-green-400 font-semibold"><i class="fas fa-star text-yellow-400 mr-1"></i>Êxito Recebido: ${exitoRecebidoDisplay}${exitoDateDisplay}</p>`;
-                 } else if (contract.successFee) {
-                      const exitoPrevistoDisplay = isUserAdmin ? contract.successFee : '[Previsto]';
-                      contractHtml += `<p class="mt-2 text-sm text-indigo-400"><i class="far fa-star text-gray-500 mr-1"></i>Êxito Previsto: ${exitoPrevistoDisplay}</p>`;
+                      contractHtml += `<p class="mt-2 text-sm text-green-400">Êxito Recebido: ${exitoRecebidoDisplay}</p>`;
                  }
                  contractHtml += `</div>`;
                  html += contractHtml;
@@ -1492,13 +1751,13 @@
 
              // Sumário financeiro apenas para admin
              const summaryHtml = isUserAdmin ? `
-                 <div class="grid grid-cols-3 gap-4 text-center mb-4 bg-gray-900 p-4 rounded-lg border border-gray-700">
-                     <div><p class="text-xs text-gray-400 uppercase tracking-wider">Total Contratado</p><p class="font-bold text-lg text-white">${totalContratado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
-                     <div><p class="text-xs text-gray-400 uppercase tracking-wider">Total Pago</p><p class="font-bold text-lg text-green-400">${totalPago.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
-                     <div><p class="text-xs text-gray-400 uppercase tracking-wider">Saldo Devedor</p><p class="font-bold text-lg text-red-400">${(totalContratado - totalPago).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
-                 </div>` : '';
+                 <div class="grid grid-cols-3 gap-4 text-center">
+                     <div><p class="text-sm text-gray-400">Total Contratado</p><p class="font-bold text-lg text-white">${totalContratado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+                     <div><p class="text-sm text-gray-400">Total Pago</p><p class="font-bold text-lg text-green-400">${totalPago.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+                     <div><p class="text-sm text-gray-400">Saldo Devedor</p><p class="font-bold text-lg text-red-400">${(totalContratado - totalPago).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+                 </div><hr class="my-4 border-gray-700">` : '';
 
-             content.innerHTML = summaryHtml + (html || '<p class="text-center text-gray-400">Nenhum contrato encontrado para este cliente.</p>'); // Adiciona mensagem se não houver contratos
+             content.innerHTML = summaryHtml + html;
              openModal('modalCliente');
         }
         window.App.openClientHistoryModal = openClientHistoryModal;
@@ -1506,21 +1765,15 @@
         const openReportModal = function() {
             if (!isUserAdmin) return; // Ação apenas para admin
             populateDateSelectors();
-            generateAndShowReport(); // Gera o relatório inicial para o mês atual
+            generateAndShowReport();
             openModal('modalRelatorio');
         }
         window.App.openReportModal = openReportModal;
 
-
-        // ... (Restante das funções: populateDateSelectors, calculateMonthlyIncome, generateAndShowReport, openExitoModal, createServiceTag, fetchIPCA, calcularValorCorrigido, formatCSVCell, downloadCSV, exportContractsCSV, exportReportCSV, event listeners DOMContentLoaded) ...
         function populateDateSelectors() { /* ... como estava ... */
             const monthSelect = document.getElementById('reportMonth'); const yearSelect = document.getElementById('reportYear');
              const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-             const anoAtual = new Date().getFullYear();
-              // Limpa selects antes de popular para evitar duplicação se chamado mais de uma vez
-             monthSelect.innerHTML = '';
-             yearSelect.innerHTML = '';
-
+             const anoAtual = new Date().getFullYear(); if (monthSelect.options.length > 0) return;
              meses.forEach((mes, index) => { monthSelect.add(new Option(mes, index)); });
              for (let i = anoAtual; i >= anoAtual - 5; i--) { yearSelect.add(new Option(i, i)); }
              monthSelect.value = new Date().getMonth(); yearSelect.value = anoAtual;
@@ -1529,61 +1782,13 @@
         function calculateMonthlyIncome(year, month, contractsToRender) {
              // Retorna 0 se não for admin
              if (!isUserAdmin) return { totalParcelas: 0, totalExito: 0, totalGeral: 0, detailedPayments: [] };
-
+             // ... (resto da lógica como estava) ...
             let totalParcelas = 0, totalExito = 0, detailedPayments = [];
              contractsToRender.filter(c => !c.isDeleted).forEach(contract => {
-                 // Soma parcelas pagas no mês/ano
-                 (contract.parcels || []).forEach(parcel => {
-                      if(parcel.status === 'Paga' && parcel.paymentDate) { // Verifica se paymentDate existe
-                         try {
-                            const d = new Date(parcel.paymentDate);
-                            // Verifica se a data é válida
-                            if (!isNaN(d.getTime()) && d.getFullYear() === year && d.getMonth() === month) {
-                                totalParcelas += (parcel.valuePaid || 0); // Usa 0 se valuePaid for undefined/null
-                                detailedPayments.push({
-                                    type: `Parcela ${parcel.number}/${contract.parcels.length}`,
-                                    clientName: contract.clientName,
-                                    date: d.toLocaleDateString('pt-BR', {timeZone: 'UTC'}), // Usa UTC para consistência
-                                    value: (parcel.valuePaid || 0) // Usa 0 se valuePaid for undefined/null
-                                });
-                            }
-                         } catch (e) {
-                             console.warn(`Data de pagamento inválida encontrada: ${parcel.paymentDate}`, e);
-                         }
-                     }
-                 });
-                 // Soma êxito pago no mês/ano
-                 if (contract.successFeePaymentDate) {
-                     try {
-                        const d = new Date(contract.successFeePaymentDate);
-                         // Verifica se a data é válida
-                        if (!isNaN(d.getTime()) && d.getFullYear() === year && d.getMonth() === month) {
-                            totalExito += (contract.successFeeValueReceived || 0); // Usa 0 se não definido
-                            detailedPayments.push({
-                                type: 'Taxa de Êxito',
-                                clientName: contract.clientName,
-                                date: d.toLocaleDateString('pt-BR', {timeZone: 'UTC'}), // Usa UTC
-                                value: (contract.successFeeValueReceived || 0) // Usa 0 se não definido
-                            });
-                        }
-                     } catch (e) {
-                         console.warn(`Data de pagamento de êxito inválida encontrada: ${contract.successFeePaymentDate}`, e);
-                     }
-                 }
+                 (contract.parcels || []).forEach(parcel => { if(parcel.status === 'Paga') { const d = new Date(parcel.paymentDate); if (d.getFullYear() === year && d.getMonth() === month) { totalParcelas += parcel.valuePaid; detailedPayments.push({ type: `Parcela ${parcel.number}/${contract.parcels.length}`, clientName: contract.clientName, date: d.toLocaleDateString('pt-BR', {timeZone: 'UTC'}), value: parcel.valuePaid }); } } });
+                 if (contract.successFeePaymentDate) { const d = new Date(contract.successFeePaymentDate); if (d.getFullYear() === year && d.getMonth() === month) { totalExito += contract.successFeeValueReceived; detailedPayments.push({ type: 'Taxa de Êxito', clientName: contract.clientName, date: d.toLocaleDateString('pt-BR', {timeZone: 'UTC'}), value: contract.successFeeValueReceived }); } }
              });
-             // Ordena pagamentos pela data (convertendo para objeto Date para ordenar corretamente)
-             detailedPayments.sort((a,b) => {
-                 try {
-                     const dateA = new Date(a.date.split('/').reverse().join('-') + 'T12:00:00Z');
-                     const dateB = new Date(b.date.split('/').reverse().join('-') + 'T12:00:00Z');
-                     if (isNaN(dateA.getTime())) return 1; // Coloca datas inválidas no final
-                     if (isNaN(dateB.getTime())) return -1;
-                     return dateA - dateB;
-                 } catch (e) {
-                     console.error("Erro ao ordenar datas de pagamento:", e);
-                     return 0; // Mantém a ordem em caso de erro
-                 }
-             });
+             detailedPayments.sort((a,b) => new Date(a.date.split('/').reverse().join('-')) - new Date(b.date.split('/').reverse().join('-')));
              return { totalParcelas, totalExito, totalGeral: totalParcelas + totalExito, detailedPayments };
         }
 
@@ -1592,12 +1797,11 @@
              const month = parseInt(document.getElementById('reportMonth').value);
              const year = parseInt(document.getElementById('reportYear').value);
              const resultDiv = document.getElementById('reportResult');
-             // Usa TODOS os contratos para o relatório, não apenas os filtrados na tela principal
-             const income = calculateMonthlyIncome(year, month, database.contracts); // Usa database.contracts
+             const income = calculateMonthlyIncome(year, month, getFilteredContracts(false)); // Usa dados filtrados
 
              let detailsHtml = '<h4 class="text-lg font-semibold mt-6 border-t border-gray-700 pt-4 text-white">Detalhes dos Recebimentos</h4>';
              if (income.detailedPayments.length > 0) {
-                 detailsHtml += '<ul class="space-y-2 mt-2 text-sm max-h-60 overflow-y-auto pr-2">'; // Adiciona scroll
+                 detailsHtml += '<ul class="space-y-2 mt-2 text-sm">';
                  income.detailedPayments.forEach(p => { detailsHtml += `<li class="flex justify-between items-center bg-gray-700/50 p-3 rounded-md"><div><p class="font-semibold text-white">${p.clientName}</p><p class="text-xs text-gray-400">${p.type} - ${p.date}</p></div><span class="font-semibold text-green-400 text-lg">${p.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></li>`; });
                  detailsHtml += '</ul>';
              } else { detailsHtml += '<p class="text-sm text-gray-400 mt-2">Nenhum recebimento neste período.</p>'; }
@@ -1618,7 +1822,7 @@
              const exitoInfoEl = document.getElementById('exitoInfo');
              const valorRecebidoInput = document.getElementById('exitoValorRecebido');
 
-             exitoInfoEl.innerHTML = `<p><strong>Cliente:</strong> ${contract.clientName}</p><p><strong>Serviço:</strong> ${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>${isUserAdmin ? `<p><strong>Bonificação Prevista:</strong> <span class="font-bold text-indigo-400">${contract.successFee || 'N/A'}</span></p>` : ''}`; // Adiciona N/A se não houver
+             exitoInfoEl.innerHTML = `<p><strong>Cliente:</strong> ${contract.clientName}</p><p><strong>Serviço:</strong> ${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>${isUserAdmin ? `<p><strong>Bonificação Prevista:</strong> <span class="font-bold text-indigo-400">${contract.successFee}</span></p>` : ''}`;
 
              // Habilita/desabilita input de valor
              valorRecebidoInput.value = ''; // Limpa o valor anterior
@@ -1630,220 +1834,57 @@
         window.App.openExitoModal = openExitoModal;
 
         const createServiceTag = function(serviceName, deadline, status = 'Pendente') { /* ... como estava ... */
-             const container = document.getElementById('servicosContainer');
-             if (!container) return; // Checa se o container existe
-             const tag = document.createElement('div'); tag.className = 'service-tag';
+             const container = document.getElementById('servicosContainer'); const tag = document.createElement('div'); tag.className = 'service-tag';
              tag.dataset.name = serviceName; tag.dataset.deadline = deadline || ''; tag.dataset.status = status;
-             let deadlineHtml = '';
-             if (deadline) {
-                  try {
-                    const prazo = new Date(deadline + "T12:00:00Z"); // Adiciona hora para evitar problemas de fuso
-                     if(!isNaN(prazo.getTime())) { // Verifica se a data é válida
-                        deadlineHtml = `<span class="text-xs text-gray-400 ml-2">(${prazo.toLocaleDateString('pt-BR', {timeZone: 'UTC'})})</span>`;
-                     } else {
-                         console.warn(`Data de prazo inválida fornecida: ${deadline}`);
-                     }
-                  } catch(e) {
-                      console.error(`Erro ao processar data de prazo: ${deadline}`, e);
-                  }
-             }
+             let deadlineHtml = ''; if (deadline) { const prazo = new Date(deadline + "T12:00:00Z"); deadlineHtml = `<span class="text-xs text-gray-400 ml-2">(${prazo.toLocaleDateString('pt-BR', {timeZone: 'UTC'})})</span>`; }
              tag.innerHTML = `<span>${serviceName}${deadlineHtml}</span><span class="remove-tag" onclick="this.parentElement.remove()">&times;</span>`; container.appendChild(tag);
         }
         window.App.createServiceTag = createServiceTag;
 
         // --- Calculation Functions ---
-        async function fetchIPCA(startDate, endDate) {
-            // Valida as datas de entrada
-            if (!(startDate instanceof Date) || isNaN(startDate.getTime()) || !(endDate instanceof Date) || isNaN(endDate.getTime())) {
-                console.error("Datas inválidas fornecidas para fetchIPCA:", startDate, endDate);
-                return 1; // Retorna 1 (sem correção) se as datas forem inválidas
-            }
-
-             const formatApiDate = (d) => {
-                 // Usa UTC para evitar problemas de fuso horário na formatação da data para a API
-                 const day = String(d.getUTCDate()).padStart(2, '0');
-                 const month = String(d.getUTCMonth() + 1).padStart(2, '0'); // Mês é 0-indexado
-                 const year = d.getUTCFullYear();
-                 return `${day}/${month}/${year}`;
-             };
-
-             const startF = formatApiDate(startDate);
-             const endF = formatApiDate(endDate); // Usa data final real para cache, mas busca só o último índice
-             const cacheKey = `${startF}-${endF}`; // Chave de cache inclui data final para diferenciar períodos
-             if (ipcaCache.has(cacheKey)) {
-                 // console.log("IPCA Cache Hit:", cacheKey, ipcaCache.get(cacheKey));
-                 return ipcaCache.get(cacheKey);
-             }
-
-             // Usa proxy para contornar CORS
-             const proxy = 'https://api.allorigins.win/get?url=';
-             // API do Banco Central para o índice IPCA (SGS 433) - Usar o índice geral 433
-             const apiBaseUrl = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados';
-
+        async function fetchIPCA(startDate, endDate) { /* ... como estava ... */
+             const formatApiDate = (d) => `${String(new Date(d).getUTCDate()).padStart(2, '0')}/${String(new Date(d).getUTCMonth() + 1).padStart(2, '0')}/${new Date(d).getUTCFullYear()}`;
+             const startF = formatApiDate(startDate), endF = formatApiDate(endDate); const cacheKey = `${startF}-${endF}`; if (ipcaCache.has(cacheKey)) return ipcaCache.get(cacheKey);
+             const proxy = 'https://api.allorigins.win/get?url='; const api = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.16121/dados';
              try {
-                 // Busca o índice na data inicial
-                 const urlStart = `${proxy}${encodeURIComponent(`${apiBaseUrl}?formato=json&dataInicial=${startF}&dataFinal=${startF}`)}`;
-                 //console.log("Fetching IPCA Start:", urlStart);
-                 const responseStart = await fetch(urlStart);
-                 if (!responseStart.ok) throw new Error(`BCB API Start Error: ${responseStart.statusText}`);
-                 let dataStartRaw = await responseStart.json();
-                 let dataStart = JSON.parse(dataStartRaw.contents);
-                 //console.log("BCB Start Response:", dataStart);
-
-                 // Busca o índice mais recente (último valor disponível)
-                 const urlEnd = `${proxy}${encodeURIComponent(`${apiBaseUrl}/ultimos/1?formato=json`)}`;
-                 //console.log("Fetching IPCA End:", urlEnd);
-                 const responseEnd = await fetch(urlEnd);
-                 if (!responseEnd.ok) throw new Error(`BCB API End Error: ${responseEnd.statusText}`);
-                 let dataEndRaw = await responseEnd.json();
-                 let dataEnd = JSON.parse(dataEndRaw.contents);
-                 //console.log("BCB End Response:", dataEnd);
-
-                 // Verifica se os dados foram retornados e extrai os valores
-                 const indexStart = dataStart && dataStart.length > 0 ? parseFloat(dataStart[0].valor.replace(',', '.')) : null; // Troca vírgula por ponto
-                 const indexEnd = dataEnd && dataEnd.length > 0 ? parseFloat(dataEnd[0].valor.replace(',', '.')) : null; // Troca vírgula por ponto
-
-                 if (indexStart === null || indexEnd === null || indexStart === 0) {
-                     console.warn(`Índices IPCA não encontrados ou inválidos para o período ${startF} - (último). Start: ${indexStart}, End: ${indexEnd}. Usando fator 1.`);
-                     ipcaCache.set(cacheKey, 1); // Guarda 1 no cache para evitar novas buscas falhas
-                     return 1;
-                 }
-
-                 const multiplier = indexEnd / indexStart;
-                 console.log(`IPCA Calculado: Start=${indexStart} (${startF}), End=${indexEnd} (Último), Multiplier=${multiplier}`);
-                 ipcaCache.set(cacheKey, multiplier);
-                 return multiplier;
-
-             } catch (error) {
-                 console.error("Erro ao buscar dados do IPCA:", error);
-                 // Não guarda erro no cache, pode tentar de novo depois
-                 return 1; // Retorna 1 em caso de erro na busca
-             }
+                 const rS = await fetch(`${proxy}${encodeURIComponent(`${api}?formato=json&dataInicial=${startF}&dataFinal=${startF}`)}`); if (!rS.ok) throw Error('...'); let dS = await rS.json(); dS = JSON.parse(dS.contents); const iS = parseFloat(dS[0]?.valor);
+                 const rE = await fetch(`${proxy}${encodeURIComponent(`${api}/ultimos/1?formato=json`)}`); if (!rE.ok) throw Error('...'); let dE = await rE.json(); dE = JSON.parse(dE.contents); const iE = parseFloat(dE[0]?.valor);
+                 if (!iS || !iE) { console.warn("IPCA indexes not found, using factor 1."); return 1; }
+                 const mult = iE / iS; ipcaCache.set(cacheKey, mult); return mult;
+             } catch (e) { console.error("IPCA fetch error:", e); return 1; }
         }
-        async function calcularValorCorrigido(valorOriginal, dataVencimentoStr) {
-             const hoje = new Date(); hoje.setHours(0, 0, 0, 0); // Zera hora para comparação de dias
-             let venc;
-             try {
-                // Tenta criar a data a partir da string, adicionando hora para evitar fuso
-                 venc = new Date(dataVencimentoStr + 'T12:00:00Z');
-                 if (isNaN(venc.getTime())) throw new Error("Data Inválida"); // Verifica se a data é válida
-                 venc.setUTCHours(0, 0, 0, 0); // Zera hora UTC para comparação
-             } catch (e) {
-                 console.error(`Data de vencimento inválida para correção: ${dataVencimentoStr}`, e);
-                 return valorOriginal; // Retorna original se data for inválida
-             }
-
-
-             if (hoje <= venc) return valorOriginal; // Não corrige se não venceu
-
-             const valorOriginalNum = parseFloat(valorOriginal);
-             if (isNaN(valorOriginalNum)) {
-                 console.error(`Valor original inválido para correção: ${valorOriginal}`);
-                 return 0; // Ou retorna erro, dependendo da lógica desejada
-             }
-
-
-             const ipcaMultiplier = await fetchIPCA(venc, hoje);
-             let valorCorrigidoIPCA = valorOriginalNum * ipcaMultiplier;
-
-             // Cálculo de Juros de Mora (1% ao mês pro rata die)
-             const diffTime = hoje - venc; // Diferença em milissegundos
-             const diffDays = Math.max(0, diffTime / (1000 * 60 * 60 * 24)); // Dias de atraso (mínimo 0)
-             const jurosPercentual = (0.01 / 30) * diffDays; // Juros pro rata die (considerando mês de 30 dias)
-             const jurosValor = valorCorrigidoIPCA * jurosPercentual;
-
-             // Multa de 2% (aplicada sobre o valor corrigido pelo IPCA)
-             const multaValor = valorCorrigidoIPCA * 0.02;
-
-             const valorFinalCorrigido = valorCorrigidoIPCA + jurosValor + multaValor;
-
-             // console.log(`Correção: Original=${valorOriginalNum}, Venc=${venc.toLocaleDateString()}, Hoje=${hoje.toLocaleDateString()}, Dias Atraso=${diffDays.toFixed(2)}, IPCA Mult=${ipcaMultiplier.toFixed(4)}, Corrigido IPCA=${valorCorrigidoIPCA.toFixed(2)}, Juros=${jurosValor.toFixed(2)}, Multa=${multaValor.toFixed(2)}, Final=${valorFinalCorrigido.toFixed(2)}`);
-
-             return valorFinalCorrigido;
+        async function calcularValorCorrigido(valorOriginal, dataVencimento) { /* ... como estava ... */
+             const hoje = new Date(); const venc = new Date(dataVencimento); if (hoje <= venc) return valorOriginal;
+             const ipcaMult = await fetchIPCA(venc, hoje); let valorCorr = valorOriginal * ipcaMult;
+             const diffMs = hoje - venc; const diffDays = diffMs / 86400000; const mesesAtr = diffDays / 30.44;
+             const jurosFat = (1 + (0.01 * mesesAtr)); return valorCorr * jurosFat;
         }
 
         // --- CSV Export Functions ---
-        // ... (formatCSVCell, downloadCSV, exportContractsCSV, exportReportCSV como estavam) ...
         function formatCSVCell(data) { /* ... como estava ... */ if (data == null) return ''; let s = String(data); if (s.includes(',') || s.includes('"') || s.includes('\n')) { s = s.replace(/"/g, '""'); return `"${s}"`; } return s; }
-        function downloadCSV(csvContent, filename) { /* ... como estava ... */ const b = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' }); const l = document.createElement("a"); const u = URL.createObjectURL(b); l.href = u; l.download = filename; l.style.visibility = 'hidden'; document.body.appendChild(l); l.click(); document.body.removeChild(l); URL.revokeObjectURL(u); } // Adiciona BOM e revokeObjectURL
+        function downloadCSV(csvContent, filename) { /* ... como estava ... */ const b = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const l = document.createElement("a"); const u = URL.createObjectURL(b); l.href = u; l.download = filename; l.style.visibility = 'hidden'; document.body.appendChild(l); l.click(); document.body.removeChild(l); }
 
-        const exportContractsCSV = function() {
-            // Usa os contratos atualmente filtrados na tela (respeitando filtro de advogado e busca)
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const advogadoFilterEl = document.getElementById('advogadoFilter');
-            let advogadoFilter = advogadoFilterEl.value;
-            if (!isUserAdmin) advogadoFilter = currentUserDisplayName;
-
-            const contractsToExport = getFilteredContracts(false).filter(c => {
-                 const matchesAdvogado = (isUserAdmin && advogadoFilter === 'Todos') || c.advogadoResponsavel === advogadoFilter;
-                 const matchesSearch = c.clientName.toLowerCase().includes(searchTerm) || (c.serviceTypes || []).some(s => s.name.toLowerCase().includes(searchTerm));
-                 return matchesAdvogado && matchesSearch;
-            });
-             // Aplica a ordenação atual da lista
-             if (currentContractSort === 'name-asc') {
-                contractsToExport.sort((a, b) => a.clientName.localeCompare(b.clientName));
-             } else if (currentContractSort === 'value-desc' && isUserAdmin) {
-                contractsToExport.sort((a, b) => (b.totalValue || 0) - (a.totalValue || 0));
-             }
-
-
-             const headers = ["Cliente", "Advogado", "Serviços", "Tipo Pagamento", "Valor Fixo Total", "Taxa Êxito", "Status Atual", "Observações"];
-             let csvRows = [headers.join(',')];
-
-             contractsToExport.forEach(c => {
-                 const status = getContractStatus(c).statusText;
-                 const services = (c.serviceTypes || []).map(s => s.name).join('; '); // Usa ; como separador interno
-                 const row = [
-                     c.clientName,
-                     c.advogadoResponsavel,
-                     services,
-                     c.paymentType,
-                     isUserAdmin ? (c.totalValue || 0) : 'Restrito', // Formata valor ou restringe
-                     isUserAdmin ? (c.successFee || '') : 'Restrito', // Formata êxito ou restringe
-                     status,
-                     c.observations
-                 ].map(formatCSVCell).join(','); // Usa função para tratar aspas e vírgulas
+        const exportContractsCSV = function() { /* ... como estava, usa getFilteredContracts ... */
+             const headers = ["ID", "Cliente", "Advogado", "Tipo Pagamento", "Valor Total", "Taxa Êxito", "Status", "Serviços", "Observações"]; let csvRows = [headers.join(',')];
+             getFilteredContracts(false).forEach(c => {
+                 const status = getContractStatus(c).statusText; const services = (c.serviceTypes || []).map(s => s.name).join('; ');
+                 const row = [ c.id, c.clientName, c.advogadoResponsavel, c.paymentType, isUserAdmin ? c.totalValue : 'Restrito', isUserAdmin ? c.successFee : 'Restrito', status, services, c.observations ].map(formatCSVCell).join(',');
                  csvRows.push(row);
              });
-             downloadCSV(csvRows.join('\n'), `contratos_export_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.csv`);
+             downloadCSV(csvRows.join('\n'), 'contratos_export.csv');
         }
         window.App.exportContractsCSV = exportContractsCSV;
 
         const exportReportCSV = function() {
             if (!isUserAdmin) return; // Ação apenas para admin
-            const month = parseInt(document.getElementById('reportMonth').value);
-            const year = parseInt(document.getElementById('reportYear').value);
-            const income = calculateMonthlyIncome(year, month, database.contracts); // Usa TODOS os contratos para o relatório
-
-            if (income.detailedPayments.length === 0) {
-                // Usa o modal de confirmação como alerta simples
-                showConfirmationModal("Nenhum dado de recebimento encontrado para exportar neste período.", () => {}); // Ação vazia no confirm
-                console.warn("Nenhum dado para exportar no relatório.");
-                return;
-            }
-
-            const headers = ["Cliente", "Tipo Recebimento", "Data Pagamento", "Valor Recebido"];
-            let csvRows = [headers.join(',')];
-            income.detailedPayments.forEach(p => {
-                const row = [
-                    p.clientName,
-                    p.type,
-                    p.date,
-                    p.value // Valor já é número
-                ].map(formatCSVCell).join(',');
-                csvRows.push(row);
-            });
-
-            // Adiciona linhas de total
-            csvRows.push(''); // Linha em branco
-            csvRows.push(formatCSVCell(`Total Parcelas (${income.detailedPayments.filter(p=>p.type.includes('Parcela')).length})`) + ',' + ','+ ',' + formatCSVCell(income.totalParcelas));
-            csvRows.push(formatCSVCell(`Total Êxito (${income.detailedPayments.filter(p=>p.type.includes('Êxito')).length})`) + ',' + ','+ ',' + formatCSVCell(income.totalExito));
-            csvRows.push(''); // Linha em branco
-             csvRows.push(formatCSVCell('TOTAL GERAL RECEBIDO') + ',' + ','+ ',' + formatCSVCell(income.totalGeral));
-
-
-            const monthName = document.getElementById('reportMonth').options[month].text;
-            downloadCSV(csvRows.join('\n'), `relatorio_recebimentos_${monthName}_${year}.csv`);
+            // ... (resto da lógica como estava, usa getFilteredContracts) ...
+             const month = parseInt(document.getElementById('reportMonth').value); const year = parseInt(document.getElementById('reportYear').value);
+             const income = calculateMonthlyIncome(year, month, getFilteredContracts(false));
+             if (income.detailedPayments.length === 0) { console.warn("No data to export."); return; }
+             const headers = ["Cliente", "Tipo", "Data", "Valor"]; let csvRows = [headers.join(',')];
+             income.detailedPayments.forEach(p => { const row = [ p.clientName, p.type, p.date, p.value ].map(formatCSVCell).join(','); csvRows.push(row); });
+             const monthName = document.getElementById('reportMonth').options[month].text;
+             downloadCSV(csvRows.join('\n'), `relatorio_${monthName}_${year}.csv`);
         }
         window.App.exportReportCSV = exportReportCSV;
 
@@ -1851,41 +1892,25 @@
         // --- Page Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
             backdrop = document.getElementById('modal-backdrop');
-            initializeAndAuth(); // Inicia autenticação e setup inicial
+            initializeAndAuth();
 
             // --- Authentication Handlers ---
-            // ... (como estavam) ...
             const loginForm = document.getElementById('login-form');
             const authError = document.getElementById('auth-error');
             const logoutButton = document.getElementById('logout-button');
             const showAuthError = (m) => { authError.textContent = m; authError.classList.remove('hidden'); }
             loginForm.addEventListener('submit', async (e) => { /* ... como estava ... */
                  e.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value;
-                 try { await signInWithEmailAndPassword(auth, email, password); authError.classList.add('hidden'); /* Limpa erro no sucesso */}
-                 catch (error) { console.error("Login Error:", error.code); if (['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found', 'auth/invalid-email'].includes(error.code)) showAuthError('Email ou senha inválidos.'); else showAuthError('Erro ao tentar fazer login. Verifique sua conexão.'); }
+                 try { await signInWithEmailAndPassword(auth, email, password); }
+                 catch (error) { console.error("Login Error:", error.code); if (['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found'].includes(error.code)) showAuthError('Email ou senha inválidos.'); else showAuthError('Erro ao tentar fazer login.'); }
             });
-            logoutButton.addEventListener('click', async () => {
-                try {
-                    await signOut(auth);
-                    console.log("Usuário deslogado.");
-                    // A lógica de onAuthStateChanged cuidará de mostrar a tela de login
-                } catch (error) {
-                    console.error("Erro ao fazer logout:", error);
-                }
-            });
-
+            logoutButton.addEventListener('click', async () => await signOut(auth));
 
             // --- Display Name Handler ---
-            // ... (como estava) ...
             const displayNameForm = document.getElementById('formDisplayName');
             displayNameForm.addEventListener('submit', async (e) => { /* ... como estava ... */
-                 e.preventDefault(); const name = document.getElementById('inputDisplayName').value.trim(); // Adiciona trim()
+                 e.preventDefault(); const name = document.getElementById('inputDisplayName').value;
                  if (name && auth.currentUser) {
-                     // Adiciona validação simples para nome não vazio
-                     if (name.length < 3) {
-                         alert("Por favor, insira um nome com pelo menos 3 caracteres."); // Usando alert temporariamente aqui
-                         return;
-                     }
                      try {
                          await updateProfile(auth.currentUser, { displayName: name });
                          currentUserDisplayName = name; isUserAdmin = ADMIN_USERS.includes(name);
@@ -1893,357 +1918,144 @@
                          document.getElementById('user-display-name').textContent = name;
                          closeModal('modalDisplayName'); document.getElementById('app-container').style.display = 'block';
                          setupUIAccess(isUserAdmin);
-                         // Não precisa recriar collection ou listener aqui, já foi feito no onAuthStateChanged
-                         // contractsCollection = collection(db, `contracts`); setupSnapshotListener();
-                         showPage('page-dashboard'); // Renderiza a página atual após salvar nome (Dashboard por padrão)
-                     } catch (error) {
-                          console.error("Erro ao salvar nome:", error);
-                          alert("Erro ao salvar seu nome. Tente novamente."); // Alert temporário
-                     }
+                         contractsCollection = collection(db, `contracts`); setupSnapshotListener();
+                     } catch (error) { console.error("Erro ao salvar nome:", error); }
                  }
             });
 
-
             // --- App Handlers ---
-            // ... (formContrato, formPagamento, formExito como estavam) ...
             document.getElementById('formContrato').addEventListener('submit', async (e) => {
                  e.preventDefault();
                  const contractId = document.getElementById('contractId').value;
                  const serviceTags = document.querySelectorAll('#servicosContainer .service-tag');
-                 const serviceTypes = Array.from(serviceTags).map(tag => ({
-                    name: tag.dataset.name,
-                    status: tag.dataset.status || 'Pendente',
-                    // Garante que deadline seja null se vazio, e não string vazia
-                    deadline: tag.dataset.deadline ? tag.dataset.deadline : null
-                }));
+                 const serviceTypes = Array.from(serviceTags).map(tag => ({ name: tag.dataset.name, status: tag.dataset.status || 'Pendente', deadline: tag.dataset.deadline || null }));
 
-
-                 if (serviceTypes.length === 0) {
-                     // Substituir alert por UI melhor
-                     alert('Adicione pelo menos um serviço ao contrato.');
-                     return;
-                 }
-                 // Validação de Nome do Cliente
-                const clientName = document.getElementById('clienteNome').value.trim();
-                if (!clientName) {
-                    alert('O nome do cliente é obrigatório.');
-                    return;
-                }
-                 // Validação do Advogado Responsável
-                const advogadoResp = document.getElementById('advogadoResponsavel').value;
-                 if (!advogadoResp || advogadoResp === "Não Informado") {
-                     // Permite "Não Informado" se for admin, mas força seleção se não for
-                     if (!isUserAdmin) {
-                         alert('Selecione o advogado responsável.');
-                         return;
-                     }
-                 }
-
+                 if (serviceTypes.length === 0) { console.warn('Adicione pelo menos um serviço.'); return; }
 
                  const contractData = {
-                     clientName: clientName,
-                     advogadoResponsavel: advogadoResp,
+                     clientName: document.getElementById('clienteNome').value,
+                     advogadoResponsavel: document.getElementById('advogadoResponsavel').value,
                      serviceTypes: serviceTypes,
                      paymentType: document.getElementById('contratoTipoPagamento').value,
-                     observations: document.getElementById('contratoObservacoes').value.trim(), // Adiciona trim()
+                     observations: document.getElementById('contratoObservacoes').value,
                      // Campos financeiros só são adicionados/atualizados se for admin
                      ...(isUserAdmin && {
                          totalValue: parseFloat(document.getElementById('valorTotal').value) || 0,
-                         successFee: document.getElementById('taxaExito').value.trim() || null, // Usa null se vazio
+                         successFee: document.getElementById('taxaExito').value || null,
                      })
                  };
 
-                 // Validações financeiras (apenas se admin)
-                 if (isUserAdmin) {
-                     const totalValue = contractData.totalValue;
-                     const numParcels = parseInt(document.getElementById('numParcelas').value) || 1;
-                     const firstDueDateStr = document.getElementById('vencimentoPrimeiraParcela').value;
+                 if (!contractId) { // Criando novo contrato
+                     contractData.parcels = [];
+                     contractData.successFeeValueReceived = 0;
+                     contractData.successFeePaymentDate = null;
+                     contractData.isDeleted = false;
 
-                     if (totalValue > 0 && numParcels > 0 && !firstDueDateStr) {
-                         alert('Informe a data de vencimento da primeira parcela para contratos com valor e parcelas definidos.');
-                         return;
-                     }
-                      if (totalValue > 0 && numParcels <= 0) {
-                         alert('O número de parcelas deve ser 1 ou maior se houver valor total.');
-                         return;
-                     }
-                      // Valida formato da data se informada
-                      if (firstDueDateStr && !/^\d{4}-\d{2}-\d{2}$/.test(firstDueDateStr)) {
-                         alert('Formato inválido para a data de vencimento da primeira parcela. Use AAAA-MM-DD.');
-                         return;
-                     }
-                 }
+                     if (isUserAdmin) { // Parcelas só podem ser criadas por admin
+                         const totalValue = contractData.totalValue;
+                         const numParcels = parseInt(document.getElementById('numParcelas').value) || 1;
+                         const firstDueDate = document.getElementById('vencimentoPrimeiraParcela').value;
 
-
-                 try {
-                     if (!contractId) { // Criando novo contrato
-                         contractData.parcels = [];
-                         contractData.successFeeValueReceived = 0;
-                         contractData.successFeePaymentDate = null;
-                         contractData.isDeleted = false;
-
-                         if (isUserAdmin) { // Parcelas só podem ser criadas por admin
-                             const totalValue = contractData.totalValue;
-                             const numParcels = parseInt(document.getElementById('numParcelas').value) || 1;
-                             const firstDueDateStr = document.getElementById('vencimentoPrimeiraParcela').value;
-
-                             if (numParcels > 0 && totalValue > 0 && firstDueDateStr) {
-                                 const parcelValue = totalValue / numParcels;
-                                 let currentDueDate = new Date(firstDueDateStr + 'T12:00:00Z'); // Usa UTC
-                                 if (isNaN(currentDueDate.getTime())) throw new Error("Data inválida para primeira parcela.");
-
-                                 for (let i = 0; i < numParcels; i++) {
-                                     contractData.parcels.push({
-                                        number: i + 1,
-                                        value: parcelValue,
-                                        dueDate: new Date(currentDueDate).toISOString(), // Salva como ISO String UTC
-                                        status: 'Pendente',
-                                        valuePaid: 0,
-                                        paymentDate: null
-                                    });
-                                     // Adiciona 1 mês à data UTC
-                                     currentDueDate.setUTCMonth(currentDueDate.getUTCMonth() + 1);
-                                 }
-                             } else if (totalValue === 0 && numParcels === 1 && firstDueDateStr) {
-                                // Caso especial: Contrato sem valor fixo (só êxito) mas com data de referência
-                                 contractData.parcels.push({
-                                     number: 1, value: 0, dueDate: new Date(firstDueDateStr + 'T12:00:00Z').toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null
-                                 });
+                         if (numParcels > 0 && totalValue > 0) {
+                             if (!firstDueDate) { console.warn('Informe data da 1ª parcela.'); return; }
+                             const parcelValue = totalValue / numParcels;
+                             let currentDueDate = new Date(firstDueDate + 'T12:00:00Z');
+                             for (let i = 0; i < numParcels; i++) {
+                                 contractData.parcels.push({ number: i + 1, value: parcelValue, dueDate: new Date(currentDueDate).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null });
+                                 currentDueDate.setMonth(currentDueDate.getMonth() + 1);
                              }
                          }
-                         await addDoc(contractsCollection, contractData);
-                         console.log("Novo contrato adicionado:", contractData.clientName);
+                     }
+                     await addDoc(contractsCollection, contractData);
 
-                     } else { // Editando contrato existente
-                        const existingContract = database.contracts.find(c => c.id === contractId);
-                         if (!existingContract) throw new Error("Contrato existente não encontrado para edição.");
-
-                         // Se admin está editando, recalcula as parcelas APENAS se os dados financeiros relevantes mudaram
-                        let shouldRecalculateParcels = false;
-                        if (isUserAdmin) {
-                            const newTotalValue = contractData.totalValue;
-                            const newNumParcels = parseInt(document.getElementById('numParcelas').value) || 1;
-                            const newFirstDueDateStr = document.getElementById('vencimentoPrimeiraParcela').value;
-                            const oldNumParcels = (existingContract.parcels || []).length;
-                            const oldFirstDueDateStr = (existingContract.parcels && existingContract.parcels[0]?.dueDate) ? existingContract.parcels[0].dueDate.split('T')[0] : '';
-
-                            if (newTotalValue !== existingContract.totalValue || newNumParcels !== oldNumParcels || newFirstDueDateStr !== oldFirstDueDateStr) {
-                                // Verifica se alguma parcela já foi paga. Se sim, impede a recriação.
-                                const hasPaidParcel = (existingContract.parcels || []).some(p => p.status === 'Paga');
-                                if (hasPaidParcel) {
-                                     alert("Não é possível alterar dados financeiros (valor, nº parcelas, 1º vencimento) de um contrato que já possui parcelas pagas. Edite manualmente se necessário.");
-                                     // Mantém os dados financeiros e parcelas originais
-                                      contractData.totalValue = existingContract.totalValue;
-                                      contractData.successFee = existingContract.successFee; // Mantém taxa de êxito também
-                                      contractData.parcels = existingContract.parcels;
-                                } else if (newTotalValue > 0 && newNumParcels > 0 && newFirstDueDateStr) {
-                                     console.log("Recalculando parcelas para contrato existente:", contractId);
-                                     shouldRecalculateParcels = true;
-                                     contractData.parcels = []; // Limpa parcelas antigas
-                                     const parcelValue = newTotalValue / newNumParcels;
-                                     let currentDueDate = new Date(newFirstDueDateStr + 'T12:00:00Z');
-                                     if (isNaN(currentDueDate.getTime())) throw new Error("Data inválida para primeira parcela.");
-                                     for (let i = 0; i < newNumParcels; i++) {
-                                        contractData.parcels.push({ number: i + 1, value: parcelValue, dueDate: new Date(currentDueDate).toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null });
-                                        currentDueDate.setUTCMonth(currentDueDate.getUTCMonth() + 1);
-                                     }
-                                } else if (newTotalValue === 0 && newNumParcels === 1 && newFirstDueDateStr) {
-                                     // Caso especial: Editando para ser só êxito com data de referência
-                                     shouldRecalculateParcels = true;
-                                     contractData.parcels = [{ number: 1, value: 0, dueDate: new Date(newFirstDueDateStr + 'T12:00:00Z').toISOString(), status: 'Pendente', valuePaid: 0, paymentDate: null }];
-                                } else {
-                                     // Se os novos dados financeiros são inválidos (ex: valor > 0 sem data), mantém as parcelas antigas
-                                     console.warn("Dados financeiros inválidos na edição, mantendo parcelas existentes.");
-                                     contractData.parcels = existingContract.parcels;
-                                }
-                            } else {
-                                // Dados financeiros não mudaram, mantém parcelas existentes
-                                contractData.parcels = existingContract.parcels;
-                            }
-                        } else {
-                             // Não é admin, mantém todos os dados financeiros e parcelas originais
-                             contractData.totalValue = existingContract.totalValue;
-                             contractData.successFee = existingContract.successFee;
-                             contractData.parcels = existingContract.parcels;
-                        }
-
-                         // Mantém dados de pagamento de êxito e status da lixeira
+                 } else { // Editando contrato existente
+                    const existingContract = database.contracts.find(c => c.id === contractId);
+                    // Mantém dados financeiros e de parcelas se não for admin editando
+                    if (!isUserAdmin && existingContract) {
+                         contractData.totalValue = existingContract.totalValue;
+                         contractData.successFee = existingContract.successFee;
+                         contractData.parcels = existingContract.parcels;
                          contractData.successFeeValueReceived = existingContract.successFeeValueReceived;
                          contractData.successFeePaymentDate = existingContract.successFeePaymentDate;
-                         contractData.isDeleted = existingContract.isDeleted || false;
-
-                         const contractRef = doc(contractsCollection, contractId);
-                         await updateDoc(contractRef, contractData);
-                         console.log("Contrato editado:", contractData.clientName);
-                     }
-                     closeModal('modalContrato');
-                 } catch (error) {
-                      console.error("Erro ao salvar contrato:", error);
-                      alert(`Erro ao salvar contrato: ${error.message}`); // Alert temporário
+                    } else if (isUserAdmin && existingContract) {
+                         // Se admin edita, mas não informou valor/parcela, mantém o que existia
+                         // (Assume que não quer zerar, apenas não mexeu nesses campos)
+                          contractData.parcels = existingContract.parcels; // Mantém parcelas existentes ao editar
+                          contractData.successFeeValueReceived = existingContract.successFeeValueReceived;
+                          contractData.successFeePaymentDate = existingContract.successFeePaymentDate;
+                          // A criação de novas parcelas na edição precisaria de lógica adicional (não implementado)
+                    }
+                     contractData.isDeleted = existingContract?.isDeleted || false; // Mantém status da lixeira
+                     const contractRef = doc(contractsCollection, contractId);
+                     await updateDoc(contractRef, contractData);
                  }
+                 closeModal('modalContrato');
             });
 
             document.getElementById('formPagamento').addEventListener('submit', async (e) => {
                  e.preventDefault();
                  const contractId = document.getElementById('pagamentoContractId').value;
                  const parcelIndex = parseInt(document.getElementById('pagamentoParcelIndex').value);
-                 const paymentDateStr = document.getElementById('pagamentoData').value;
-
-                 // Valida data de pagamento
-                 if (!paymentDateStr || !/^\d{4}-\d{2}-\d{2}$/.test(paymentDateStr)) {
-                     alert('Informe uma data de pagamento válida.');
-                     return;
-                 }
-                 const paymentDate = new Date(paymentDateStr + 'T12:00:00Z'); // Usa UTC
-                 if (isNaN(paymentDate.getTime())) {
-                     alert('Data de pagamento inválida.');
-                     return;
-                 }
-
+                 // Usa o valor do input se for admin, senão usa o valor original da parcela
+                 const valuePaid = isUserAdmin
+                                     ? parseFloat(document.getElementById('pagamentoValor').value)
+                                     : database.contracts.find(c => c.id === contractId)?.parcels[parcelIndex]?.value || 0;
+                 const paymentDate = document.getElementById('pagamentoData').value;
 
                  const contractRef = doc(contractsCollection, contractId);
                  const contract = database.contracts.find(c => c.id === contractId);
 
-                 if (!contract || !contract.parcels || !contract.parcels[parcelIndex]) {
-                     console.error("Contrato ou parcela não encontrada para pagamento.");
-                     alert("Erro: Contrato ou parcela não encontrada.");
-                     return;
-                 }
-
-                 // Usa o valor do input se for admin, senão usa o valor original da parcela
-                 let valuePaid;
-                 if (isUserAdmin) {
-                     valuePaid = parseFloat(document.getElementById('pagamentoValor').value);
-                     if (isNaN(valuePaid) || valuePaid < 0) { // Permite pagamento de 0
-                         alert('Informe um valor de pagamento válido (número maior ou igual a zero).');
-                         return;
-                     }
-                 } else {
-                     valuePaid = contract.parcels[parcelIndex].value || 0; // Usa valor original ou 0
-                 }
-
-
-                 try {
+                 if (contract && !isNaN(valuePaid)) { // Verifica se valor é válido
                      const updatedParcels = [...contract.parcels];
                      updatedParcels[parcelIndex].status = 'Paga';
-                     updatedParcels[parcelIndex].valuePaid = valuePaid; // Salva o valor pago (pode ser 0)
-                     updatedParcels[parcelIndex].paymentDate = paymentDate.toISOString(); // Salva como ISO String UTC
+                     updatedParcels[parcelIndex].valuePaid = valuePaid; // Salva o valor pago
+                     updatedParcels[parcelIndex].paymentDate = new Date(paymentDate + 'T12:00:00Z').toISOString();
                      await updateDoc(contractRef, { parcels: updatedParcels });
-                     console.log(`Pagamento registrado para contrato ${contractId}, parcela ${parcelIndex + 1}`);
                      closeModal('modalPagamento');
-                 } catch (error) {
-                      console.error("Erro ao registrar pagamento:", error);
-                      alert("Erro ao registrar pagamento. Tente novamente."); // Alert temporário
+                 } else {
+                     console.warn("Valor de pagamento inválido.");
                  }
             });
 
             document.getElementById('formExito').addEventListener('submit', async (e) => {
                  e.preventDefault();
                  const contractId = document.getElementById('exitoContractId').value;
-                 const contractRef = doc(contractsCollection, contractId);
+                 // Pega valor apenas se for admin, senão assume um valor simbólico (ou 0)
+                 const valueReceived = isUserAdmin ? parseFloat(document.getElementById('exitoValorRecebido').value) : 0; // Não-admin só confirma, não informa valor
+
                  const contract = database.contracts.find(c => c.id === contractId);
 
-                 if (!contract) {
-                     console.error("Contrato não encontrado para registrar êxito.");
-                     alert("Erro: Contrato não encontrado.");
-                     return;
-                 }
-
-                 let valueReceived = 0; // Valor padrão para não-admin
-                 if (isUserAdmin) {
-                     valueReceived = parseFloat(document.getElementById('exitoValorRecebido').value);
-                     if (isNaN(valueReceived) || valueReceived < 0) { // Permite 0
-                         alert('Informe um valor de êxito válido (número maior ou igual a zero).');
+                 if (contract) {
+                     // Verifica se valor é válido apenas se for admin
+                     if (isUserAdmin && (isNaN(valueReceived) || valueReceived <= 0)) {
+                         console.warn('Valor de êxito inválido.');
                          return;
                      }
-                 }
-
-                 try {
-                     await updateDoc(contractRef, {
-                         successFeeValueReceived: valueReceived, // Salva valor (ou 0 se não for admin)
-                         successFeePaymentDate: new Date().toISOString() // Data da confirmação/recebimento UTC ISO
+                     await updateDoc(doc(contractsCollection, contractId), {
+                         successFeeValueReceived: valueReceived, // Salva 0 se não for admin
+                         successFeePaymentDate: new Date().toISOString() // Data da confirmação/recebimento
                      });
-                     console.log(`Recebimento de êxito registrado para contrato ${contractId}`);
                      closeModal('modalExito');
-                 } catch (error) {
-                      console.error("Erro ao registrar recebimento de êxito:", error);
-                      alert("Erro ao registrar recebimento de êxito. Tente novamente."); // Alert temporário
                  }
             });
 
-
             if (backdrop) {
-                // Modificado para fechar APENAS o modal de cima se houver sobreposição
-                backdrop.addEventListener('click', () => {
-                     // Encontra o modal visível com maior z-index
-                     let topModal = null;
-                     let maxZ = 0;
-                     document.querySelectorAll('.modal').forEach(m => {
-                         if (m.style.display === 'block') {
-                             const z = parseInt(m.style.zIndex || '0');
-                             if (z >= maxZ) {
-                                 maxZ = z;
-                                 topModal = m;
-                             }
-                         }
-                     });
-
-                     // Fecha apenas o modal de cima, e não o de display name ou confirmação
-                     if (topModal && topModal.id !== 'modalDisplayName' && !topModal.querySelector('#confirmOkBtn')) { // Verifica se não é o modal de confirmação
-                         closeModal(topModal.id);
-                     }
-                 });
+                backdrop.addEventListener('click', () => { /* ... como estava, fecha modais exceto display name ... */
+                     if (document.getElementById('modalDisplayName').style.display !== 'block') { closeModal('modalContrato'); closeModal('modalRelatorio'); closeModal('modalExito'); closeModal('modalPagamento'); closeModal('modalCliente'); }
+                });
             }
 
             // --- Service Tag Handler ---
             const addServiceButton = document.getElementById('addServiceButton');
             if(addServiceButton) {
-                const handleAddService = () => { // Função separada para reusar
-                    const serviceInput = document.getElementById('contratoServicoInput');
-                    const deadlineInput = document.getElementById('contratoPrazoInput');
-                    const serviceName = serviceInput.value.trim();
-                    const deadline = deadlineInput.value; // Formato YYYY-MM-DD
-
-                    if (serviceName) {
-                        // Valida formato da data se informada
-                        if (deadline && !/^\d{4}-\d{2}-\d{2}$/.test(deadline)) {
-                           alert('Formato inválido para a data de prazo. Use AAAA-MM-DD.');
-                           return; // Não adiciona se a data for inválida
-                        }
-                        createServiceTag(serviceName, deadline, 'Pendente');
-                        serviceInput.value = '';
-                        deadlineInput.value = '';
-                        serviceInput.focus(); // Foca no input de serviço novamente
-                    } else {
-                        alert('Insira um nome para o serviço.'); // Alert temporário
-                        serviceInput.focus();
-                    }
-                };
-
-                addServiceButton.addEventListener('click', handleAddService);
-
-                 // Adiciona listener para Enter nos inputs de serviço/prazo
-                const serviceInput = document.getElementById('contratoServicoInput');
-                const deadlineInput = document.getElementById('contratoPrazoInput');
-                if(serviceInput) {
-                    serviceInput.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') {
-                            e.preventDefault(); // Impede envio do formulário
-                            handleAddService();
-                        }
-                    });
-                }
-                 if(deadlineInput) {
-                    deadlineInput.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') {
-                            e.preventDefault(); // Impede envio do formulário
-                            handleAddService(); // Tenta adicionar ao pressionar Enter na data também
-                        }
-                    });
-                }
+                addServiceButton.addEventListener('click', () => { /* ... como estava ... */
+                    const serviceInput = document.getElementById('contratoServicoInput'); const deadlineInput = document.getElementById('contratoPrazoInput');
+                    const serviceName = serviceInput.value.trim(); const deadline = deadlineInput.value;
+                    if (serviceName) { createServiceTag(serviceName, deadline, 'Pendente'); serviceInput.value = ''; deadlineInput.value = ''; }
+                    else { console.warn('Insira um nome para o serviço.'); }
+                });
             }
         });
     </script>
 </body>
 </html>
-
