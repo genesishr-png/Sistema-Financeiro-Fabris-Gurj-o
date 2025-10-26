@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Biblioteca de Gráficos -->
+    <!-- Biblioteca de Gráficos (mantida caso seja usada em outro lugar, como relatórios) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -208,11 +208,8 @@
         body.is-admin .flex.admin-only { display: flex; } /* Ajuste para flex containers */
         body:not(.is-admin) .non-admin-hidden { display: none; }
 
-        /* ADICIONADO: Estilo para container dos canvas para recriação */
-        .canvas-container {
-             height: 24rem; /* h-96 */
-             position: relative; /* Necessário para Chart.js responsive */
-        }
+        /* REMOVIDO: Estilo canvas-container */
+        /* .canvas-container { ... } */
 
     </style>
 </head>
@@ -284,10 +281,8 @@
                     <a onclick="window.App.showPage('page-servicos')" id="tab-servicos" class="nav-tab">
                         <i class="fas fa-tasks mr-2"></i>Serviços
                     </a>
-                    <!-- ADICIONADO: Tab Análise Gráfica (Admin Only) -->
-                     <a onclick="window.App.showPage('page-analytics')" id="tab-analytics" class="nav-tab admin-only">
-                        <i class="fas fa-chart-bar mr-2"></i>Análise Gráfica
-                    </a>
+                    <!-- REMOVIDO: Tab Análise Gráfica -->
+                    <!-- <a onclick="window.App.showPage('page-analytics')" id="tab-analytics" class="nav-tab admin-only"> ... </a> -->
                 </div>
 
                 <!-- Ícone da Lixeira (direita) -->
@@ -311,11 +306,8 @@
                 <button onclick="window.App.openReportModal()" class="admin-only bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
                     <i class="fas fa-chart-line"></i> Relatório Mensal
                 </button>
-                <!-- REINSERIDO: Botão Análise Gráfica (discreto) -->
-                 <button onclick="window.App.showPage('page-analytics')" class="admin-only bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-3 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2 text-sm">
-                    <i class="fas fa-chart-bar"></i> Análise Gráfica
-                </button>
-                 <!-- Removido botão de ajustes -->
+                <!-- REMOVIDO: Botão Análise Gráfica -->
+                <!-- <button onclick="window.App.showPage('page-analytics')" class="admin-only ..."> ... </button> -->
             </div>
 
             <div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -405,31 +397,8 @@
              <div id="servicosListContainer" class="space-y-6"></div>
         </div>
 
-        <!-- ADICIONADO: Conteúdo da Página: Análise Gráfica (Admin Only) -->
-         <div id="page-analytics" class="hidden admin-only">
-             <div class="flex justify-between items-center mb-6">
-                 <h2 class="text-2xl font-semibold text-white">Análise Gráfica</h2>
-                 <div id="analyticsPeriodFilter" class="flex gap-1">
-                     <button onclick="window.App.setAnalyticsPeriod('12m')" class="filter-button active" data-period="12m">Últimos 12 Meses</button>
-                     <button onclick="window.App.setAnalyticsPeriod('thisYear')" class="filter-button" data-period="thisYear">Este Ano</button>
-                     <button onclick="window.App.setAnalyticsPeriod('lastYear')" class="filter-button" data-period="lastYear">Ano Passado</button>
-                 </div>
-             </div>
-             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                 <div class="dark-card p-6 rounded-lg shadow-lg">
-                     <h3 class="text-lg font-semibold text-white mb-4">Recebimentos Totais</h3>
-                     <div id="faturamentoChartContainer" class="canvas-container">
-                         <!-- Canvas será criado via JS -->
-                     </div>
-                 </div>
-                 <div class="dark-card p-6 rounded-lg shadow-lg">
-                     <h3 class="text-lg font-semibold text-white mb-4">Produção (Novos Contratos)</h3>
-                     <div id="producaoChartContainer" class="canvas-container">
-                          <!-- Canvas será criado via JS -->
-                     </div>
-                 </div>
-             </div>
-         </div>
+        <!-- REMOVIDO: Conteúdo da Página: Análise Gráfica -->
+        <!-- <div id="page-analytics" class="hidden admin-only"> ... </div> -->
 
         <!-- Conteúdo da Página: Lixeira -->
         <div id="page-lixeira" class="hidden">
@@ -639,19 +608,19 @@
         let currentInadimplentesSort = 'days-desc';
         let currentServicosSort = 'name-asc';
         let ipcaCache = new Map();
-        // REINSERIDO: Variáveis dos gráficos
-        let faturamentoChartInstance = null;
-        let producaoChartInstance = null;
+        // REMOVIDO: Variáveis dos gráficos
+        // let faturamentoChartInstance = null;
+        // let producaoChartInstance = null;
         let backdrop;
         let contractListPage = 0;
         const CONTRACTS_PER_PAGE = 30;
         const ADMIN_USERS = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "D'Arc"]; // Usernames dos admins
         let currentUserDisplayName = null;
         let isUserAdmin = false;
-        // REINSERIDO: Variável de período dos gráficos
-        let currentAnalyticsPeriod = '12m';
-        // ADICIONADO: Guarda a ID da página atual para lógica de limpeza
-        let currentPageId = 'page-dashboard'; // Inicia com o dashboard
+        // REMOVIDO: Variável de período dos gráficos
+        // let currentAnalyticsPeriod = '12m';
+        // REMOVIDO: Variável currentPageId
+        // let currentPageId = 'page-dashboard';
 
         // --- Initialization and Authentication ---
         async function initializeAndAuth() {
@@ -697,10 +666,10 @@
                             appContainer.style.display = 'block';
                             setupUIAccess(isUserAdmin);
                             contractsCollection = collection(db, `contracts`);
-                            setupSnapshotListener();
+                            setupSnapshotListener(); // Listener já chama render() e showPage() inicial
                             loadingOverlay.style.display = 'none';
-                            // Mostra a página inicial após o login e inicialização
-                            showPage(currentPageId); // Garante que a página inicial seja renderizada
+                            // REMOVIDO: Chamada showPage daqui, pois render() cuidará disso
+                            // showPage('page-dashboard');
                         }
                     } else {
                         console.log("Nenhum usuário logado.");
@@ -710,12 +679,12 @@
                         authOverlay.style.display = 'flex';
                         appContainer.style.display = 'none';
                         loadingOverlay.style.display = 'none';
-                        // Limpa gráficos ao deslogar
-                        if (faturamentoChartInstance) faturamentoChartInstance.destroy();
-                        if (producaoChartInstance) producaoChartInstance.destroy();
-                        faturamentoChartInstance = null;
-                        producaoChartInstance = null;
-                        currentPageId = 'page-dashboard'; // Reseta para a página inicial
+                        // REMOVIDO: Limpeza de gráficos no logout
+                        // if (faturamentoChartInstance) faturamentoChartInstance.destroy();
+                        // if (producaoChartInstance) producaoChartInstance.destroy();
+                        // faturamentoChartInstance = null;
+                        // producaoChartInstance = null;
+                        // currentPageId = 'page-dashboard';
                     }
                 });
 
@@ -772,109 +741,72 @@
         }
 
         const showPage = (pageId) => {
-            console.log(`Tentando mostrar página: ${pageId}. Página anterior: ${currentPageId}`);
-            const previousPageId = currentPageId; // Guarda a página anterior
+             console.log(`Tentando mostrar página: ${pageId}.`);
 
-            // Limpa gráficos SE a página anterior era a de analytics E a nova página NÃO é a de analytics
-            if (previousPageId === 'page-analytics' && pageId !== 'page-analytics') {
-                console.log("Saindo da página de analytics. Limpando gráficos...");
-                try {
-                    if (faturamentoChartInstance) {
-                        faturamentoChartInstance.destroy();
-                        faturamentoChartInstance = null;
-                        console.log("Instância faturamentoChartInstance destruída.");
-                    }
-                     if (producaoChartInstance) {
-                        producaoChartInstance.destroy();
-                        producaoChartInstance = null;
-                        console.log("Instância producaoChartInstance destruída.");
-                    }
-                    // Limpa os containers para remover os canvas antigos
-                    const fatContainer = document.getElementById('faturamentoChartContainer');
-                    const prodContainer = document.getElementById('producaoChartContainer');
-                    if(fatContainer) fatContainer.innerHTML = '';
-                    if(prodContainer) prodContainer.innerHTML = '';
-                    console.log("Containers dos gráficos limpos.");
-                } catch(e){
-                    console.error("Erro ao destruir gráficos:", e);
-                }
-            }
+             // Lista de todas as páginas e tabs
+             // REMOVIDO: 'page-analytics', 'tab-analytics'
+             const allPages = ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-lixeira'];
+             const allTabs = ['tab-dashboard', 'tab-inadimplentes', 'tab-servicos', 'tab-lixeira'];
 
-            // Lista de todas as páginas e tabs
-            const allPages = ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-analytics', 'page-lixeira'];
-            const allTabs = ['tab-dashboard', 'tab-inadimplentes', 'tab-servicos', 'tab-analytics', 'tab-lixeira'];
+             // Esconde todas as páginas primeiro
+             allPages.forEach(id => {
+                 const el = document.getElementById(id);
+                 if (el) el.classList.add('hidden');
+             });
 
-            // Esconde todas as páginas primeiro
-            allPages.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.classList.add('hidden');
-            });
+             // Desativa todas as tabs primeiro
+             allTabs.forEach(id => {
+                 const tab = document.getElementById(id);
+                  if (tab) {
+                      // Verifica se é o ícone da lixeira para usar a classe correta
+                      if (id === 'tab-lixeira') {
+                          tab.classList.remove('active'); // Remove a classe de ícone ativo
+                      } else {
+                          tab.classList.remove('active'); // Remove a classe de tab ativa
+                      }
+                  }
+             });
 
-            // Desativa todas as tabs primeiro
-            allTabs.forEach(id => {
-                const tab = document.getElementById(id);
-                 if (tab) {
-                     // Verifica se é o ícone da lixeira para usar a classe correta
-                     if (id === 'tab-lixeira') {
-                         tab.classList.remove('active'); // Remove a classe de ícone ativo
-                     } else {
-                         tab.classList.remove('active'); // Remove a classe de tab ativa
-                     }
-                 }
-            });
+              // Mostra a página clicada (respeitando admin-only)
+             const targetPage = document.getElementById(pageId);
+             if (targetPage) {
+                 // REMOVIDO: Checagem admin-only para page-analytics
+                 targetPage.classList.remove('hidden');
+                 console.log(`Página ${pageId} exibida.`);
+             } else {
+                  console.error(`Página ${pageId} não encontrada! Voltando para dashboard.`);
+                  showPage('page-dashboard'); // Redireciona se a página não existe
+                  return;
+             }
 
-            // Mostra a página clicada (respeitando admin-only)
-            const targetPage = document.getElementById(pageId);
-            if (targetPage) {
-                if(targetPage.classList.contains('admin-only') && !isUserAdmin) {
-                     console.warn("Acesso negado a ", pageId);
-                     // Importante: Chama showPage recursivamente para garantir a limpeza correta
-                     currentPageId = pageId; // Define temporariamente para a lógica de limpeza funcionar
-                     showPage('page-dashboard'); // Redireciona para o dashboard
-                     return;
-                 }
-                targetPage.classList.remove('hidden');
-                console.log(`Página ${pageId} exibida.`);
-            } else {
-                 console.error(`Página ${pageId} não encontrada! Voltando para dashboard.`);
-                 currentPageId = pageId; // Define temporariamente para a lógica de limpeza funcionar
-                 showPage('page-dashboard'); // Redireciona se a página não existe
-                 return;
-            }
+             // Ativa a tab correspondente
+             // REMOVIDO: Condição ternária envolvendo page-analytics
+              const tabId = pageId === 'page-lixeira' ? 'tab-lixeira' : `tab-${pageId.split('-')[1]}`;
+             const targetTab = document.getElementById(tabId);
+             if (targetTab) {
+                  // Aplica a classe ativa correta (nav-tab ou nav-tab-icon)
+                  targetTab.classList.add('active');
+                  console.log(`Tab ${tabId} ativada.`);
+             } else {
+                  console.warn(`Tab ${tabId} não encontrada para a página ${pageId}.`);
+             }
 
-            // Ativa a tab correspondente
-            const tabId = pageId === 'page-analytics' ? 'tab-analytics' :
-                          pageId === 'page-lixeira' ? 'tab-lixeira' : // Garante que a tab da lixeira seja correta
-                          `tab-${pageId.split('-')[1]}`;
-            const targetTab = document.getElementById(tabId);
-            if (targetTab) {
-                 // Aplica a classe ativa correta (nav-tab ou nav-tab-icon)
-                 targetTab.classList.add('active');
-                 console.log(`Tab ${tabId} ativada.`);
-            } else {
-                 console.warn(`Tab ${tabId} não encontrada para a página ${pageId}.`);
-            }
+             // Renderiza o conteúdo específico da página que acabou de ser mostrada
+             const filteredData = getFilteredContracts(false);
+             const allFilteredData = getFilteredContracts(true); // Para lixeira
 
-             // ATUALIZA a página atual global APENAS DEPOIS de toda a lógica
-            currentPageId = pageId;
-
-            // Renderiza o conteúdo específico da página que acabou de ser mostrada
-            const filteredData = getFilteredContracts(false);
-            const allFilteredData = getFilteredContracts(true); // Para lixeira
-
-            if (pageId === 'page-dashboard') {
-                renderKanban(filteredData);
-                renderContractList(true); // Reseta a lista ao voltar pro dashboard
-            } else if (pageId === 'page-inadimplentes') {
-                renderInadimplentesPage(filteredData);
-            } else if (pageId === 'page-servicos') {
-                renderServicosPage(filteredData);
-            } else if (pageId === 'page-analytics' && isUserAdmin) {
-                renderAnalyticsPage(filteredData); // Chama a renderização dos gráficos
-            } else if (pageId === 'page-lixeira') {
-                renderLixeiraPage(allFilteredData);
-            }
-        }
+             if (pageId === 'page-dashboard') {
+                 renderKanban(filteredData);
+                 renderContractList(true); // Reseta a lista ao voltar pro dashboard
+             } else if (pageId === 'page-inadimplentes') {
+                 renderInadimplentesPage(filteredData);
+             } else if (pageId === 'page-servicos') {
+                 renderServicosPage(filteredData);
+             // REMOVIDO: Else if para page-analytics
+             } else if (pageId === 'page-lixeira') {
+                 renderLixeiraPage(allFilteredData);
+             }
+         }
         window.App.showPage = showPage;
 
         async function render() {
@@ -884,15 +816,10 @@
             const filteredData = getFilteredContracts(false);
             const allFilteredData = getFilteredContracts(true); // Para lixeira
 
-            // Não busca mais o current page aqui, usa a variável global currentPageId
-            if (!currentPageId) {
-                console.warn("Nenhuma página atual definida no render, definindo dashboard.");
-                currentPageId = 'page-dashboard'; // Garante que há uma página definida
-            }
-            const pageId = currentPageId;
+            // Determina a página atual
+            const currentPage = document.querySelector('div[id^="page-"]:not(.hidden)');
+            const pageId = currentPage ? currentPage.id : 'page-dashboard'; // Default para dashboard se nenhuma estiver visível
 
-            // Renderiza APENAS o conteúdo da página ATUAL
-            // Evita re-renderizar gráficos se não estiver na página de analytics
             console.log(`Renderizando conteúdo para a página atual: ${pageId}`);
             if (pageId === 'page-dashboard') {
                 await renderKanban(filteredData);
@@ -901,10 +828,7 @@
                 await renderInadimplentesPage(filteredData);
             } else if (pageId === 'page-servicos') {
                 renderServicosPage(filteredData);
-            } else if (pageId === 'page-analytics' && isUserAdmin) {
-                 // A renderização dos gráficos é chamada SOMENTE pelo showPage quando entramos na aba
-                 // renderAnalyticsPage(filteredData); // NÃO chama aqui para evitar re-renderização desnecessária
-                 console.log("Na página de analytics, renderização dos gráficos feita pelo showPage.");
+            // REMOVIDO: Else if para page-analytics
             } else if (pageId === 'page-lixeira') {
                 renderLixeiraPage(allFilteredData);
             }
@@ -1014,194 +938,97 @@
         }
 
        // ... (Restante das funções createParcelCard, createExitoCard, renderDashboard, etc., permanecem as mesmas) ...
-       // Certifique-se de que todas as funções auxiliares chamadas aqui ainda existem no código.
+        function createParcelCard(contract, parcel, index, type, remainingValue, valorCorrigido = null) {
+            const vencimento = new Date(parcel.dueDate);
+            const formattedDate = vencimento.toLocaleDateString('pt-BR', {timeZone: 'UTC'});
+            const formattedValue = isUserAdmin ? parcel.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
+            const formattedRemaining = isUserAdmin ? remainingValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
+            const formattedCorrigido = isUserAdmin && valorCorrigido ? valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
 
-        // --- Analytics Functions (Admin Only) ---
-        // (Funções getAnnualChartData, getAnnualProducaoData, renderAnalyticsPage, setAnalyticsPeriod como na versão anterior)
-         // --- Analytics Functions (Admin Only) - REINSERIDO ---
-         function getAnnualChartData(period, contractsToRender) {
-             if (!isUserAdmin) return { labels: [], data: [] }; // Retorna vazio se não for admin
+            let actionButton = '';
+            let statusClass = '';
+            let valorHtml = '';
 
-            const labels = [], data = [];
-            const meses = ["Jan", "Fev", "Mar", "Abr", "Maio", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-            const hoje = new Date();
-             if (period === '12m') {
-                 for (let i = 11; i >= 0; i--) {
-                     const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
-                     labels.push(`${meses[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}`);
-                     const income = calculateMonthlyIncome(d.getFullYear(), d.getMonth(), contractsToRender);
-                     data.push(income.totalGeral);
-                 }
-            } else if (period === 'thisYear') {
-                 for (let i = 0; i < 12; i++) {
-                     labels.push(meses[i]);
-                     const income = calculateMonthlyIncome(hoje.getFullYear(), i, contractsToRender);
-                     data.push(income.totalGeral);
-                 }
-            } else if (period === 'lastYear') {
-                 const lastYear = hoje.getFullYear() - 1;
-                 for (let i = 0; i < 12; i++) {
-                     labels.push(meses[i]);
-                     const income = calculateMonthlyIncome(lastYear, i, contractsToRender);
-                     data.push(income.totalGeral);
-                 }
+             if (type === 'vencida') {
+                 statusClass = 'border-red-400';
+                 valorHtml = isUserAdmin ? `
+                     <div class="flex items-center text-gray-400 text-xs"><strong>Original:</strong><span class="ml-auto font-medium line-through">${formattedValue}</span></div>
+                     <div class="flex items-center text-red-400"><strong>Corrigido:</strong><span class="ml-auto font-semibold text-lg">${formattedCorrigido}</span></div>`
+                     : `<div class="text-red-400 font-semibold">Vencida</div>`;
+             } else if (type === 'a-vencer') {
+                  statusClass = 'border-yellow-400';
+                  valorHtml = isUserAdmin ? `
+                     <div class="flex items-center text-gray-300"><i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-500"></i><strong>Valor:</strong><span class="ml-auto font-semibold text-lg text-white">${formattedValue}</span></div>`
+                     : `<div class="text-yellow-400 font-semibold">A vencer</div>`;
+             } else { // Paga
+                  statusClass = 'border-gray-600';
+                  const formattedPaidValue = isUserAdmin ? (parcel.valuePaid || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
+                  const paymentDate = new Date(parcel.paymentDate).toLocaleDateString('pt-BR', {timeZone: 'UTC'});
+                  valorHtml = isUserAdmin ? `
+                     <div class="flex items-center text-gray-300"><i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-500"></i><strong>Valor:</strong><span class="ml-auto font-semibold text-lg text-white">${formattedValue}</span></div>`
+                     : ''; // Não mostra valor se não for admin e já estiver pago
+                  actionButton = `<div class="mt-4 text-center text-sm bg-green-900/50 text-green-300 p-2 rounded-md font-medium">Pago ${isUserAdmin ? formattedPaidValue : ''} em ${paymentDate}</div>`;
+             }
+
+            // Botão de pagamento visível para todos, mas modal não terá valor se não for admin
+            if (type !== 'paga') {
+                actionButton = `<button onclick="window.App.openPaymentModal('${contract.id}', ${index})" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2"><i class="fas fa-check"></i> Registrar Pagamento</button>`;
             }
-             return { labels, data };
+
+            // Informação extra de valor apenas para admin
+            let extraInfoHtml = isUserAdmin ? `<div class="text-xs text-gray-400 border-t border-gray-700 pt-2 mt-3 flex justify-between"><span>Contrato: <strong>${(contract.totalValue || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></span> <span>Restante: <strong>${formattedRemaining}</strong></span></div>` : '';
+
+            return `
+                <div class="dark-card p-4 rounded-lg shadow-md border-l-4 ${statusClass}">
+                    <p class="font-bold text-white">${contract.clientName}</p>
+                    <p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')} - Parcela ${parcel.number}/${contract.parcels.length || 1}</p>
+                    <div class="space-y-2 text-sm">
+                        ${valorHtml}
+                        <div class="flex items-center text-gray-300">
+                            <i class="fas fa-calendar-alt w-5 text-center mr-2 text-gray-500"></i>
+                            <strong>Vencimento:</strong>
+                            <span class="ml-auto font-medium">${formattedDate}</span>
+                        </div>
+                    </div>
+                    ${extraInfoHtml}
+                    ${actionButton}
+                </div>`;
         }
 
-        function getAnnualProducaoData(period, contractsToRender) {
-             if (!isUserAdmin) return { labels: [], data: [] }; // Retorna vazio se não for admin
-
-            const labels = [], data = [];
-            const meses = ["Jan", "Fev", "Mar", "Abr", "Maio", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-            const hoje = new Date();
-            let yearToScan, startRange, endRange;
-             if (period === '12m') {
-                 for (let i = 11; i >= 0; i--) { const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1); labels.push(`${meses[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}`); }
-                 startRange = new Date(hoje.getFullYear(), hoje.getMonth() - 11, 1);
-                 endRange = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
-            } else if (period === 'thisYear') {
-                 yearToScan = hoje.getFullYear(); labels.push(...meses);
-                 startRange = new Date(yearToScan, 0, 1); endRange = new Date(yearToScan, 11, 31);
-            } else if (period === 'lastYear') {
-                 yearToScan = hoje.getFullYear() - 1; labels.push(...meses);
-                 startRange = new Date(yearToScan, 0, 1); endRange = new Date(yearToScan, 11, 31);
-            }
-             const monthlyProduction = new Array(12).fill(0);
-             startRange.setHours(0,0,0,0); endRange.setHours(23,59,59,999);
-             contractsToRender.filter(c => c.parcels && c.parcels.length > 0).forEach(contract => {
-                 // Adiciona checagem para dueDate inválido na primeira parcela
-                 if (!contract.parcels[0].dueDate) {
-                     console.warn(`Contrato ${contract.id}: dueDate inválido na primeira parcela para cálculo de produção.`);
-                     return;
-                 }
-                 const firstDueDate = new Date(contract.parcels[0].dueDate);
-                  if (isNaN(firstDueDate.getTime())) {
-                     console.warn(`Contrato ${contract.id}: Data inválida na primeira parcela: ${contract.parcels[0].dueDate}`);
-                     return;
-                 }
-
-                 if (firstDueDate >= startRange && firstDueDate <= endRange) {
-                     let dataIndex;
-                     if (period === '12m') {
-                         const startMonth = startRange.getMonth();
-                         const currentMonth = firstDueDate.getMonth();
-                         const startYear = startRange.getFullYear();
-                         const currentYear = firstDueDate.getFullYear();
-                         dataIndex = (currentYear - startYear) * 12 + (currentMonth - startMonth);
-                     }
-                     else { dataIndex = firstDueDate.getMonth(); }
-
-                     if (dataIndex >= 0 && dataIndex < 12) monthlyProduction[dataIndex] += (contract.totalValue || 0);
-                 }
-             });
-             return { labels, data: monthlyProduction };
+        function createExitoCard(contract) {
+             const taxaExitoDisplay = isUserAdmin ? contract.successFee : '[Restrito]';
+             return `
+                <div class="dark-card p-4 rounded-lg shadow-md border-l-4 border-indigo-400">
+                    <p class="font-bold text-white">${contract.clientName}</p>
+                    <p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
+                    <div class="my-4 text-center">
+                        <p class="text-sm text-gray-400">Bonificação Pendente</p>
+                        <p class="text-2xl font-semibold text-indigo-400">${taxaExitoDisplay}</p>
+                    </div>
+                    <button onclick="window.App.openExitoModal('${contract.id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2"><i class="fas fa-gavel"></i> Registrar Recebimento</button>
+                </div>`;
         }
 
-        function renderAnalyticsPage(contractsToRender) {
-             // Adiciona verificação extra para garantir que só renderize na página correta
-            if (currentPageId !== 'page-analytics' || !isUserAdmin) {
-                 console.log("Tentativa de renderizar analytics fora da página correta ou sem permissão. Abortando.");
-                 return;
-             }
-             console.log("Renderizando página de analytics...");
-
-             const fatContainer = document.getElementById('faturamentoChartContainer');
-             const prodContainer = document.getElementById('producaoChartContainer');
-
-             // Garante que os containers estejam limpos e os canvas existam ANTES de criar os gráficos
-             if (fatContainer && !fatContainer.querySelector('canvas')) {
-                 fatContainer.innerHTML = '<canvas id="faturamentoChart"></canvas>';
-                 console.log("Canvas faturamentoChart recriado.");
-             } else if (!fatContainer) {
-                 console.error("Container faturamentoChartContainer não encontrado!"); return;
-             }
-             if (prodContainer && !prodContainer.querySelector('canvas')) {
-                 prodContainer.innerHTML = '<canvas id="producaoChart"></canvas>';
-                 console.log("Canvas producaoChart recriado.");
-             } else if (!prodContainer) {
-                 console.error("Container producaoChartContainer não encontrado!"); return;
-             }
-
-             // Obtém os elementos canvas APÓS garantir que existem
-             const ctxFaturamentoEl = document.getElementById('faturamentoChart');
-             const ctxProducaoEl = document.getElementById('producaoChart');
-
-             // Verifica se os elementos canvas foram encontrados
-             if (!ctxFaturamentoEl || !ctxProducaoEl) {
-                 console.error("Elementos canvas não encontrados após recriação!");
-                 return;
-             }
-
-             // Tenta obter o contexto 2d
-             let ctxFaturamento, ctxProducao;
-             try {
-                ctxFaturamento = ctxFaturamentoEl.getContext('2d');
-                ctxProducao = ctxProducaoEl.getContext('2d');
-                if (!ctxFaturamento || !ctxProducao) throw new Error("Contexto 2D não pôde ser obtido.");
-             } catch(e) {
-                 console.error("Erro ao obter contexto 2D dos canvas:", e);
-                 return; // Sai se não conseguir o contexto
-             }
-
-
-             // Destroi instâncias antigas se existirem (segurança extra)
-             if (faturamentoChartInstance) {
-                 faturamentoChartInstance.destroy();
-                 faturamentoChartInstance = null;
-                 console.log("Instância faturamentoChartInstance antiga destruída (segurança).");
-             }
-             if (producaoChartInstance) {
-                 producaoChartInstance.destroy();
-                 producaoChartInstance = null;
-                 console.log("Instância producaoChartInstance antiga destruída (segurança).");
-             }
-
-             const faturamentoData = getAnnualChartData(currentAnalyticsPeriod, contractsToRender);
-             const producaoData = getAnnualProducaoData(currentAnalyticsPeriod, contractsToRender);
-
-             Chart.defaults.color = '#9ca3af'; Chart.defaults.borderColor = '#374151';
-
-             try {
-                 faturamentoChartInstance = new Chart(ctxFaturamento, { type: 'bar', data: { labels: faturamentoData.labels, datasets: [{ label: 'Faturamento Total Recebido', data: faturamentoData.data, backgroundColor: 'rgba(79, 70, 229, 0.6)', borderColor: 'rgba(99, 102, 241, 1)', borderWidth: 1, borderRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: (v) => 'R$ ' + v.toLocaleString('pt-BR') } } }, plugins: { tooltip: { callbacks: { label: (c) => (c.dataset.label || '') + ': ' + new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.parsed.y) } } } } });
-                 console.log("Novo faturamentoChartInstance criado.");
-
-                 producaoChartInstance = new Chart(ctxProducao, { type: 'bar', data: { labels: producaoData.labels, datasets: [{ label: 'Valor de Novos Contratos', data: producaoData.data, backgroundColor: 'rgba(14, 165, 233, 0.6)', borderColor: 'rgba(56, 189, 248, 1)', borderWidth: 1, borderRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: (v) => 'R$ ' + v.toLocaleString('pt-BR') } } }, plugins: { tooltip: { callbacks: { label: (c) => (c.dataset.label || '') + ': ' + new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.parsed.y) } } } } });
-                 console.log("Novo producaoChartInstance criado.");
-             } catch(e) {
-                 console.error("Erro ao criar instâncias do Chart.js:", e);
-                 // Limpa instâncias se a criação falhou
-                 if(faturamentoChartInstance) faturamentoChartInstance.destroy();
-                 if(producaoChartInstance) producaoChartInstance.destroy();
-                 faturamentoChartInstance = null;
-                 producaoChartInstance = null;
-                 // Opcional: Mostrar mensagem de erro na UI
-                 if (fatContainer) fatContainer.innerHTML = '<p class="text-red-500">Erro ao carregar gráfico de faturamento.</p>';
-                 if (prodContainer) prodContainer.innerHTML = '<p class="text-red-500">Erro ao carregar gráfico de produção.</p>';
-             }
+        function renderDashboard(aVencer, vencido, pago, totalContratos) {
+            // Atualiza apenas os cards que devem ser mostrados
+             document.getElementById('dash-a-receber').textContent = aVencer.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+             document.getElementById('dash-vencido').textContent = vencido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+             document.getElementById('dash-recebido').textContent = pago.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+             document.getElementById('dash-contratos').textContent = totalContratos; // Total de contratos do usuário (ou todos para admin)
         }
-        window.App.renderAnalyticsPage = renderAnalyticsPage;
-
-        const setAnalyticsPeriod = function(period) {
-             if (!isUserAdmin) return; // Ação apenas para admin
-             currentAnalyticsPeriod = period;
-             // Atualiza botões de filtro
-             const filterButtons = document.querySelectorAll('#analyticsPeriodFilter .filter-button');
-             if (filterButtons.length > 0) {
-                 filterButtons.forEach(btn => btn.classList.remove('active'));
-                 const activeButton = document.querySelector(`#analyticsPeriodFilter .filter-button[data-period="${period}"]`);
-                 if(activeButton) activeButton.classList.add('active');
-             } else {
-                 console.warn("Botões de filtro de período da análise não encontrados.");
-             }
-             // Re-renderiza os gráficos com os dados filtrados
-             renderAnalyticsPage(getFilteredContracts(false));
-        }
-        window.App.setAnalyticsPeriod = setAnalyticsPeriod;
 
 
-       // --- Restante do código (Lixeira, Modais, Cálculos, CSV, Inicialização) ---
-       // ... (Colar aqui o restante do código JS que não foi modificado nesta etapa) ...
+        // --- Analytics Functions (Admin Only) - REMOVIDO ---
+        // function getAnnualChartData(...) { ... }
+        // function getAnnualProducaoData(...) { ... }
+        // function renderAnalyticsPage(...) { ... }
+        // window.App.renderAnalyticsPage = renderAnalyticsPage;
+        // const setAnalyticsPeriod = function(...) { ... }
+        // window.App.setAnalyticsPeriod = setAnalyticsPeriod;
+        // window.App.setChartPeriod = setAnalyticsPeriod; // Alias
+
+        // --- Restante do código (Lixeira, Modais, Cálculos, CSV, Inicialização) ---
+        // ... (Colar aqui o restante do código JS que não foi modificado nesta etapa) ...
         // --- Lixeira Functions ---
         function renderLixeiraPage(contractsToRender) {
              const container = document.getElementById('lixeiraListContainer');
@@ -1456,7 +1283,7 @@
 
              // Fecha o backdrop apenas se não houver outros modais abertos (exceto o de confirmação)
              const anyModalOpen = Array.from(document.querySelectorAll('.modal')).some(
-                 m => m.style.display === 'block' && m.id !== 'confirmModal' // Ajuste o ID se usar um diferente
+                 m => m.style.display === 'block' && !m.querySelector('#confirmOkBtn') // Verifica se não é o modal de confirmação
              );
              if(backdrop && !anyModalOpen) {
                  backdrop.style.display = 'none';
@@ -1686,7 +1513,19 @@
 
 
         // ... (Restante das funções: populateDateSelectors, calculateMonthlyIncome, generateAndShowReport, openExitoModal, createServiceTag, fetchIPCA, calcularValorCorrigido, formatCSVCell, downloadCSV, exportContractsCSV, exportReportCSV, event listeners DOMContentLoaded) ...
-        // ... Assegurar que estas funções estão presentes e corretas ...
+        function populateDateSelectors() { /* ... como estava ... */
+            const monthSelect = document.getElementById('reportMonth'); const yearSelect = document.getElementById('reportYear');
+             const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+             const anoAtual = new Date().getFullYear();
+              // Limpa selects antes de popular para evitar duplicação se chamado mais de uma vez
+             monthSelect.innerHTML = '';
+             yearSelect.innerHTML = '';
+
+             meses.forEach((mes, index) => { monthSelect.add(new Option(mes, index)); });
+             for (let i = anoAtual; i >= anoAtual - 5; i--) { yearSelect.add(new Option(i, i)); }
+             monthSelect.value = new Date().getMonth(); yearSelect.value = anoAtual;
+        }
+
         function calculateMonthlyIncome(year, month, contractsToRender) {
              // Retorna 0 se não for admin
              if (!isUserAdmin) return { totalParcelas: 0, totalExito: 0, totalGeral: 0, detailedPayments: [] };
@@ -2056,7 +1895,7 @@
                          setupUIAccess(isUserAdmin);
                          // Não precisa recriar collection ou listener aqui, já foi feito no onAuthStateChanged
                          // contractsCollection = collection(db, `contracts`); setupSnapshotListener();
-                         showPage(currentPageId); // Renderiza a página atual após salvar nome
+                         showPage('page-dashboard'); // Renderiza a página atual após salvar nome (Dashboard por padrão)
                      } catch (error) {
                           console.error("Erro ao salvar nome:", error);
                           alert("Erro ao salvar seu nome. Tente novamente."); // Alert temporário
@@ -2350,7 +2189,7 @@
                      });
 
                      // Fecha apenas o modal de cima, e não o de display name ou confirmação
-                     if (topModal && topModal.id !== 'modalDisplayName' && !topModal.classList.contains('confirm-modal')) { // Adiciona classe a modal de confirmação se necessário
+                     if (topModal && topModal.id !== 'modalDisplayName' && !topModal.querySelector('#confirmOkBtn')) { // Verifica se não é o modal de confirmação
                          closeModal(topModal.id);
                      }
                  });
