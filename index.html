@@ -398,14 +398,28 @@
                     <input type="text" id="servicosSearchInput" onkeyup="window.App.renderServicosPage()" placeholder="🔎 Pesquisar..." class="w-full md:w-auto p-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white">
                 </div>
             </div>
-             <div id="servicosListContainer" class="space-y-6"></div>
-        </div>
+            <div id="page-analytics" class="hidden admin-only">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-white">Análise Gráfica</h2>
+            </div>
 
-        <!-- Conteúdo da Página: Análise Gráfica (Admin Only) - REMOVIDO -->
-        <!-- <div id="page-analytics" class="hidden admin-only"> ... </div> -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div class="dark-card p-6 rounded-lg shadow-lg">
+                    <h3 class="text-lg font-semibold text-gray-300 mb-4">Faturamento Real (Últimos 12 Meses)</h3>
+                    <div class="relative" style="height: 350px;">
+                        <canvas id="actualIncomeChart"></canvas>
+                    </div>
+                </div>
 
-        <!-- Conteúdo da Página: Lixeira -->
-        <div id="page-lixeira" class="hidden">
+                                <div class="dark-card p-6 rounded-lg shadow-lg">
+                    <h3 class="text-lg font-semibold text-gray-300 mb-4">Projeção de Ganhos (Próximos 12 Meses)</h3>
+                    <p class="text-sm text-gray-400 mb-4 -mt-3">(Baseado em parcelas pendentes)</p>
+                    <div class="relative" style="height: 350px;">
+                        <canvas id="projectedIncomeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-2xl font-semibold text-white">Lixeira de Contratos</h2>
             </div>
@@ -612,6 +626,9 @@
         let currentInadimplentesSort = 'days-desc';
         let currentServicosSort = 'name-asc';
         let ipcaCache = new Map();
+                let actualIncomeChartInstance = null;
+                let projectedIncomeChartInstance = null;
+                // REMOVIDO: Variáveis dos gráficos (o comentário antigo estava aqui)
         // REMOVIDO: Variáveis dos gráficos
         // let faturamentoChartInstance = null;
         // let producaoChartInstance = null;
@@ -737,7 +754,7 @@
         const showPage = (pageId) => {
             // Esconde todas as páginas e desativa tabs
             // REMOVIDO: 'page-analytics' da lista
-            ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-lixeira'].forEach(id => {
+            ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-lixeira', 'page-analytics'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.add('hidden');
             });
@@ -747,7 +764,15 @@
             });
 
             // REMOVIDO: Lógica de limpar/destruir gráficos
-
+           // Destrói instâncias de gráficos para evitar sobreposição
+            if (actualIncomeChartInstance) {
+                actualIncomeChartInstance.destroy();
+                actualIncomeChartInstance = null;
+            }
+            if (projectedIncomeChartInstance) {
+                projectedIncomeChartInstance.destroy();
+                projectedIncomeChartInstance = null;
+            }
             // Mostra a página clicada
             const targetPage = document.getElementById(pageId);
             if (targetPage) {
@@ -770,12 +795,19 @@
                 renderContractList(true);
             } else if (pageId === 'page-inadimplentes') {
                 renderInadimplentesPage(filteredData);
-            } else if (pageId === 'page-servicos') {
-                renderServicosPage(filteredData);
-            // REMOVIDO: Else if para page-analytics
-            } else if (pageId === 'page-lixeira') {
-                renderLixeiraPage(allFilteredData); // Lixeira usa dados incluindo deletados
-            }
+           } else if (pageId === 'page-servicos') {
+                renderServicosPage(filteredData);
+            // REMOVIDO: Else if para page-analytics
+            } else if (pageId === 'page-lixeira') {
+                renderLixeiraPage(allFilteredData); // Lixeira usa dados incluindo deletados
+            
+            // ----- COLE O NOVO BLOCO AQUI ----- //
+            } else if (pageId === 'page-analytics') {
+                // Certifique-se de que só renderiza se for admin, embora a página já esteja oculta por CSS
+                if (isUserAdmin) {
+                    renderAnalyticsPage(allFilteredData); // Usa todos os dados para os gráficos
+                }
+            }           
         }
         window.App.showPage = showPage;
 
@@ -803,10 +835,13 @@
             } else if (pageId === 'page-servicos') {
                 renderServicosPage(filteredData);
             // REMOVIDO: Else if para page-analytics
-            } else if (pageId === 'page-lixeira') {
-                renderLixeiraPage(allFilteredData);
-            }
-
+           } else if (pageId === 'page-lixeira') {
+                renderLixeiraPage(allFilteredData);
+            } else if (pageId === 'page-analytics') {
+                if (isUserAdmin) {
+                   renderAnalyticsPage(allFilteredData);
+                }
+            }
             renderSortButtons();
             renderAdvogadoFilters(); // Atualiza os filtros de advogado
         }
@@ -1218,14 +1253,145 @@
         }
         window.App.renderServicosPage = renderServicosPage;
 
-        // --- Analytics Functions (Admin Only) - REMOVIDO ---
-        // function getAnnualChartData(...) { ... }
-        // function getAnnualProducaoData(...) { ... }
-        // function renderAnalyticsPage(...) { ... }
-        // window.App.renderAnalyticsPage = renderAnalyticsPage;
-        // const setAnalyticsPeriod = function(...) { ... }
-        // window.App.setAnalyticsPeriod = setAnalyticsPeriod;
-        // window.App.setChartPeriod = setAnalyticsPeriod; // Alias
+       // --- Analytics Functions (Admin Only) ---
+        
+        /**
+         * Prepara os dados de faturamento real dos últimos 12 meses.
+         */
+        function getActualIncomeData(contractsToRender) {
+            const labels = [];
+            const data = [];
+            const hoje = new Date();
+
+            for (let i = 11; i >= 0; i--) {
+                const date = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                
+                labels.push(date.toLocaleString('pt-BR', { month: 'short', year: '2-digit' }));
+                
+                // Reutiliza a função de cálculo de renda que já existe
+                const income = calculateMonthlyIncome(year, month, contractsToRender);
+                data.push(income.totalGeral);
+            }
+            return { labels, data };
+        }
+
+        /**
+         * Prepara os dados de projeção de ganhos (parcelas pendentes) para os próximos 12 meses.
+         */
+        function getProjectedIncomeData(contractsToRender) {
+            const labels = [];
+            const data = new Array(12).fill(0); // Array [0, 0, 0, ..., 0]
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+
+            const inicioMesAtual = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+            
+            // Define os 12 meses futuros
+            for (let i = 0; i < 12; i++) {
+                const date = new Date(hoje.getFullYear(), hoje.getMonth() + i, 1);
+                labels.push(date.toLocaleString('pt-BR', { month: 'short', year: '2-digit' }));
+            }
+
+            // Itera sobre todos os contratos (a função allFilteredData já filtra por permissão de usuário)
+            const filteredContracts = contractsToRender.filter(c => !c.isDeleted);
+
+            for (const contract of filteredContracts) {
+                if (!contract.parcels) continue;
+
+                for (const parcel of contract.parcels) {
+                    if (parcel.status === 'Pendente') {
+                        const dueDate = new Date(parcel.dueDate);
+                        
+                        // Ignora parcelas vencidas (só queremos projeção futura)
+                        if (dueDate < inicioMesAtual) continue; 
+                        
+                        // Calcula a diferença em meses do início do mês atual
+                        const diffYear = dueDate.getFullYear() - inicioMesAtual.getFullYear();
+                        const diffMonth = (diffYear * 12) + (dueDate.getMonth() - inicioMesAtual.getMonth());
+
+                        // Se estiver dentro da nossa janela de 12 meses, adiciona ao balde
+                        if (diffMonth >= 0 && diffMonth < 12) {
+                            data[diffMonth] += parcel.value;
+                        }
+                    }
+                }
+            }
+            return { labels, data };
+        }
+
+        /**
+         * Renderiza os dois gráficos na página de Análise.
+         */
+        function renderAnalyticsPage(allContracts) {
+            if (!isUserAdmin) return; // Segurança
+            
+            const actualCtx = document.getElementById('actualIncomeChart')?.getContext('2d');
+            const projectedCtx = document.getElementById('projectedIncomeChart')?.getContext('2d');
+
+            if (!actualCtx || !projectedCtx) {
+                console.error("Canvas dos gráficos não encontrado.");
+                return;
+            }
+
+            // 1. Dados de Faturamento Real
+            // Usamos allContracts, pois calculateMonthlyIncome já filtra os deletados.
+            const actualData = getActualIncomeData(allContracts); 
+            
+            if (actualIncomeChartInstance) actualIncomeChartInstance.destroy();
+            actualIncomeChartInstance = new Chart(actualCtx, {
+                type: 'bar',
+                data: {
+                    labels: actualData.labels,
+                    datasets: [{
+                        label: 'Faturamento Real',
+                        data: actualData.data,
+                        backgroundColor: 'rgba(74, 222, 128, 0.6)', // green-400
+                        borderColor: 'rgba(74, 222, 128, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { color: '#9ca3af' } },
+                        x: { ticks: { color: '#9ca3af' } }
+                    },
+                    plugins: { legend: { labels: { color: '#d1d5db' } } }
+                }
+            });
+
+            // 2. Dados de Projeção de Ganhos
+            // Usamos allContracts, e a função getProjectedIncomeData filtra os deletados.
+            const projectedData = getProjectedIncomeData(allContracts);
+            
+            if (projectedIncomeChartInstance) projectedIncomeChartInstance.destroy();
+            projectedIncomeChartInstance = new Chart(projectedCtx, {
+                type: 'bar',
+                data: {
+                    labels: projectedData.labels,
+                    datasets: [{
+                        label: 'Projeção (Parcelas)',
+                        data: projectedData.data,
+                        backgroundColor: 'rgba(139, 92, 246, 0.6)', // purple-500
+Não                    borderColor: 'rgba(139, 92, 246, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { color: '#9ca3af' } },
+                        x: { ticks: { color: '#9ca3af' } }
+                    },
+                    plugins: { legend: { labels: { color: '#d1d5db' } } }
+                }
+            });
+        }
+        window.App.renderAnalyticsPage = renderAnalyticsPage;
 
         // --- Lixeira Functions ---
         function renderLixeiraPage(contractsToRender) {
