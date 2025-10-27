@@ -704,11 +704,15 @@
             });
         }
 
+        // ***** FUNÇÃO showPage CORRIGIDA *****
         const showPage = (pageId) => {
             // Esconde todas as páginas e desativa tabs
-            ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-lixeira', 'page-analytics'].forEach(id => {
+            ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-lixeira', 'page-analytics'].forEach(id => { // <<< GARANTE QUE 'page-analytics' ESTÁ AQUI
                 const el = document.getElementById(id);
-                if (el) el.classList.add('hidden');
+                if (el) {
+                   el.classList.add('hidden');
+                   // console.log(`Added 'hidden' to ${id}. Has class now?`, el.classList.contains('hidden')); // Linha de Debug (opcional)
+                }
             });
             ['tab-dashboard', 'tab-inadimplentes', 'tab-servicos', 'tab-lixeira'].forEach(id => {
                 const tab = document.getElementById(id);
@@ -729,14 +733,16 @@
             const targetPage = document.getElementById(pageId);
             if (targetPage) {
                 targetPage.classList.remove('hidden');
+                // console.log(`Removed 'hidden' from ${pageId}. Has class now?`, targetPage.classList.contains('hidden')); // Linha de Debug (opcional)
+            } else {
+                 console.error(`Target page with ID ${pageId} not found!`); // Avisa se a página não existe
             }
 
-            // Ativa a tab correspondente
-            // Condição especial para tab-analytics - usa o botão, não uma tab
+            // Ativa a tab correspondente (ignora se for a página de analytics)
             if (pageId !== 'page-analytics') {
-                const tabId = `tab-${pageId.split('-')[1]}`;
-                const targetTab = document.getElementById(tabId);
-                if (targetTab) targetTab.classList.add('active');
+                 const tabId = `tab-${pageId.split('-')[1]}`;
+                 const targetTab = document.getElementById(tabId);
+                 if (targetTab) targetTab.classList.add('active');
             }
 
 
@@ -754,13 +760,15 @@
             } else if (pageId === 'page-lixeira') {
                 renderLixeiraPage(allFilteredData); // Lixeira usa dados incluindo deletados
             } else if (pageId === 'page-analytics') {
-                // Certifique-se de que só renderiza se for admin, embora a página já esteja oculta por CSS
+                // Certifique-se de que só renderiza se for admin
                 if (isUserAdmin) {
                     renderAnalyticsPage(allFilteredData); // Usa todos os dados para os gráficos
                 }
             }
         }
-        window.App.showPage = showPage;
+        window.App.showPage = showPage; // Garante que a função global está atualizada
+        // ***** FIM DA FUNÇÃO showPage CORRIGIDA *****
+
 
         async function render() {
             // Garante que o render só aconteça se o app estiver visível
@@ -1327,7 +1335,7 @@
                        label: 'Projeção (Parcelas)',
                        data: projectedData.data,
                        backgroundColor: 'rgba(139, 92, 246, 0.6)', // purple-500
-                       borderColor: 'rgba(139, 92, 246, 1)', // << CORRIGIDO AQUI
+                       borderColor: 'rgba(139, 92, 246, 1)', // << CORRIGIDO
                        borderWidth: 1
                    }]
                },
