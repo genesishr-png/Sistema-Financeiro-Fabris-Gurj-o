@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Biblioteca de Gráficos (mantida caso seja usada em outro lugar, como relatórios) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -213,13 +212,10 @@
 
     </style>
 </head>
-<body class="text-gray-300"> <!-- Classe is-admin será adicionada via JS -->
-
-    <div id="loading-overlay">
+<body class="text-gray-300"> <div id="loading-overlay">
         <i class="fas fa-spinner fa-spin mr-3"></i> Conectando...
     </div>
 
-    <!-- Tela de Login -->
     <div id="auth-overlay">
         <div class="w-full max-w-sm p-8 space-y-6 bg-[#1a173a] rounded-lg shadow-xl border border-indigo-800">
             <img src="https://www.fabrisegurjao.adv.br/netpage/data/uploads/2019/12/logo-fabris-e-gurjao-491x325px.png" alt="Logo" class="w-48 mx-auto">
@@ -227,7 +223,6 @@
 
             <div id="auth-error" class="hidden p-3 text-sm text-red-300 bg-red-800/50 border border-red-700 rounded-lg"></div>
 
-            <!-- Formulário de Login -->
             <form id="login-form" class="space-y-4">
                 <div>
                     <label for="login-email" class="block text-sm font-medium text-gray-400">Email</label>
@@ -242,35 +237,24 @@
         </div>
     </div>
 
-    <!-- Conteúdo Principal do App (Começa escondido) -->
     <div id="app-container" class="container mx-auto p-4 md:p-8">
 
-        <!-- ***** HEADER RESTAURADO AO ORIGINAL ***** -->
         <header class="mb-6 header-with-logo">
-            <!-- Bloco Esquerdo: Título e Descrição -->
             <div>
                 <h1 class="text-3xl font-bold text-white">Painel de Gestão</h1>
                 <p class="text-gray-400">Controle Financeiro e de Produção do Escritório</p>
             </div>
 
-            <!-- Bloco Direito: Usuário e Logout (CLASSE ADICIONADA AQUI) -->
             <div class="flex items-center header-user-block">
                 <span id="user-display-name" class="text-sm text-gray-300 font-medium mr-4"></span>
                 <button id="logout-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded-lg shadow-md text-sm flex items-center gap-2">
                     <i class="fas fa-sign-out-alt"></i> Sair
                 </button>
             </div>
-            <!-- Logo (flutuante) -->
             <img src="https://www.fabrisegurjao.adv.br/netpage/data/uploads/2019/12/logo-fabris-e-gurjao-491x325px.png" alt="Fabris e Gurjão Logo" class="header-logo">
         </header>
-        <!-- ***** FIM DO HEADER RESTAURADO ***** -->
-
-
         <div class="border-b border-gray-700 mb-8">
-            <!-- Nav ajustada com justify-between e items-center -->
-            <!-- Container flex para a barra de navegação -->
             <nav class="flex justify-between items-center -mb-px">
-                <!-- Tabs Principais (esquerda) -->
                 <div class="flex">
                     <a onclick="window.App.showPage('page-dashboard')" id="tab-dashboard" class="nav-tab active">
                         <i class="fas fa-tachometer-alt mr-2"></i>Painel Principal
@@ -283,9 +267,7 @@
                     </a>
                 </div>
 
-                <!-- Ícone da Lixeira (direita) -->
                 <div>
-                    <!-- A lixeira é visível para todos para restaurar seus próprios itens, mas admins podem excluir perm -->
                     <a onclick="window.App.showPage('page-lixeira')" id="tab-lixeira" class="nav-tab-icon" title="Lixeira">
                         <i class="fas fa-trash-alt"></i>
                     </a>
@@ -294,31 +276,20 @@
         </div>
 
 
-        <!-- Conteúdo da Página: Painel Principal -->
         <div id="page-dashboard">
             <div class="flex flex-wrap gap-4 mb-8">
                 <button onclick="window.App.openContractModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
                     <i class="fas fa-plus-circle"></i> Novo Contrato
                 </button>
-                <!-- Botões apenas para admin -->
                 <button onclick="window.App.openReportModal()" class="admin-only bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
                     <i class="fas fa-chart-line"></i> Relatório Mensal
                 </button>
-                <!-- REMOVIDO: Botão Ver Gráficos -->
-                <!-- <button onclick="window.App.showPage('page-analytics')" class="admin-only bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
-                    <i class="fas fa-chart-bar"></i> Ver Gráficos
-                </button> -->
-                <!-- ADICIONADO: Botão Ajustes (Admin) -->
-                <button onclick="console.log('Botão Ajustes (Admin) clicado!')" class="admin-only bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2 text-sm">
-                    <i class="fas fa-cog"></i> Ajustes (Admin)
-                </button>
                 <button onclick="window.App.showPage('page-analytics')" class="admin-only bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
-                    <i class="fas fa-chart-bar"></i> Análise Gráfica
-                </button>
+                    <i class="fas fa-chart-bar"></i> Análise Gráfica
+                </button>
             </div>
 
             <div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                 <!-- Cards serão preenchidos via JS -->
                  <div class="dark-card p-6 rounded-lg shadow-lg admin-only"><h3 class="text-lg font-semibold text-gray-400">A Receber (Próx. 30 dias)</h3><p id="dash-a-receber" class="text-3xl font-bold text-green-400"></p></div>
                  <div class="dark-card p-6 rounded-lg shadow-lg admin-only"><h3 class="text-lg font-semibold text-gray-400">Vencido (Corrigido)</h3><p id="dash-vencido" class="text-3xl font-bold text-red-400"></p></div>
                  <div class="dark-card p-6 rounded-lg shadow-lg admin-only"><h3 class="text-lg font-semibold text-gray-400">Recebido (Este Mês)</h3><p id="dash-recebido" class="text-3xl font-bold text-indigo-400"></p></div>
@@ -355,7 +326,6 @@
                         <button onclick="window.App.exportContractsCSV()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2 text-sm">
                             <i class="fas fa-file-csv"></i> Exportar (CSV)
                         </button>
-                        <!-- Filtro de advogado (visível para admin) -->
                         <select id="advogadoFilter" onchange="window.App.resetAndRenderContractList()" class="filter-select admin-only"></select>
                         <div class="flex items-center gap-2">
                             <span class="text-sm text-gray-400">Ordenar por:</span>
@@ -375,7 +345,6 @@
             </div>
         </div>
 
-        <!-- Conteúdo da Página: Inadimplentes -->
         <div id="page-inadimplentes" class="hidden">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-2xl font-semibold text-white">Controle de Inadimplentes (Meus Contratos)</h2>
@@ -387,12 +356,10 @@
             <div id="inadimplentesListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
-        <!-- Conteúdo da Página: Controle de Serviços -->
         <div id="page-servicos" class="hidden">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-2xl font-semibold text-white">Controle de Produção de Serviços (Meus Contratos)</h2>
                 <div class="flex items-center gap-4">
-                    <!-- Filtro de advogado (visível para admin) -->
                     <select id="servicosAdvogadoFilter" onchange="window.App.renderServicosPage()" class="filter-select admin-only"></select>
                     <div class="flex items-center gap-2">
                         <span class="text-sm text-gray-400">Ordenar por:</span>
@@ -402,13 +369,28 @@
                 </div>
             </div>
              <div id="servicosListContainer" class="space-y-6"></div>
-        </div>
+        </div> <div id="page-analytics" class="hidden admin-only">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-white">Análise Gráfica</h2>
+            </div>
 
-        <!-- Conteúdo da Página: Análise Gráfica (Admin Only) - REMOVIDO -->
-        <!-- <div id="page-analytics" class="hidden admin-only"> ... </div> -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="dark-card p-6 rounded-lg shadow-lg">
+                    <h3 class="text-lg font-semibold text-gray-300 mb-4">Faturamento Real (Últimos 12 Meses)</h3>
+                    <div class="relative" style="height: 350px;">
+                        <canvas id="actualIncomeChart"></canvas>
+                    </div>
+                </div>
 
-        <!-- Conteúdo da Página: Lixeira -->
-        <div id="page-lixeira" class="hidden">
+                <div class="dark-card p-6 rounded-lg shadow-lg">
+                    <h3 class="text-lg font-semibold text-gray-300 mb-4">Projeção de Ganhos (Próximos 12 Meses)</h3>
+                    <p class="text-sm text-gray-400 mb-4 -mt-3">(Baseado em parcelas pendentes)</p>
+                    <div class="relative" style="height: 350px;">
+                        <canvas id="projectedIncomeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div> <div id="page-lixeira" class="hidden">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-2xl font-semibold text-white">Lixeira de Contratos</h2>
             </div>
@@ -417,8 +399,6 @@
         </div>
     </div>
 
-    <!-- Modais -->
-    <!-- Modal: Adicionar Nome -->
     <div id="modalDisplayName" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
         <div class="p-6">
             <h2 class="text-2xl font-bold text-white mb-4">Bem-vindo(a)!</h2>
@@ -433,7 +413,6 @@
         </div>
     </div>
 
-    <!-- Modal: Contrato -->
     <div id="modalContrato" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/2 lg:w-2/5">
         <div class="p-6">
             <div class="flex justify-between items-center mb-4">
@@ -450,8 +429,7 @@
                     <div>
                         <label for="advogadoResponsavel" class="block text-sm font-medium text-gray-400">Advogado Responsável</label>
                         <select id="advogadoResponsavel" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" required>
-                            <!-- Opções preenchidas via JS -->
-                        </select>
+                            </select>
                     </div>
                 </div>
                  <div class="mb-4">
@@ -477,7 +455,6 @@
                     <label for="contratoObservacoes" class="block text-sm font-medium text-gray-400">Observações</label>
                     <textarea id="contratoObservacoes" rows="3" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" placeholder="Detalhes da negociação, informações do caso, etc..."></textarea>
                 </div>
-                <!-- Campos financeiros (Admin Only) -->
                 <div class="admin-only">
                     <h3 class="text-lg font-semibold mb-2 border-t border-gray-700 pt-4 text-white">Detalhes Financeiros</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -507,7 +484,6 @@
         </div>
     </div>
 
-    <!-- Modal: Pagamento -->
     <div id="modalPagamento" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
          <div class="p-6">
             <div class="flex justify-between items-center mb-4">
@@ -534,7 +510,6 @@
         </div>
     </div>
 
-    <!-- Modal: Cliente -->
     <div id="modalCliente" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-3/4 lg:w-2/3">
          <div class="p-6">
             <div class="flex justify-between items-center mb-4">
@@ -545,7 +520,6 @@
         </div>
     </div>
 
-    <!-- Modal: Relatório (Admin Only) -->
     <div id="modalRelatorio" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/2 lg:w-2/5 admin-only">
         <div class="p-6">
             <div class="flex justify-between items-center mb-6">
@@ -562,17 +536,15 @@
                     <select id="reportYear" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white"></select>
                 </div>
             </div>
-             <div class="flex gap-4 mb-6">
+              <div class="flex gap-4 mb-6">
                 <button onclick="window.App.generateAndShowReport()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg">Gerar Relatório</button>
                 <button onclick="window.App.exportReportCSV()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Exportar (CSV)</button>
              </div>
             <div id="reportResult" class="space-y-4">
-                <!-- O conteúdo será injetado aqui pela generateAndShowReport -->
-            </div>
+                </div>
         </div>
     </div>
 
-    <!-- Modal: Êxito -->
     <div id="modalExito" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
         <div class="p-6">
             <div class="flex justify-between items-center mb-4">
@@ -581,12 +553,10 @@
             </div>
             <form id="formExito">
                 <div id="exitoInfo" class="mb-4 bg-gray-700 p-3 rounded-md"></div>
-                 <!-- Campo de valor apenas para admin -->
-                <div class="mb-4 admin-only">
+                 <div class="mb-4 admin-only">
                     <label for="exitoValorRecebido" class="block text-sm font-medium text-gray-400">Valor Líquido Recebido (R$)</label>
                     <input type="number" step="0.01" id="exitoValorRecebido" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white" placeholder="Ex: 9500.00" required>
                 </div>
-                 <!-- Texto para não-admin -->
                  <p class="mb-4 text-gray-400 non-admin-hidden">Confirme o recebimento do valor de êxito.</p>
                 <input type="hidden" id="exitoContractId">
                 <div class="flex justify-end mt-6">
@@ -615,17 +585,14 @@
         let currentInadimplentesSort = 'days-desc';
         let currentServicosSort = 'name-asc';
         let ipcaCache = new Map();
-        // REMOVIDO: Variáveis dos gráficos
-        // let faturamentoChartInstance = null;
-        // let producaoChartInstance = null;
+        let actualIncomeChartInstance = null;
+        let projectedIncomeChartInstance = null;
         let backdrop;
         let contractListPage = 0;
         const CONTRACTS_PER_PAGE = 30;
         const ADMIN_USERS = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "D'Arc"]; // Usernames dos admins
         let currentUserDisplayName = null;
         let isUserAdmin = false;
-        // REMOVIDO: Variável de período dos gráficos
-        // let currentAnalyticsPeriod = '12m';
 
         // --- Initialization and Authentication ---
         async function initializeAndAuth() {
@@ -694,20 +661,20 @@
         function setupUIAccess(isAdmin) {
             // Ajusta visibilidade de botões e inputs financeiros
              const advogadoFilters = [
-                document.getElementById('advogadoFilter'),
-                document.getElementById('servicosAdvogadoFilter')
+                 document.getElementById('advogadoFilter'),
+                 document.getElementById('servicosAdvogadoFilter')
             ];
              advogadoFilters.forEach(select => {
-                if (select) {
-                    select.disabled = !isAdmin;
-                    select.value = isAdmin ? 'Todos' : currentUserDisplayName;
-                }
+                 if (select) {
+                     select.disabled = !isAdmin;
+                     select.value = isAdmin ? 'Todos' : currentUserDisplayName;
+                 }
             });
              // Habilita/desabilita campos no modal de contrato
              const financialFields = ['valorTotal', 'numParcelas', 'vencimentoPrimeiraParcela', 'taxaExito'];
              financialFields.forEach(id => {
-                const field = document.getElementById(id);
-                if (field) field.disabled = !isAdmin;
+                 const field = document.getElementById(id);
+                 if (field) field.disabled = !isAdmin;
              });
 
             // Popula o select de advogado no modal de contrato
@@ -739,8 +706,7 @@
 
         const showPage = (pageId) => {
             // Esconde todas as páginas e desativa tabs
-            // REMOVIDO: 'page-analytics' da lista
-            ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-lixeira'].forEach(id => {
+            ['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-lixeira', 'page-analytics'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.add('hidden');
             });
@@ -749,20 +715,30 @@
                 if (tab) tab.classList.remove('active');
             });
 
-            // REMOVIDO: Lógica de limpar/destruir gráficos
+            // Destrói instâncias de gráficos para evitar sobreposição
+            if (actualIncomeChartInstance) {
+                actualIncomeChartInstance.destroy();
+                actualIncomeChartInstance = null;
+            }
+            if (projectedIncomeChartInstance) {
+                projectedIncomeChartInstance.destroy();
+                projectedIncomeChartInstance = null;
+            }
 
             // Mostra a página clicada
             const targetPage = document.getElementById(pageId);
             if (targetPage) {
-                // REMOVIDO: Verificação admin para page-analytics pois ela não existe mais
                 targetPage.classList.remove('hidden');
             }
 
             // Ativa a tab correspondente
-            // REMOVIDO: Condição especial para tab-analytics
-            const tabId = `tab-${pageId.split('-')[1]}`;
-            const targetTab = document.getElementById(tabId);
-            if (targetTab) targetTab.classList.add('active');
+            // Condição especial para tab-analytics - usa o botão, não uma tab
+            if (pageId !== 'page-analytics') {
+                const tabId = `tab-${pageId.split('-')[1]}`;
+                const targetTab = document.getElementById(tabId);
+                if (targetTab) targetTab.classList.add('active');
+            }
+
 
             // Renderiza o conteúdo específico da página
             const filteredData = getFilteredContracts(false);
@@ -775,9 +751,13 @@
                 renderInadimplentesPage(filteredData);
             } else if (pageId === 'page-servicos') {
                 renderServicosPage(filteredData);
-            // REMOVIDO: Else if para page-analytics
             } else if (pageId === 'page-lixeira') {
                 renderLixeiraPage(allFilteredData); // Lixeira usa dados incluindo deletados
+            } else if (pageId === 'page-analytics') {
+                // Certifique-se de que só renderiza se for admin, embora a página já esteja oculta por CSS
+                if (isUserAdmin) {
+                    renderAnalyticsPage(allFilteredData); // Usa todos os dados para os gráficos
+                }
             }
         }
         window.App.showPage = showPage;
@@ -805,9 +785,12 @@
                 await renderInadimplentesPage(filteredData);
             } else if (pageId === 'page-servicos') {
                 renderServicosPage(filteredData);
-            // REMOVIDO: Else if para page-analytics
             } else if (pageId === 'page-lixeira') {
                 renderLixeiraPage(allFilteredData);
+            } else if (pageId === 'page-analytics') {
+                if (isUserAdmin) {
+                    renderAnalyticsPage(allFilteredData);
+                }
             }
 
             renderSortButtons();
@@ -914,34 +897,34 @@
             let extraInfoHtml = isUserAdmin ? `<div class="text-xs text-gray-400 border-t border-gray-700 pt-2 mt-3 flex justify-between"><span>Contrato: <strong>${(contract.totalValue || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></span> <span>Restante: <strong>${formattedRemaining}</strong></span></div>` : '';
 
             return `
-                <div class="dark-card p-4 rounded-lg shadow-md border-l-4 ${statusClass}">
-                    <p class="font-bold text-white">${contract.clientName}</p>
-                    <p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')} - Parcela ${parcel.number}/${contract.parcels.length || 1}</p>
-                    <div class="space-y-2 text-sm">
-                        ${valorHtml}
-                        <div class="flex items-center text-gray-300">
-                            <i class="fas fa-calendar-alt w-5 text-center mr-2 text-gray-500"></i>
-                            <strong>Vencimento:</strong>
-                            <span class="ml-auto font-medium">${formattedDate}</span>
-                        </div>
-                    </div>
-                    ${extraInfoHtml}
-                    ${actionButton}
-                </div>`;
+                 <div class="dark-card p-4 rounded-lg shadow-md border-l-4 ${statusClass}">
+                     <p class="font-bold text-white">${contract.clientName}</p>
+                     <p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')} - Parcela ${parcel.number}/${contract.parcels.length || 1}</p>
+                     <div class="space-y-2 text-sm">
+                         ${valorHtml}
+                         <div class="flex items-center text-gray-300">
+                             <i class="fas fa-calendar-alt w-5 text-center mr-2 text-gray-500"></i>
+                             <strong>Vencimento:</strong>
+                             <span class="ml-auto font-medium">${formattedDate}</span>
+                         </div>
+                     </div>
+                     ${extraInfoHtml}
+                     ${actionButton}
+                 </div>`;
         }
 
         function createExitoCard(contract) {
              const taxaExitoDisplay = isUserAdmin ? contract.successFee : '[Restrito]';
              return `
-                <div class="dark-card p-4 rounded-lg shadow-md border-l-4 border-indigo-400">
-                    <p class="font-bold text-white">${contract.clientName}</p>
-                    <p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
-                    <div class="my-4 text-center">
-                        <p class="text-sm text-gray-400">Bonificação Pendente</p>
-                        <p class="text-2xl font-semibold text-indigo-400">${taxaExitoDisplay}</p>
-                    </div>
-                    <button onclick="window.App.openExitoModal('${contract.id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2"><i class="fas fa-gavel"></i> Registrar Recebimento</button>
-                </div>`;
+                 <div class="dark-card p-4 rounded-lg shadow-md border-l-4 border-indigo-400">
+                     <p class="font-bold text-white">${contract.clientName}</p>
+                     <p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
+                     <div class="my-4 text-center">
+                         <p class="text-sm text-gray-400">Bonificação Pendente</p>
+                         <p class="text-2xl font-semibold text-indigo-400">${taxaExitoDisplay}</p>
+                     </div>
+                     <button onclick="window.App.openExitoModal('${contract.id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2"><i class="fas fa-gavel"></i> Registrar Recebimento</button>
+                 </div>`;
         }
 
         function renderDashboard(aVencer, vencido, pago, totalContratos) {
@@ -968,9 +951,9 @@
             if (!isUserAdmin) advogadoFilter = currentUserDisplayName;
 
             let filteredContracts = getFilteredContracts(false).filter(c => {
-                const matchesAdvogado = (isUserAdmin && advogadoFilter === 'Todos') || c.advogadoResponsavel === advogadoFilter;
-                const matchesSearch = c.clientName.toLowerCase().includes(searchTerm) || (c.serviceTypes || []).some(s => s.name.toLowerCase().includes(searchTerm));
-                return matchesAdvogado && matchesSearch;
+                 const matchesAdvogado = (isUserAdmin && advogadoFilter === 'Todos') || c.advogadoResponsavel === advogadoFilter;
+                 const matchesSearch = c.clientName.toLowerCase().includes(searchTerm) || (c.serviceTypes || []).some(s => s.name.toLowerCase().includes(searchTerm));
+                 return matchesAdvogado && matchesSearch;
             });
 
             // Ordenação
@@ -1002,34 +985,34 @@
                  const exitoDisplay = isUserAdmin && contract.successFee ? contract.successFee : (contract.successFee ? '[Restrito]' : '');
 
                 html += `
-                    <div class="dark-card rounded-lg shadow-lg overflow-hidden border-l-4 ${borderColor} flex flex-col justify-between transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl">
-                        <div class="p-5">
-                            <div class="flex justify-between items-start mb-3">
-                                <h3 class="font-bold text-xl text-white">${contract.clientName}</h3>
-                                <span class="px-2 py-1 rounded-full text-xs font-semibold ${statusColor}">${statusText}</span>
-                            </div>
-                            <p class="text-xs text-indigo-300 mb-3"><i class="fas fa-user-tie mr-1"></i> ${contract.advogadoResponsavel}</p>
-                            <div class="mb-4">${servicesHtml}</div>
-                            <div class="border-t border-gray-700 pt-4 space-y-3 text-sm">
-                                <div class="flex items-center text-gray-300">
-                                    <i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-500"></i>
-                                    <strong>Valor Fixo:</strong>
-                                    <span class="ml-auto font-medium">${valorFixoDisplay}</span>
-                                </div>
-                                ${contract.successFee ? `
-                                <div class="flex items-center text-gray-300">
-                                    <i class="fas fa-star w-5 text-center mr-2 text-gray-500"></i>
-                                    <strong>Êxito:</strong>
-                                    <span class="ml-auto font-medium text-indigo-400">${exitoDisplay}</span>
-                                </div>` : ''}
-                            </div>
-                        </div>
-                        <div class="bg-gray-900/50 px-4 py-2 flex justify-end gap-2">
-                           <button onclick="window.App.openClientHistoryModal('${contract.clientName}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-indigo-400 hover:bg-indigo-900/20 py-1 px-3 rounded-md transition-colors" title="Ver Histórico do Cliente"><i class="fas fa-eye"></i> Histórico</button>
-                           <button onclick="window.App.openContractModal('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-green-400 hover:bg-green-900/20 py-1 px-3 rounded-md transition-colors" title="Editar Contrato"><i class="fas fa-pencil-alt"></i> Editar</button>
-                           <button onclick="window.App.moveToLixeira('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 py-1 px-3 rounded-md transition-colors" title="Mover para Lixeira"><i class="fas fa-trash-alt"></i></button>
-                        </div>
-                    </div>`;
+                     <div class="dark-card rounded-lg shadow-lg overflow-hidden border-l-4 ${borderColor} flex flex-col justify-between transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl">
+                         <div class="p-5">
+                             <div class="flex justify-between items-start mb-3">
+                                 <h3 class="font-bold text-xl text-white">${contract.clientName}</h3>
+                                 <span class="px-2 py-1 rounded-full text-xs font-semibold ${statusColor}">${statusText}</span>
+                             </div>
+                             <p class="text-xs text-indigo-300 mb-3"><i class="fas fa-user-tie mr-1"></i> ${contract.advogadoResponsavel}</p>
+                             <div class="mb-4">${servicesHtml}</div>
+                             <div class="border-t border-gray-700 pt-4 space-y-3 text-sm">
+                                 <div class="flex items-center text-gray-300">
+                                     <i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-500"></i>
+                                     <strong>Valor Fixo:</strong>
+                                     <span class="ml-auto font-medium">${valorFixoDisplay}</span>
+                                 </div>
+                                 ${contract.successFee ? `
+                                 <div class="flex items-center text-gray-300">
+                                     <i class="fas fa-star w-5 text-center mr-2 text-gray-500"></i>
+                                     <strong>Êxito:</strong>
+                                     <span class="ml-auto font-medium text-indigo-400">${exitoDisplay}</span>
+                                 </div>` : ''}
+                             </div>
+                         </div>
+                         <div class="bg-gray-900/50 px-4 py-2 flex justify-end gap-2">
+                            <button onclick="window.App.openClientHistoryModal('${contract.clientName}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-indigo-400 hover:bg-indigo-900/20 py-1 px-3 rounded-md transition-colors" title="Ver Histórico do Cliente"><i class="fas fa-eye"></i> Histórico</button>
+                            <button onclick="window.App.openContractModal('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-green-400 hover:bg-green-900/20 py-1 px-3 rounded-md transition-colors" title="Editar Contrato"><i class="fas fa-pencil-alt"></i> Editar</button>
+                            <button onclick="window.App.moveToLixeira('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 py-1 px-3 rounded-md transition-colors" title="Mover para Lixeira"><i class="fas fa-trash-alt"></i></button>
+                         </div>
+                     </div>`;
             });
             html += `</div>`;
             listContainer.innerHTML = html;
@@ -1043,10 +1026,10 @@
         window.App.loadMoreContracts = loadMoreContracts;
 
         function getContractStatus(contract) {
-             const hasPendingParcels = (contract.parcels || []).some(p => p.status === 'Pendente');
-             if (hasPendingParcels) return { statusText: 'Ativo', statusColor: 'bg-yellow-900/50 text-yellow-300', borderColor: 'border-yellow-500' };
-             if (contract.successFee && !contract.successFeePaymentDate) return { statusText: 'Aguardando Êxito', statusColor: 'bg-indigo-900/50 text-indigo-300', borderColor: 'border-indigo-500' };
-             return { statusText: 'Concluído', statusColor: 'bg-gray-700 text-gray-300', borderColor: 'border-gray-600' };
+              const hasPendingParcels = (contract.parcels || []).some(p => p.status === 'Pendente');
+              if (hasPendingParcels) return { statusText: 'Ativo', statusColor: 'bg-yellow-900/50 text-yellow-300', borderColor: 'border-yellow-500' };
+              if (contract.successFee && !contract.successFeePaymentDate) return { statusText: 'Aguardando Êxito', statusColor: 'bg-indigo-900/50 text-indigo-300', borderColor: 'border-indigo-500' };
+              return { statusText: 'Concluído', statusColor: 'bg-gray-700 text-gray-300', borderColor: 'border-gray-600' };
         }
 
         async function renderInadimplentesPage(contractsToRender) {
@@ -1056,19 +1039,19 @@
 
             let inadimplentesList = [];
             const promises = contractsToRender.map(async (contract) => {
-                if (!contract.parcels) return [];
-                const contractInadimplencias = [];
-                for (let i = 0; i < contract.parcels.length; i++) {
-                    const parcel = contract.parcels[i];
-                    const vencimento = new Date(parcel.dueDate);
-                    if (parcel.status === 'Pendente' && vencimento < hoje) {
-                        const diffTime = Math.abs(hoje - vencimento);
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        const valorCorrigido = await calcularValorCorrigido(parcel.value, parcel.dueDate);
-                        contractInadimplencias.push({ contract, parcel, index: i, diffDays, valorCorrigido });
-                    }
-                }
-                return contractInadimplencias;
+                 if (!contract.parcels) return [];
+                 const contractInadimplencias = [];
+                 for (let i = 0; i < contract.parcels.length; i++) {
+                     const parcel = contract.parcels[i];
+                     const vencimento = new Date(parcel.dueDate);
+                     if (parcel.status === 'Pendente' && vencimento < hoje) {
+                         const diffTime = Math.abs(hoje - vencimento);
+                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                         const valorCorrigido = await calcularValorCorrigido(parcel.value, parcel.dueDate);
+                         contractInadimplencias.push({ contract, parcel, index: i, diffDays, valorCorrigido });
+                     }
+                 }
+                 return contractInadimplencias;
             });
 
             const results = await Promise.all(promises);
@@ -1090,36 +1073,36 @@
 
             let inadimplentesHtml = '';
             inadimplentesList.forEach(({ contract, parcel, index, diffDays, valorCorrigido }) => {
-                const vencimento = new Date(parcel.dueDate);
-                 const valorOriginalDisplay = isUserAdmin ? parcel.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
-                 const valorCorrigidoDisplay = isUserAdmin ? valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
+                 const vencimento = new Date(parcel.dueDate);
+                  const valorOriginalDisplay = isUserAdmin ? parcel.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
+                  const valorCorrigidoDisplay = isUserAdmin ? valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
 
-                inadimplentesHtml += `
-                    <div class="dark-card p-5 rounded-lg shadow-lg border-l-4 border-red-500">
-                        <p class="font-bold text-lg text-white">${contract.clientName}</p>
-                        <p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
-                        <div class="border-t border-gray-700 pt-3 mt-3 space-y-2">
-                            <div class="flex justify-between items-center text-sm ${!isUserAdmin ? 'hidden' : ''}">
-                                <span class="text-gray-400">Valor Original:</span>
-                                <span class="font-medium text-gray-400 line-through">${valorOriginalDisplay}</span>
-                            </div>
-                            <div class="flex justify-between items-center ${!isUserAdmin ? 'hidden' : ''}">
-                                <span class="text-sm text-white">Valor Corrigido:</span>
-                                <span class="font-semibold text-lg text-red-400">${valorCorrigidoDisplay}</span>
-                            </div>
-                            <div class="flex justify-between items-center text-sm">
-                                <span class="text-gray-400">Venceu em:</span>
-                                <span class="font-medium text-gray-300">${vencimento.toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</span>
-                            </div>
-                            <div class="flex justify-between items-center text-red-400 font-bold text-sm bg-red-900/30 px-2 py-1 rounded">
-                                <span>Atrasado há:</span>
-                                <span>${diffDays} dia(s)</span>
-                            </div>
-                        </div>
-                        <button onclick="window.App.openPaymentModal('${contract.id}', ${index})" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2">
-                            <i class="fas fa-check"></i> Registrar Pagamento
-                        </button>
-                    </div>`;
+                 inadimplentesHtml += `
+                     <div class="dark-card p-5 rounded-lg shadow-lg border-l-4 border-red-500">
+                         <p class="font-bold text-lg text-white">${contract.clientName}</p>
+                         <p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
+                         <div class="border-t border-gray-700 pt-3 mt-3 space-y-2">
+                             <div class="flex justify-between items-center text-sm ${!isUserAdmin ? 'hidden' : ''}">
+                                 <span class="text-gray-400">Valor Original:</span>
+                                 <span class="font-medium text-gray-400 line-through">${valorOriginalDisplay}</span>
+                             </div>
+                             <div class="flex justify-between items-center ${!isUserAdmin ? 'hidden' : ''}">
+                                 <span class="text-sm text-white">Valor Corrigido:</span>
+                                 <span class="font-semibold text-lg text-red-400">${valorCorrigidoDisplay}</span>
+                             </div>
+                             <div class="flex justify-between items-center text-sm">
+                                 <span class="text-gray-400">Venceu em:</span>
+                                 <span class="font-medium text-gray-300">${vencimento.toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</span>
+                             </div>
+                             <div class="flex justify-between items-center text-red-400 font-bold text-sm bg-red-900/30 px-2 py-1 rounded">
+                                 <span>Atrasado há:</span>
+                                 <span>${diffDays} dia(s)</span>
+                             </div>
+                         </div>
+                         <button onclick="window.App.openPaymentModal('${contract.id}', ${index})" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2">
+                             <i class="fas fa-check"></i> Registrar Pagamento
+                         </button>
+                     </div>`;
             });
             container.innerHTML = inadimplentesHtml;
         }
@@ -1134,23 +1117,23 @@
              container.innerHTML = '';
 
              let activeContracts = contractsToRender.filter(c => {
-                 const isNotConcluded = getContractStatus(c).statusText !== 'Concluído';
-                 if (!isNotConcluded) return false;
-                 const matchesAdvogado = (isUserAdmin && advogadoFilter === 'Todos') || c.advogadoResponsavel === advogadoFilter;
-                 const matchesSearch = c.clientName.toLowerCase().includes(searchTerm) || (c.serviceTypes || []).some(s => s.name.toLowerCase().includes(searchTerm)) || c.advogadoResponsavel.toLowerCase().includes(searchTerm);
-                 return matchesAdvogado && matchesSearch;
+                  const isNotConcluded = getContractStatus(c).statusText !== 'Concluído';
+                  if (!isNotConcluded) return false;
+                  const matchesAdvogado = (isUserAdmin && advogadoFilter === 'Todos') || c.advogadoResponsavel === advogadoFilter;
+                  const matchesSearch = c.clientName.toLowerCase().includes(searchTerm) || (c.serviceTypes || []).some(s => s.name.toLowerCase().includes(searchTerm)) || c.advogadoResponsavel.toLowerCase().includes(searchTerm);
+                  return matchesAdvogado && matchesSearch;
              });
 
             // Ordenação
              if (currentServicosSort === 'name-asc') {
-                 activeContracts.sort((a, b) => a.clientName.localeCompare(b.clientName));
+                  activeContracts.sort((a, b) => a.clientName.localeCompare(b.clientName));
              } else if (currentServicosSort === 'adv-asc') {
-                 activeContracts.sort((a, b) => a.advogadoResponsavel.localeCompare(b.advogadoResponsavel));
+                  activeContracts.sort((a, b) => a.advogadoResponsavel.localeCompare(b.advogadoResponsavel));
              }
 
              if (activeContracts.length === 0) {
-                  container.innerHTML = `<div class="text-center py-10"><div class="inline-block dark-card text-indigo-400 p-6 rounded-lg shadow-md"><i class="fas fa-coffee fa-3x mb-3"></i><p class="font-bold text-xl">Nenhum contrato ativo encontrado.</p><p class="text-sm text-gray-400">Nenhum resultado para a busca ou todos os trabalhos estão concluídos.</p></div></div>`;
-                  return;
+                   container.innerHTML = `<div class="text-center py-10"><div class="inline-block dark-card text-indigo-400 p-6 rounded-lg shadow-md"><i class="fas fa-coffee fa-3x mb-3"></i><p class="font-bold text-xl">Nenhum contrato ativo encontrado.</p><p class="text-sm text-gray-400">Nenhum resultado para a busca ou todos os trabalhos estão concluídos.</p></div></div>`;
+                   return;
              }
 
              activeContracts.forEach(contract => {
@@ -1176,21 +1159,21 @@
                      let statusHtml, actionsHtml = '', deadlineHtml = '';
                      // ... (lógica de deadline e status permanece a mesma) ...
                       if (service.deadline) {
-                         const hoje = new Date(); hoje.setHours(0,0,0,0);
-                         const prazo = new Date(service.deadline + "T12:00:00Z");
-                         const diffTime = prazo - hoje;
-                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                         const formattedPrazo = prazo.toLocaleDateString('pt-BR', {timeZone: 'UTC'});
-                         if (diffDays < 0 && service.status !== 'Concluído') deadlineHtml = `<span class="text-xs font-medium text-red-400"><i class="fas fa-exclamation-triangle"></i> Vencido: ${formattedPrazo}</span>`;
-                         else if (diffDays <= 7 && service.status !== 'Concluído') deadlineHtml = `<span class="text-xs font-medium text-yellow-400"><i class="fas fa-clock"></i> Vence: ${formattedPrazo}</span>`;
-                         else if (service.status !== 'Concluído') deadlineHtml = `<span class="text-xs text-gray-500"><i class="far fa-calendar-alt"></i> ${formattedPrazo}</span>`;
-                         else deadlineHtml = `<span class="text-xs text-gray-500"><i class="far fa-calendar-check"></i> ${formattedPrazo}</span>`;
+                          const hoje = new Date(); hoje.setHours(0,0,0,0);
+                          const prazo = new Date(service.deadline + "T12:00:00Z");
+                          const diffTime = prazo - hoje;
+                          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                          const formattedPrazo = prazo.toLocaleDateString('pt-BR', {timeZone: 'UTC'});
+                          if (diffDays < 0 && service.status !== 'Concluído') deadlineHtml = `<span class="text-xs font-medium text-red-400"><i class="fas fa-exclamation-triangle"></i> Vencido: ${formattedPrazo}</span>`;
+                          else if (diffDays <= 7 && service.status !== 'Concluído') deadlineHtml = `<span class="text-xs font-medium text-yellow-400"><i class="fas fa-clock"></i> Vence: ${formattedPrazo}</span>`;
+                          else if (service.status !== 'Concluído') deadlineHtml = `<span class="text-xs text-gray-500"><i class="far fa-calendar-alt"></i> ${formattedPrazo}</span>`;
+                          else deadlineHtml = `<span class="text-xs text-gray-500"><i class="far fa-calendar-check"></i> ${formattedPrazo}</span>`;
                      }
                       switch(service.status) {
-                         case 'Concluído': statusHtml = `<span class="text-xs font-bold text-teal-400">CONCLUÍDO</span>`; break;
-                         case '50% Concluído': statusHtml = `<span class="text-xs font-bold text-purple-400">50%</span>`; actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`; break;
-                         case 'Em Andamento': statusHtml = `<span class="text-xs font-bold text-yellow-400">EM ANDAMENTO</span>`; actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, '50% Concluído')" class="text-xs bg-purple-600 text-white hover:bg-purple-500 font-semibold py-1 px-2 rounded-md transition-colors">50%</button><button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`; break;
-                         default: statusHtml = `<span class="text-xs font-bold text-gray-400">PENDENTE</span>`; actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Em Andamento')" class="text-xs bg-yellow-600 text-white hover:bg-yellow-500 font-semibold py-1 px-2 rounded-md transition-colors">Iniciar</button>`; break;
+                          case 'Concluído': statusHtml = `<span class="text-xs font-bold text-teal-400">CONCLUÍDO</span>`; break;
+                          case '50% Concluído': statusHtml = `<span class="text-xs font-bold text-purple-400">50%</span>`; actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`; break;
+                          case 'Em Andamento': statusHtml = `<span class="text-xs font-bold text-yellow-400">EM ANDAMENTO</span>`; actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, '50% Concluído')" class="text-xs bg-purple-600 text-white hover:bg-purple-500 font-semibold py-1 px-2 rounded-md transition-colors">50%</button><button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`; break;
+                          default: statusHtml = `<span class="text-xs font-bold text-gray-400">PENDENTE</span>`; actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Em Andamento')" class="text-xs bg-yellow-600 text-white hover:bg-yellow-500 font-semibold py-1 px-2 rounded-md transition-colors">Iniciar</button>`; break;
                      }
                      const iconClass = service.status === 'Concluído' ? 'fas fa-check-circle text-teal-500' : (service.status === '50% Concluído' ? 'fas fa-adjust text-purple-500' : (service.status === 'Em Andamento' ? 'fas fa-spinner fa-spin text-yellow-500' : 'far fa-circle text-gray-500'));
                      const textClass = service.status === 'Concluído' ? 'text-gray-500 line-through' : 'text-gray-300';
@@ -1200,10 +1183,10 @@
                  }).join('');
 
                  container.innerHTML += `
-                      <div class="dark-card p-5 rounded-lg shadow-lg">
+                       <div class="dark-card p-5 rounded-lg shadow-lg">
                            <div class="flex justify-between items-start">
-                                <h3 class="font-bold text-xl text-indigo-300 mb-4">${contract.clientName}</h3>
-                                <p class="text-sm text-gray-400"><i class="fas fa-user-tie mr-1"></i> ${contract.advogadoResponsavel}</p>
+                               <h3 class="font-bold text-xl text-indigo-300 mb-4">${contract.clientName}</h3>
+                               <p class="text-sm text-gray-400"><i class="fas fa-user-tie mr-1"></i> ${contract.advogadoResponsavel}</p>
                            </div>
                            <div class="space-y-4 mb-4">
                                ${financialProgressBar}
@@ -1216,19 +1199,150 @@
                                <h4 class="font-semibold text-sm mb-2 text-gray-400">Serviços do Contrato:</h4>
                                <ul class="space-y-1">${servicesHtml}</ul>
                            </div>
-                      </div>`;
+                       </div>`;
              });
         }
         window.App.renderServicosPage = renderServicosPage;
 
-        // --- Analytics Functions (Admin Only) - REMOVIDO ---
-        // function getAnnualChartData(...) { ... }
-        // function getAnnualProducaoData(...) { ... }
-        // function renderAnalyticsPage(...) { ... }
-        // window.App.renderAnalyticsPage = renderAnalyticsPage;
-        // const setAnalyticsPeriod = function(...) { ... }
-        // window.App.setAnalyticsPeriod = setAnalyticsPeriod;
-        // window.App.setChartPeriod = setAnalyticsPeriod; // Alias
+       // --- Analytics Functions (Admin Only) ---
+
+       /**
+        * Prepara os dados de faturamento real dos últimos 12 meses.
+        */
+       function getActualIncomeData(contractsToRender) {
+           const labels = [];
+           const data = [];
+           const hoje = new Date();
+
+           for (let i = 11; i >= 0; i--) {
+               const date = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+               const year = date.getFullYear();
+               const month = date.getMonth();
+
+               labels.push(date.toLocaleString('pt-BR', { month: 'short', year: '2-digit' }));
+
+               // Reutiliza a função de cálculo de renda que já existe
+               const income = calculateMonthlyIncome(year, month, contractsToRender);
+               data.push(income.totalGeral);
+           }
+           return { labels, data };
+       }
+
+       /**
+        * Prepara os dados de projeção de ganhos (parcelas pendentes) para os próximos 12 meses.
+        */
+       function getProjectedIncomeData(contractsToRender) {
+           const labels = [];
+           const data = new Array(12).fill(0); // Array [0, 0, 0, ..., 0]
+           const hoje = new Date();
+           hoje.setHours(0, 0, 0, 0);
+
+           const inicioMesAtual = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+
+           // Define os 12 meses futuros
+           for (let i = 0; i < 12; i++) {
+               const date = new Date(hoje.getFullYear(), hoje.getMonth() + i, 1);
+               labels.push(date.toLocaleString('pt-BR', { month: 'short', year: '2-digit' }));
+           }
+
+           // Itera sobre todos os contratos (a função allFilteredData já filtra por permissão de usuário)
+           const filteredContracts = contractsToRender.filter(c => !c.isDeleted);
+
+           for (const contract of filteredContracts) {
+               if (!contract.parcels) continue;
+
+               for (const parcel of contract.parcels) {
+                   if (parcel.status === 'Pendente') {
+                       const dueDate = new Date(parcel.dueDate);
+
+                       // Ignora parcelas vencidas (só queremos projeção futura)
+                       if (dueDate < inicioMesAtual) continue;
+
+                       // Calcula a diferença em meses do início do mês atual
+                       const diffYear = dueDate.getFullYear() - inicioMesAtual.getFullYear();
+                       const diffMonth = (diffYear * 12) + (dueDate.getMonth() - inicioMesAtual.getMonth());
+
+                       // Se estiver dentro da nossa janela de 12 meses, adiciona ao balde
+                       if (diffMonth >= 0 && diffMonth < 12) {
+                           data[diffMonth] += parcel.value;
+                       }
+                   }
+               }
+           }
+           return { labels, data };
+       }
+
+       /**
+        * Renderiza os dois gráficos na página de Análise.
+        */
+       function renderAnalyticsPage(allContracts) {
+           if (!isUserAdmin) return; // Segurança
+
+           const actualCtx = document.getElementById('actualIncomeChart')?.getContext('2d');
+           const projectedCtx = document.getElementById('projectedIncomeChart')?.getContext('2d');
+
+           if (!actualCtx || !projectedCtx) {
+               console.error("Canvas dos gráficos não encontrado.");
+               return;
+           }
+
+           // 1. Dados de Faturamento Real
+           // Usamos allContracts, pois calculateMonthlyIncome já filtra os deletados.
+           const actualData = getActualIncomeData(allContracts);
+
+           if (actualIncomeChartInstance) actualIncomeChartInstance.destroy();
+           actualIncomeChartInstance = new Chart(actualCtx, {
+               type: 'bar',
+               data: {
+                   labels: actualData.labels,
+                   datasets: [{
+                       label: 'Faturamento Real',
+                       data: actualData.data,
+                       backgroundColor: 'rgba(74, 222, 128, 0.6)', // green-400
+                       borderColor: 'rgba(74, 222, 128, 1)',
+                       borderWidth: 1
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: { beginAtZero: true, ticks: { color: '#9ca3af' } },
+                       x: { ticks: { color: '#9ca3af' } }
+                   },
+                   plugins: { legend: { labels: { color: '#d1d5db' } } }
+               }
+           });
+
+           // 2. Dados de Projeção de Ganhos
+           // Usamos allContracts, e a função getProjectedIncomeData filtra os deletados.
+           const projectedData = getProjectedIncomeData(allContracts);
+
+           if (projectedIncomeChartInstance) projectedIncomeChartInstance.destroy();
+           projectedIncomeChartInstance = new Chart(projectedCtx, {
+               type: 'bar',
+               data: {
+                   labels: projectedData.labels,
+                   datasets: [{
+                       label: 'Projeção (Parcelas)',
+                       data: projectedData.data,
+                       backgroundColor: 'rgba(139, 92, 246, 0.6)', // purple-500
+                       borderColor: 'rgba(139, 92, 246, 1)', // << CORRIGIDO AQUI
+                       borderWidth: 1
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: { beginAtZero: true, ticks: { color: '#9ca3af' } },
+                       x: { ticks: { color: '#9ca3af' } }
+                   },
+                   plugins: { legend: { labels: { color: '#d1d5db' } } }
+               }
+           });
+       }
+       window.App.renderAnalyticsPage = renderAnalyticsPage;
 
         // --- Lixeira Functions ---
         function renderLixeiraPage(contractsToRender) {
@@ -1249,16 +1363,16 @@
                      </button>` : '';
 
                  container.innerHTML += `
-                      <div class="dark-card p-5 rounded-lg shadow-lg border-l-4 border-gray-600">
-                          <p class="font-bold text-lg text-white">${contract.clientName}</p>
-                          <p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
-                          <div class="border-t border-gray-700 pt-3 mt-3 flex gap-2">
-                              <button onclick="window.App.restoreContract('${contract.id}')" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2">
-                                  <i class="fas fa-undo"></i> Restaurar
-                              </button>
-                              ${deleteButton}
-                          </div>
-                      </div>`;
+                       <div class="dark-card p-5 rounded-lg shadow-lg border-l-4 border-gray-600">
+                           <p class="font-bold text-lg text-white">${contract.clientName}</p>
+                           <p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
+                           <div class="border-t border-gray-700 pt-3 mt-3 flex gap-2">
+                               <button onclick="window.App.restoreContract('${contract.id}')" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2">
+                                   <i class="fas fa-undo"></i> Restaurar
+                               </button>
+                               ${deleteButton}
+                           </div>
+                       </div>`;
              });
         }
 
@@ -1318,26 +1432,26 @@
              const contractSorts = [{ key: 'name-asc', label: 'Nome (A-Z)' }];
              if(isUserAdmin) contractSorts.push({ key: 'value-desc', label: 'Valor (Maior)' });
              contractSorts.forEach(sort => { /* ... criar botão ... */
-                const button = document.createElement('button'); button.textContent = sort.label; button.className = `sort-button ${currentContractSort === sort.key ? 'active' : ''}`;
-                button.onclick = () => { currentContractSort = sort.key; contractListPage = 0; renderContractList(true); renderSortButtons(); };
-                contractSortContainer.appendChild(button);
+                 const button = document.createElement('button'); button.textContent = sort.label; button.className = `sort-button ${currentContractSort === sort.key ? 'active' : ''}`;
+                 button.onclick = () => { currentContractSort = sort.key; contractListPage = 0; renderContractList(true); renderSortButtons(); };
+                 contractSortContainer.appendChild(button);
              });
 
              // Inadimplentes: Ordenar por valor só para admin
              const inadimplentesSorts = [{ key: 'days-desc', label: 'Mais Antigas' }, { key: 'name-asc', label: 'Nome (A-Z)' }];
              if(isUserAdmin) inadimplentesSorts.push({ key: 'value-desc', label: 'Maior Valor' });
              inadimplentesSorts.forEach(sort => { /* ... criar botão ... */
-                 const button = document.createElement('button'); button.textContent = sort.label; button.className = `sort-button ${currentInadimplentesSort === sort.key ? 'active' : ''}`;
-                 button.onclick = () => { currentInadimplentesSort = sort.key; renderInadimplentesPage(getFilteredContracts(false)); renderSortButtons(); };
-                 inadimplentesSortContainer.appendChild(button);
+                  const button = document.createElement('button'); button.textContent = sort.label; button.className = `sort-button ${currentInadimplentesSort === sort.key ? 'active' : ''}`;
+                  button.onclick = () => { currentInadimplentesSort = sort.key; renderInadimplentesPage(getFilteredContracts(false)); renderSortButtons(); };
+                  inadimplentesSortContainer.appendChild(button);
              });
 
              // Serviços: Ordenação não muda
              const servicosSorts = [{ key: 'name-asc', label: 'Cliente (A-Z)' }, { key: 'adv-asc', label: 'Advogado (A-Z)' }];
              servicosSorts.forEach(sort => { /* ... criar botão ... */
-                 const button = document.createElement('button'); button.textContent = sort.label; button.className = `sort-button ${currentServicosSort === sort.key ? 'active' : ''}`;
-                 button.onclick = () => { currentServicosSort = sort.key; renderServicosPage(getFilteredContracts(false)); renderSortButtons(); };
-                 servicosSortContainer.appendChild(button);
+                  const button = document.createElement('button'); button.textContent = sort.label; button.className = `sort-button ${currentServicosSort === sort.key ? 'active' : ''}`;
+                  button.onclick = () => { currentServicosSort = sort.key; renderServicosPage(getFilteredContracts(false)); renderSortButtons(); };
+                  servicosSortContainer.appendChild(button);
              });
         }
 
@@ -1472,7 +1586,7 @@
         const openClientHistoryModal = function(clientName) {
             // Usa todos os contratos do cliente, mesmo os de outros advogados (se admin)
              const clientContracts = (isUserAdmin ? database.contracts : getFilteredContracts(true))
-                                         .filter(c => c.clientName === clientName); // Inclui deletados para histórico
+                                                 .filter(c => c.clientName === clientName); // Inclui deletados para histórico
              const title = document.getElementById('clienteModalTitle'); title.textContent = `Histórico de ${clientName}`;
              const content = document.getElementById('clienteModalContent');
 
@@ -1484,9 +1598,9 @@
 
                  let contractHtml = `<div class="bg-gray-700 p-4 rounded-lg ${contract.isDeleted ? 'opacity-60 border-l-4 border-gray-500' : ''}">`;
                  contractHtml += `<div class="flex justify-between items-start">
-                                     <h3 class="font-bold text-lg text-white">${(contract.serviceTypes || []).map(s => s.name).join(', ')} <span class="text-base font-normal text-gray-400">- ${contract.paymentType}</span></h3>
-                                     ${contract.isDeleted ? '<span class="text-xs bg-red-900/50 text-red-300 px-2 py-1 rounded-full font-semibold">Excluído</span>' : ''}
-                                 </div>`;
+                                      <h3 class="font-bold text-lg text-white">${(contract.serviceTypes || []).map(s => s.name).join(', ')} <span class="text-base font-normal text-gray-400">- ${contract.paymentType}</span></h3>
+                                      ${contract.isDeleted ? '<span class="text-xs bg-red-900/50 text-red-300 px-2 py-1 rounded-full font-semibold">Excluído</span>' : ''}
+                                  </div>`;
                  contractHtml += `<p class="text-sm text-gray-400 mb-2">Adv: ${contract.advogadoResponsavel}</p>`;
 
                  if (contract.observations) contractHtml += `<blockquote class="text-sm mt-2 p-2 bg-gray-600/50 rounded-md text-gray-300 border-l-4 border-indigo-500 pl-4"><strong>Obs:</strong> ${contract.observations}</blockquote>`;
@@ -1516,11 +1630,11 @@
 
              // Sumário financeiro apenas para admin
              const summaryHtml = isUserAdmin ? `
-                 <div class="grid grid-cols-3 gap-4 text-center">
-                     <div><p class="text-sm text-gray-400">Total Contratado</p><p class="font-bold text-lg text-white">${totalContratado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
-                     <div><p class="text-sm text-gray-400">Total Pago</p><p class="font-bold text-lg text-green-400">${totalPago.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
-                     <div><p class="text-sm text-gray-400">Saldo Devedor</p><p class="font-bold text-lg text-red-400">${(totalContratado - totalPago).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
-                 </div><hr class="my-4 border-gray-700">` : '';
+                  <div class="grid grid-cols-3 gap-4 text-center">
+                      <div><p class="text-sm text-gray-400">Total Contratado</p><p class="font-bold text-lg text-white">${totalContratado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+                      <div><p class="text-sm text-gray-400">Total Pago</p><p class="font-bold text-lg text-green-400">${totalPago.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+                      <div><p class="text-sm text-gray-400">Saldo Devedor</p><p class="font-bold text-lg text-red-400">${(totalContratado - totalPago).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+                  </div><hr class="my-4 border-gray-700">` : '';
 
              content.innerHTML = summaryHtml + html;
              openModal('modalCliente');
@@ -1572,11 +1686,11 @@
              } else { detailsHtml += '<p class="text-sm text-gray-400 mt-2">Nenhum recebimento neste período.</p>'; }
 
              resultDiv.innerHTML = `
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     <div class="dark-card p-4 rounded-lg text-center"><p class="text-sm text-gray-400">Total (Parcelas)</p><p class="text-2xl font-bold text-white">${income.totalParcelas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
-                     <div class="dark-card p-4 rounded-lg text-center"><p class="text-sm text-gray-400">Total (Êxito)</p><p class="text-2xl font-bold text-indigo-400">${income.totalExito.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
-                 </div>
-                 <div class="bg-gray-900 p-4 rounded-lg border border-gray-700 text-center"><p class="text-white font-bold">TOTAL GERAL RECEBIDO</p><p class="text-3xl font-extrabold text-green-400">${income.totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div class="dark-card p-4 rounded-lg text-center"><p class="text-sm text-gray-400">Total (Parcelas)</p><p class="text-2xl font-bold text-white">${income.totalParcelas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+                      <div class="dark-card p-4 rounded-lg text-center"><p class="text-sm text-gray-400">Total (Êxito)</p><p class="text-2xl font-bold text-indigo-400">${income.totalExito.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+                  </div>
+                  <div class="bg-gray-900 p-4 rounded-lg border border-gray-700 text-center"><p class="text-white font-bold">TOTAL GERAL RECEBIDO</p><p class="text-3xl font-extrabold text-green-400">${income.totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
              ` + detailsHtml;
         }
         window.App.generateAndShowReport = generateAndShowReport;
@@ -1734,25 +1848,25 @@
                      await addDoc(contractsCollection, contractData);
 
                  } else { // Editando contrato existente
-                    const existingContract = database.contracts.find(c => c.id === contractId);
-                    // Mantém dados financeiros e de parcelas se não for admin editando
-                    if (!isUserAdmin && existingContract) {
-                         contractData.totalValue = existingContract.totalValue;
-                         contractData.successFee = existingContract.successFee;
-                         contractData.parcels = existingContract.parcels;
-                         contractData.successFeeValueReceived = existingContract.successFeeValueReceived;
-                         contractData.successFeePaymentDate = existingContract.successFeePaymentDate;
-                    } else if (isUserAdmin && existingContract) {
+                      const existingContract = database.contracts.find(c => c.id === contractId);
+                     // Mantém dados financeiros e de parcelas se não for admin editando
+                     if (!isUserAdmin && existingContract) {
+                          contractData.totalValue = existingContract.totalValue;
+                          contractData.successFee = existingContract.successFee;
+                          contractData.parcels = existingContract.parcels;
+                          contractData.successFeeValueReceived = existingContract.successFeeValueReceived;
+                          contractData.successFeePaymentDate = existingContract.successFeePaymentDate;
+                     } else if (isUserAdmin && existingContract) {
                          // Se admin edita, mas não informou valor/parcela, mantém o que existia
                          // (Assume que não quer zerar, apenas não mexeu nesses campos)
                           contractData.parcels = existingContract.parcels; // Mantém parcelas existentes ao editar
                           contractData.successFeeValueReceived = existingContract.successFeeValueReceived;
                           contractData.successFeePaymentDate = existingContract.successFeePaymentDate;
                           // A criação de novas parcelas na edição precisaria de lógica adicional (não implementado)
-                    }
-                     contractData.isDeleted = existingContract?.isDeleted || false; // Mantém status da lixeira
-                     const contractRef = doc(contractsCollection, contractId);
-                     await updateDoc(contractRef, contractData);
+                     }
+                      contractData.isDeleted = existingContract?.isDeleted || false; // Mantém status da lixeira
+                      const contractRef = doc(contractsCollection, contractId);
+                      await updateDoc(contractRef, contractData);
                  }
                  closeModal('modalContrato');
             });
@@ -1763,8 +1877,8 @@
                  const parcelIndex = parseInt(document.getElementById('pagamentoParcelIndex').value);
                  // Usa o valor do input se for admin, senão usa o valor original da parcela
                  const valuePaid = isUserAdmin
-                                     ? parseFloat(document.getElementById('pagamentoValor').value)
-                                     : database.contracts.find(c => c.id === contractId)?.parcels[parcelIndex]?.value || 0;
+                                       ? parseFloat(document.getElementById('pagamentoValor').value)
+                                       : database.contracts.find(c => c.id === contractId)?.parcels[parcelIndex]?.value || 0;
                  const paymentDate = document.getElementById('pagamentoData').value;
 
                  const contractRef = doc(contractsCollection, contractId);
