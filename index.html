@@ -26,7 +26,7 @@
 			background-position: center center;
 			opacity: 0.12;
 		}
-		/* z-index fixo e seguro para evitar bloqueios de clique */
+		/* z-index seguro para cliques */
 		.modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 999; }
 		.modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; max-height: 90vh; overflow-y: auto; }
 		.kanban-column { min-width: 320px; }
@@ -432,11 +432,15 @@
 	<div id="modal-backdrop" class="modal-backdrop"></div>
 
 	<script type="module">
+		/* Namespace global garantido e acessível */
+		window.App = window.App || {};
+		window.App = Object.assign(window.App, {});
+		window.openApp = window.App;
+
 		import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 		import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 		import { getFirestore, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-		window.App = {};
 		let db, auth, contractsCollection;
 		let database = { contracts: [] };
 		let currentContractSort = 'name-asc';
@@ -475,7 +479,7 @@
 				n.style.color = '#fff';
 				n.textContent = message;
 				this.toastContainer.appendChild(n);
-				setTimeout(() => n.remove(), 3500);
+				setTimeout(() => n.remove(), 2500);
 			},
 			debounce(fn, ms = 300) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; },
 			sanitizeText(s) { if (!s) return ''; return String(s).replace(/[<>]/g, '').trim(); },
@@ -538,7 +542,7 @@
 							loadingOverlay.style.display = 'none';
 							authOverlay.style.display = 'none';
 							appContainer.style.display = 'none';
-							openModal('modalDisplayName');
+							window.App.openModal('modalDisplayName');
 						} else {
 							document.getElementById('user-display-name').textContent = user.displayName;
 							authOverlay.style.display = 'none';
@@ -1279,70 +1283,88 @@
 		function closeAllModals() {
 			const modals = document.querySelectorAll('.modal');
 			modals.forEach(m => { if (m && m.style.display === 'block') m.style.display = 'none'; });
-			if (backdrop) backdrop.style.display = 'none';
+			const bd = document.getElementById('modal-backdrop');
+			if (bd) bd.style.display = 'none';
 		}
 
 		/* Abre modal garantindo que nenhum outro fique aberto e backdrop fique por baixo */
-		const openModal = function (modalId) {
+		function openModal(modalId) {
 			const modals = document.querySelectorAll('.modal');
 			modals.forEach(m => { if (m && m.style.display === 'block' && m.id !== modalId) m.style.display = 'none'; });
-
 			const modal = document.getElementById(modalId);
+			const bd = document.getElementById('modal-backdrop');
 			if (modal) modal.style.display = 'block';
-			if (backdrop) backdrop.style.display = 'block';
-		};
-		window.App.openModal = openModal;
+			if (bd) bd.style.display = 'block';
+		}
 
-		const closeModal = function (modalId) {
+		function closeModal(modalId) {
 			const el = document.getElementById(modalId);
 			if (el) el.style.display = 'none';
-
 			const anyOpen = Array.from(document.querySelectorAll('.modal')).some(m => m.style.display === 'block');
-			if (backdrop && !anyOpen) backdrop.style.display = 'none';
-
+			const bd = document.getElementById('modal-backdrop');
+			if (bd && !anyOpen) bd.style.display = 'none';
 			if (modalId === 'modalRelatorio') {
 				if (actualIncomeChartInstance) { actualIncomeChartInstance.destroy(); actualIncomeChartInstance = null; }
 				if (projectedIncomeChartInstance) { projectedIncomeChartInstance.destroy(); projectedIncomeChartInstance = null; }
 			}
-		};
+		}
+
+		// Expor globalmente para segurança
+		window.App.openModal = openModal;
 		window.App.closeModal = closeModal;
+		window.openModal = openModal;
+		window.closeModal = closeModal;
 
-		const openContractModal = function (contractId = null) {
-			const form = document.getElementById('formContrato'); form.reset();
-			const title = document.getElementById('modalContratoTitle');
-			const servicosContainer = document.getElementById('servicosContainer'); servicosContainer.innerHTML = '';
-			populateAdvogadoSelectModal();
-			const advogadoSelect = document.getElementById('advogadoResponsavel');
+		function openContractModal(contractId = null) {
+			try {
+				Utils.showToast('Abrindo modal de contrato...', 'info');
+				const form = document.getElementById('formContrato'); form.reset();
+				const title = document.getElementById('modalContratoTitle');
+				const servicosContainer = document.getElementById('servicosContainer'); servicosContainer.innerHTML = '';
+				populateAdvogadoSelectModal();
+				const advogadoSelect = document.getElementById('advogadoResponsavel');
 
-			if (contractId) {
-				const contract = database.contracts.find(c => c.id === contractId);
-				title.textContent = "Editar Contrato";
-				document.getElementById('contractId').value = contract.id;
-				document.getElementById('clienteNome').value = contract.clientName;
-				advogadoSelect.value = contract.advogadoResponsavel;
-				(contract.serviceTypes || []).forEach(service => createServiceTag(service.name, service.deadline, service.status));
-				document.getElementById('contratoTipoPagamento').value = contract.paymentType || 'Parcelado';
-				document.getElementById('contratoObservacoes').value = contract.observations || '';
+				if (contractId) {
+					const contract = database.contracts.find(c => c.id === contractId);
+					if (!contract) { Utils.showToast('Contrato não encontrado.', 'error'); return; }
+					title.textContent = "Editar Contrato";
+					document.getElementById('contractId').value = contract.id;
+					document.getElementById('clienteNome').value = contract.clientName;
+					advogadoSelect.value = contract.advogadoResponsavel;
+					(contract.serviceTypes || []).forEach(service => window.App.createServiceTag(service.name, service.deadline, service.status));
+					document.getElementById('contratoTipoPagamento').value = contract.paymentType || 'Parcelado';
+					document.getElementById('contratoObservacoes').value = contract.observations || '';
 
-				if (isUserAdmin) {
-					document.getElementById('valorTotal').value = contract.totalValue || '';
-					document.getElementById('numParcelas').value = (contract.parcels || []).length || 1;
-					document.getElementById('taxaExito').value = contract.successFee || '';
-					if ((contract.parcels || []).length > 0) {
-						document.getElementById('vencimentoPrimeiraParcela').value = contract.parcels[0].dueDate.split('T')[0];
+					if (isUserAdmin) {
+						document.getElementById('valorTotal').value = contract.totalValue || '';
+						document.getElementById('numParcelas').value = (contract.parcels || []).length || 1;
+						document.getElementById('taxaExito').value = contract.successFee || '';
+						if ((contract.parcels || []).length > 0) {
+							document.getElementById('vencimentoPrimeiraParcela').value = contract.parcels[0].dueDate.split('T')[0];
+						}
 					}
+				} else {
+					title.textContent = "Cadastrar Novo Contrato";
+					document.getElementById('contractId').value = '';
+					advogadoSelect.value = isUserAdmin ? 'Não Informado' : currentUserDisplayName;
 				}
-			} else {
-				title.textContent = "Cadastrar Novo Contrato";
-				document.getElementById('contractId').value = '';
-				advogadoSelect.value = isUserAdmin ? 'Não Informado' : currentUserDisplayName;
+				setupUIAccess(isUserAdmin);
+				openModal('modalContrato');
+			} catch (e) {
+				console.error('Erro em openContractModal:', e);
+				Utils.showToast('Falha ao abrir o modal de contrato.', 'error');
 			}
-			setupUIAccess(isUserAdmin);
-			openModal('modalContrato');
-		};
+		}
 		window.App.openContractModal = openContractModal;
+		window.openContractModal = openContractModal;
 
-		const openPaymentModal = async function (contractId, parcelIndex) {
+		function openPaymentModal(contractId, parcelIndex) {
+			// a função original usa async/await; mantemos a versão original para lógica e chamamos ela
+			return window.App.__openPaymentModalInner(contractId, parcelIndex);
+		}
+		window.openPaymentModal = openPaymentModal;
+
+		const __openPaymentModalInner = async function (contractId, parcelIndex) {
 			const contract = database.contracts.find(c => c.id === contractId);
 			if (!contract || !contract.parcels || !contract.parcels[parcelIndex]) return;
 			const parcel = contract.parcels[parcelIndex];
@@ -1370,9 +1392,9 @@
 			document.getElementById('pagamentoData').value = new Date().toISOString().split('T')[0];
 			openModal('modalPagamento');
 		};
-		window.App.openPaymentModal = openPaymentModal;
+		window.App.__openPaymentModalInner = __openPaymentModalInner;
 
-		const openClientHistoryModal = function (clientName) {
+		function openClientHistoryModal(clientName) {
 			const clientContracts = (isUserAdmin ? database.contracts : getFilteredContracts(true))
 				.filter(c => c.clientName === clientName);
 			const title = document.getElementById('clienteModalTitle'); title.textContent = `Histórico de ${clientName}`;
@@ -1425,23 +1447,23 @@
 
 			content.innerHTML = summaryHtml + html;
 			openModal('modalCliente');
-		};
+		}
 		window.App.openClientHistoryModal = openClientHistoryModal;
 
-		const openReportModal = function () {
-			if (!isUserAdmin) return;
-
-			openModal('modalRelatorio');
-
+		function openReportModal() {
 			try {
+				if (!isUserAdmin) { Utils.showToast('Apenas admins podem abrir o relatório.', 'error'); return; }
+				Utils.showToast('Abrindo relatório...', 'info');
+				openModal('modalRelatorio');
 				populateDateSelectors();
 				generateAndShowReport();
 			} catch (e) {
-				console.error('Erro ao gerar relatório:', e);
-				Utils.showToast('Não foi possível gerar o relatório agora.', 'error');
+				console.error('Erro em openReportModal:', e);
+				Utils.showToast('Não foi possível abrir o relatório agora.', 'error');
 			}
-		};
+		}
 		window.App.openReportModal = openReportModal;
+		window.openReportModal = openReportModal;
 
 		function populateDateSelectors() {
 			const monthSelect = document.getElementById('reportMonth');
@@ -1585,7 +1607,7 @@
 		}
 		async function fetchIPCAAccumulatedFactor(vencDate, refDate = new Date()) {
 			const start = startOfMonthUTC(vencDate);
-		 const refMonth = startOfMonthUTC(refDate);
+			const refMonth = startOfMonthUTC(refDate);
 			const endPrevMonth = endOfMonthUTC(toUTCDate(refMonth.getUTCFullYear(), refMonth.getUTCMonth(), 1 - 1));
 			if (start.getTime() > endPrevMonth.getTime()) return 1;
 
@@ -1612,7 +1634,7 @@
 				}, 1);
 				const finalFactor = factor || 1;
 				ipcaWindowCache.set(cacheKey, finalFactor);
-			 return finalFactor;
+				return finalFactor;
 			} catch (e) {
 				console.error('IPCA fetch error:', e);
 				return 1;
@@ -1653,7 +1675,7 @@
 		const exportReportCSV = function () {
 			if (!isUserAdmin) return;
 			const month = parseInt(document.getElementById('reportMonth').value);
-			const year = parseInt(document.getElementById('reportYear').value);
+		                                     const year = parseInt(document.getElementById('reportYear').value);
 			const income = calculateMonthlyIncome(year, month, getFilteredContracts(true));
 			if (income.detailedPayments.length === 0) { console.warn("No data to export."); return; }
 			const headers = ["Cliente", "Tipo", "Data", "Valor"];
@@ -1869,7 +1891,7 @@
 					const serviceName = (serviceInput.value || '').trim();
 					const deadline = deadlineInput.value;
 					if (serviceName) {
-						createServiceTag(serviceName, deadline, 'Pendente');
+						window.App.createServiceTag(serviceName, deadline, 'Pendente');
 						serviceInput.value = ''; deadlineInput.value = '';
 					} else {
 						Utils.showToast('Insira um nome para o serviço.', 'error');
