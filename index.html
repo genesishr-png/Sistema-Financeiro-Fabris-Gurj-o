@@ -320,6 +320,17 @@
 				<!-- Seção Admin: Financeiro -->
 				<div class="admin-only">
 					<h3 class="text-lg font-semibold mb-2 border-t border-gray-700 pt-4 text-white">Detalhes Financeiros</h3>
+					
+					<!-- === NOVA FUNÇÃO === -->
+					<div class="mb-4 p-3 bg-gray-900/50 rounded-lg border border-gray-700">
+						<label for="contratoJaQuitado" class="flex items-center">
+							<input type="checkbox" id="contratoJaQuitado" class="h-4 w-4 bg-gray-700 border-gray-600 rounded text-indigo-600 focus:ring-indigo-500">
+							<span class="ml-2 text-sm font-medium text-gray-300">Marcar valor fixo como já quitado (contrato antigo)</span>
+						</label>
+						<p class="text-xs text-gray-500 ml-6 mt-1">Isso criará 1 parcela única já "Paga" com o Valor Total. Deixe o N° de Parcelas como 1.</p>
+					</div>
+					<!-- === FIM DA NOVA FUNÇÃO === -->
+
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div class="mb-4">
 							<label for="valorTotal" class="block text-sm font-medium text-gray-400">Valor Fixo Total (R$)</label>
@@ -809,7 +820,7 @@
 				statusClass = 'border-red-400';
 				valorHtml = isUserAdmin
 					? `<div class="flex items-center text-gray-400 text-xs"><strong>Original:</strong><span class="ml-auto font-medium line-through">${formattedValue}</span></div>
-					  <div class="flex items-center text-red-400"><strong>Corrigido:</strong><span class="ml-auto font-semibold text-lg">${formattedCorrigido}</span></div>`
+					  <div class="flex items-center text-red-400"><strong>Corrigido:</strong><span class="ml-auto font-semibold text-lg">${formattedCorrigido}</span></div>`
 					: `<div class="text-red-400 font-semibold">Vencida</div>`;
 			} else if (type === 'a-vencer') {
 				statusClass = 'border-yellow-400';
@@ -961,8 +972,10 @@
 			if (resetList || contractListPage === 0) {
 				listContainer.innerHTML = html;
 			} else {
-				listContainer.innerHTML += html; // Isso está errado, deveria adicionar ao grid, mas vamos simplificar
-				listContainer.innerHTML = html; // Substitui tudo, o que é mais simples
+				// Correção: A paginação deveria adicionar, mas para simplificar, está substituindo o bloco todo.
+				// O ideal seria: listContainer.querySelector('.grid').innerHTML += html;
+				// Mas como a paginação não é por "append", e sim por "slice", substituir o innerHTML está correto.
+				listContainer.innerHTML = html; 
 			}
 		};
 		window.App.renderContractList = renderContractList;
@@ -1133,7 +1146,7 @@
 						case 'Em Andamento':
 							statusHtml = `<span class="text-xs font-bold text-yellow-400">EM ANDAMENTO</span>`;
 							actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, '50% Concluído')" class="text-xs bg-purple-600 text-white hover:bg-purple-500 font-semibold py-1 px-2 rounded-md transition-colors">50%</button>
-										  <button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`;
+										  <button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`;
 							break;
 						default: // Pendente
 							statusHtml = `<span class="text-xs font-bold text-gray-400">PENDENTE</span>`;
@@ -1454,6 +1467,10 @@
 				const servicosContainer = document.getElementById('servicosContainer'); servicosContainer.innerHTML = '';
 				populateAdvogadoSelectModal();
 				const advogadoSelect = document.getElementById('advogadoResponsavel');
+				
+				// === NOVA FUNÇÃO ===
+				// Pega o checkbox de "Já Quitado"
+				const jaQuitadoCheckbox = document.getElementById('contratoJaQuitado');
 
 				if (contractId) {
 					// Modo de Edição
@@ -1466,6 +1483,10 @@
 					(contract.serviceTypes || []).forEach(service => window.App.createServiceTag(service.name, service.deadline, service.status));
 					document.getElementById('contratoTipoPagamento').value = contract.paymentType || 'Parcelado';
 					document.getElementById('contratoObservacoes').value = contract.observations || '';
+
+					// Desabilita a opção de "Já Quitado" ao editar
+					jaQuitadoCheckbox.checked = false;
+					jaQuitadoCheckbox.disabled = true;
 
 					if (isUserAdmin) {
 						document.getElementById('valorTotal').value = contract.totalValue || '';
@@ -1480,6 +1501,10 @@
 					title.textContent = "Cadastrar Novo Contrato";
 					document.getElementById('contractId').value = '';
 					advogadoSelect.value = isUserAdmin ? 'Não Informado' : currentUserDisplayName;
+					
+					// Habilita e reseta a opção "Já Quitado"
+					jaQuitadoCheckbox.checked = false;
+					jaQuitadoCheckbox.disabled = false;
 				}
 				setupUIAccess(isUserAdmin); // Garante que os campos de admin estejam corretos
 				openModal('modalContrato');
@@ -1728,7 +1753,7 @@
 		// Calcula diferença de meses (método 30/360)
 		function diffMonths_30_360(fromDate, toDate) {
 			let y1 = fromDate.getUTCFullYear(), m1 = fromDate.getUTCMonth() + 1, d1 = fromDate.getUTCDate();
-			let y2 = toDate.getUTCFullYear(),   m2 = toDate.getUTCMonth() + 1,   d2 = toDate.getUTCDate();
+			let y2 = toDate.getUTCFullYear(),   m2 = toDate.getUTCMonth() + 1,   d2 = toDate.getUTCDate();
 			if (d1 === 31) d1 = 30;
 			if (d2 === 31 && d1 === 30) d2 = 30;
 			return Math.max(0, (y2 - y1) * 12 + (m2 - m1) + (d2 - d1) / 30);
@@ -1941,21 +1966,39 @@
 					contractData.isDeleted = false;
 
 					if (isUserAdmin) {
+						// Pega o valor do novo checkbox
+						const jaQuitado = document.getElementById('contratoJaQuitado').checked;
+						
 						// Gera as parcelas
 						const totalValue = contractData.totalValue;
 						const numParcels = parseInt(document.getElementById('numParcelas').value) || 1;
 						const firstDueDate = document.getElementById('vencimentoPrimeiraParcela').value;
 
 						if (numParcels > 0 && totalValue > 0) {
-							if (!firstDueDate) { Utils.showToast('Informe data da 1ª parcela.', 'error'); return; }
+							if (!firstDueDate && !jaQuitado) { // Se não estiver quitado, a data é obrigatória
+								Utils.showToast('Informe data da 1ª parcela.', 'error'); 
+								return; 
+							}
+							
 							const parcelValue = totalValue / numParcels;
-							let currentDueDate = new Date(firstDueDate + 'T12:00:00Z'); // Trata como UTC
+							// Se já quitado, usa a data de hoje. Senão, a data informada.
+							let currentDueDate = new Date((firstDueDate || new Date().toISOString().split('T')[0]) + 'T12:00:00Z'); 
+
 							for (let i = 0; i < numParcels; i++) {
+								// === LÓGICA DA NOVA FUNÇÃO ===
+								// Marca como pago apenas se for parcela única e o checkbox estiver marcado
+								const isPaid = jaQuitado && numParcels === 1;
+								
 								contractData.parcels.push({
-									number: i + 1, value: parcelValue,
+									number: i + 1, 
+									value: parcelValue,
 									dueDate: new Date(currentDueDate).toISOString(),
-									status: 'Pendente', valuePaid: 0, paymentDate: null
+									status: isPaid ? 'Paga' : 'Pendente', 
+									valuePaid: isPaid ? parcelValue : 0, 
+									paymentDate: isPaid ? new Date().toISOString() : null 
 								});
+								// === FIM DA LÓGICA ===
+								
 								currentDueDate.setMonth(currentDueDate.getMonth() + 1);
 							}
 						}
@@ -1973,7 +2016,10 @@
 						contractData.successFeePaymentDate = existingContract.successFeePaymentDate;
 					} else if (isUserAdmin && existingContract) {
 						// Se for admin, preserva dados de pagamento (parcelas são editadas em outro lugar)
-						contractData.parcels = existingContract.parcels;
+						// NOTA: A lógica de recriar parcelas ao editar foi removida, o que é CORRETO.
+						// Para editar parcelas, deve-se usar a tela de pagamento.
+						// Apenas preservamos o que já existe.
+						contractData.parcels = existingContract.parcels; 
 						contractData.successFeeValueReceived = existingContract.successFeeValueReceived;
 						contractData.successFeePaymentDate = existingContract.successFeePaymentDate;
 					}
@@ -2082,5 +2128,4 @@
 	</script>
 </body>
 </html>
-
 
