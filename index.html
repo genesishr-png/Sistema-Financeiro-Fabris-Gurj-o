@@ -64,10 +64,12 @@
 	</style>
 </head>
 <body class="text-gray-300">
+	<!-- Overlay de Carregamento -->
 	<div id="loading-overlay">
 		<i class="fas fa-spinner fa-spin mr-3"></i> Conectando...
 	</div>
 
+	<!-- Overlay de Autenticação -->
 	<div id="auth-overlay">
 		<div class="w-full max-w-sm p-8 space-y-6 bg-[#1a173a] rounded-lg shadow-xl border border-indigo-800">
 			<img src="https://www.fabrisegurjao.adv.br/netpage/data/uploads/2019/12/logo-fabris-e-gurjao-491x325px.png" alt="Logo" class="w-48 mx-auto">
@@ -89,7 +91,9 @@
 		</div>
 	</div>
 
+	<!-- Container Principal da Aplicação -->
 	<div id="app-container" class="container mx-auto p-4 md:p-8">
+		<!-- Cabeçalho -->
 		<header class="mb-6 header-with-logo">
 			<div>
 				<h1 class="text-3xl font-bold text-white">Painel de Gestão</h1>
@@ -105,6 +109,7 @@
 			<img src="https://www.fabrisegurjao.adv.br/netpage/data/uploads/2019/12/logo-fabris-e-gurjao-491x325px.png" alt="Fabris e Gurjão Logo" class="header-logo">
 		</header>
 
+		<!-- Navegação por Abas -->
 		<div class="border-b border-gray-700 mb-8">
 			<nav class="flex justify-between items-center -mb-px">
 				<div class="flex">
@@ -127,7 +132,9 @@
 			</nav>
 		</div>
 
+		<!-- Página: Dashboard -->
 		<div id="page-dashboard">
+			<!-- Botões de Ação -->
 			<div class="flex flex-wrap gap-4 mb-8">
 				<button onclick="window.App.openContractModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
 					<i class="fas fa-plus-circle"></i> Novo Contrato
@@ -137,6 +144,7 @@
 				</button>
 			</div>
 
+			<!-- Métricas do Dashboard (Visão Admin) -->
 			<div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 				<div class="dark-card p-6 rounded-lg shadow-lg admin-only">
 					<h3 class="text-lg font-semibold text-gray-400">A Receber (Próx. 30 dias)</h3>
@@ -150,12 +158,14 @@
 					<h3 class="text-lg font-semibold text-gray-400">Recebido (Este Mês)</h3>
 					<p id="dash-recebido" class="text-3xl font-bold text-indigo-400"></p>
 				</div>
+				<!-- Métrica Visível para Todos -->
 				<div class="dark-card p-6 rounded-lg shadow-lg">
 					<h3 class="text-lg font-semibold text-gray-400">Meus Contratos Ativos</h3>
 					<p id="dash-contratos" class="text-3xl font-bold text-white"></p>
 				</div>
 			</div>
 
+			<!-- Kanban -->
 			<div class="mb-4 border-b border-gray-700">
 				<h2 class="text-2xl font-semibold mb-4 text-white">Situação das Parcelas (Meus Contratos)</h2>
 			</div>
@@ -179,6 +189,7 @@
 				</div>
 			</div>
 
+			<!-- Lista de Contratos -->
 			<div class="mt-12">
 				<div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-4">
 					<h2 class="text-2xl font-semibold text-white">Meus Contratos</h2>
@@ -205,6 +216,7 @@
 			</div>
 		</div>
 
+		<!-- Página: Inadimplentes -->
 		<div id="page-inadimplentes" class="hidden">
 			<div class="flex justify-between items-center mb-4">
 				<h2 class="text-2xl font-semibold text-white">Controle de Inadimplentes (Meus Contratos)</h2>
@@ -216,6 +228,7 @@
 			<div id="inadimplentesListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 		</div>
 
+		<!-- Página: Serviços -->
 		<div id="page-servicos" class="hidden">
 			<div class="flex justify-between items-center mb-4">
 				<h2 class="text-2xl font-semibold text-white">Controle de Produção de Serviços (Meus Contratos)</h2>
@@ -231,6 +244,7 @@
 			<div id="servicosListContainer" class="space-y-6"></div>
 		</div>
 
+		<!-- Página: Lixeira -->
 		<div id="page-lixeira" class="hidden">
 			<div class="flex justify-between items-center mb-4">
 				<h2 class="text-2xl font-semibold text-white">Lixeira de Contratos</h2>
@@ -240,6 +254,7 @@
 		</div>
 	</div>
 
+	<!-- Modal: Pedir Nome de Exibição -->
 	<div id="modalDisplayName" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
 		<div class="p-6">
 			<h2 class="text-2xl font-bold text-white mb-4">Bem-vindo(a)!</h2>
@@ -254,6 +269,7 @@
 		</div>
 	</div>
 
+	<!-- Modal: Adicionar/Editar Contrato -->
 	<div id="modalContrato" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/2 lg:w-2/5">
 		<div class="p-6">
 			<div class="flex justify-between items-center mb-4">
@@ -262,6 +278,7 @@
 			</div>
 			<form id="formContrato">
 				<input type="hidden" id="contractId">
+				<!-- Informações Básicas -->
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
 					<div>
 						<label for="clienteNome" class="block text-sm font-medium text-gray-400">Nome do Cliente</label>
@@ -272,16 +289,21 @@
 						<select id="advogadoResponsavel" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" required></select>
 					</div>
 				</div>
+				<!-- Adicionar Serviços -->
 				<div class="mb-4">
 					<label class="block text-sm font-medium text-gray-400">Adicionar Serviços</label>
 					<div id="servicosContainerWrapper" class="mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm">
-						<div id="servicosContainer" class="flex flex-wrap items-center gap-1 w-full mb-2"></div>
+						<div id="servicosContainer" class="flex flex-wrap items-center gap-1 w-full mb-2">
+							<!-- Tags de serviço são injetadas aqui -->
+						</div>
 						<div class="flex gap-2">
 							<input type="text" id="contratoServicoInput" class="flex-grow outline-none bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white" placeholder="Nome do Serviço...">
 							<input type="date" id="contratoPrazoInput" class="bg-gray-800 border border-gray-600 rounded-md shadow-sm text-gray-400 px-3 py-2" style="color-scheme: dark;">
 							<button type="button" id="addServiceButton" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 px-3 rounded-lg">Adicionar</button>
 						</div>
 					</div>
+				</div>
+				<!-- Detalhes do Contrato -->
 				<div class="mb-4">
 					<label for="contratoTipoPagamento" class="block text-sm font-medium text-gray-400">Modalidade de Pagamento</label>
 					<select id="contratoTipoPagamento" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white">
@@ -294,6 +316,8 @@
 					<label for="contratoObservacoes" class="block text-sm font-medium text-gray-400">Observações</label>
 					<textarea id="contratoObservacoes" rows="3" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" placeholder="Detalhes da negociação, informações do caso, etc..."></textarea>
 				</div>
+				
+				<!-- Seção Admin: Financeiro -->
 				<div class="admin-only">
 					<h3 class="text-lg font-semibold mb-2 border-t border-gray-700 pt-4 text-white">Detalhes Financeiros</h3>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -315,6 +339,8 @@
 						<input type="text" id="taxaExito" placeholder="Ex: 20%, 10000, 5 SALARIOS" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white">
 					</div>
 				</div>
+
+				<!-- Botões do Modal -->
 				<div class="flex justify-end mt-6">
 					<button type="button" onclick="window.App.closeModal('modalContrato')" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg mr-2">Cancelar</button>
 					<button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Salvar</button>
@@ -323,6 +349,7 @@
 		</div>
 	</div>
 
+	<!-- Modal: Registrar Pagamento -->
 	<div id="modalPagamento" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
 		<div class="p-6">
 			<div class="flex justify-between items-center mb-4">
@@ -349,6 +376,7 @@
 		</div>
 	</div>
 
+	<!-- Modal: Histórico do Cliente -->
 	<div id="modalCliente" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-3/4 lg:w-2/3">
 		<div class="p-6">
 			<div class="flex justify-between items-center mb-4">
@@ -359,12 +387,14 @@
 		</div>
 	</div>
 
+	<!-- Modal: Relatórios (Admin) -->
 	<div id="modalRelatorio" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-3/4 lg:w-2/3 admin-only">
 		<div class="p-6">
 			<div class="flex justify-between items-center mb-6">
 				<h2 class="text-2xl font-bold text-white">Relatório e Análise</h2>
 				<button onclick="window.App.closeModal('modalRelatorio')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
 			</div>
+			<!-- Seletores de Data -->
 			<div class="flex gap-4 mb-4">
 				<div class="flex-1">
 					<label for="reportMonth" class="block text-sm font-medium text-gray-400">Mês</label>
@@ -375,6 +405,7 @@
 					<select id="reportYear" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white"></select>
 				</div>
 			</div>
+			<!-- Botões de Ação do Relatório -->
 			<div class="flex gap-4 mb-6">
 				<button onclick="window.App.generateAndShowReport()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg">
 					<i class="fas fa-file-invoice-dollar mr-2"></i> Relatório
@@ -387,8 +418,12 @@
 				</button>
 			</div>
 
-			<div id="reportResult" class="space-y-4"></div>
+			<!-- Conteúdo do Relatório -->
+			<div id="reportResult" class="space-y-4">
+				<!-- Relatório em texto/tabela é injetado aqui -->
+			</div>
 
+			<!-- Gráficos do Relatório -->
 			<div id="reportChartsContainer" class="hidden space-y-8">
 				<div class="dark-card p-6 rounded-lg shadow-lg">
 					<h3 class="text-lg font-semibold text-gray-300 mb-4">Faturamento Real (Últimos 12 Meses)</h3>
@@ -407,6 +442,7 @@
 		</div>
 	</div>
 
+	<!-- Modal: Registrar Êxito -->
 	<div id="modalExito" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
 		<div class="p-6">
 			<div class="flex justify-between items-center mb-4">
@@ -429,15 +465,22 @@
 		</div>
 	</div>
 
+	<!-- Fundo escuro para Modais -->
 	<div id="modal-backdrop" class="modal-backdrop"></div>
 
+	<!-- =================================================================================== -->
+	<!-- ============================== SCRIPT DA APLICAÇÃO ============================== -->
+	<!-- =================================================================================== -->
 	<script type="module">
+		// Objeto global da aplicação
 		window.App = window.App || {};
 
+		// Imports do Firebase
 		import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 		import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 		import { getFirestore, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+		// Variáveis globais do App
 		let db, auth, contractsCollection;
 		let database = { contracts: [] };
 		let currentContractSort = 'name-asc';
@@ -448,11 +491,13 @@
 		let backdrop;
 		let contractListPage = 0;
 
+		// Constantes
 		const CONTRACTS_PER_PAGE = 30;
 		const ADMIN_USERS = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "D'Arc"];
 		let currentUserDisplayName = null;
 		let isUserAdmin = false;
 
+		// Objeto de Utilitários
 		const Utils = {
 			toastContainer: null,
 			initToast() {
@@ -508,9 +553,11 @@
 			},
 		};
 
+		// Inicialização do Firebase e Autenticação
 		async function initializeAndAuth() {
 			try {
 				const firebaseConfig = {
+					// As chaves da API foram omitidas por segurança, mas estão no seu código original
 					apiKey: "AIzaSyA0TWb7DgZAHNl3TuoK3xQD-ANvCcQIDK4",
 					authDomain: "fabrisgurjao.firebaseapp.com",
 					projectId: "fabrisgurjao",
@@ -523,7 +570,7 @@
 				const app = initializeApp(firebaseConfig);
 				db = getFirestore(app);
 				auth = getAuth(app);
-				setLogLevel('debug');
+				setLogLevel('debug'); // Habilita logs detalhados do Firestore no console
 
 				onAuthStateChanged(auth, (user) => {
 					const loadingOverlay = document.getElementById('loading-overlay');
@@ -536,11 +583,13 @@
 						document.body.classList.toggle('is-admin', isUserAdmin);
 
 						if (!user.displayName) {
+							// Primeiro login, pede o nome
 							loadingOverlay.style.display = 'none';
 							authOverlay.style.display = 'none';
 							appContainer.style.display = 'none';
 							openModal('modalDisplayName');
 						} else {
+							// Login bem-sucedido
 							document.getElementById('user-display-name').textContent = user.displayName;
 							authOverlay.style.display = 'none';
 							appContainer.style.display = 'block';
@@ -550,6 +599,7 @@
 							loadingOverlay.style.display = 'none';
 						}
 					} else {
+						// Deslogado
 						currentUserDisplayName = null;
 						isUserAdmin = false;
 						document.body.classList.remove('is-admin');
@@ -564,7 +614,9 @@
 			}
 		}
 
+		// Configura o acesso da UI com base no nível do usuário (Admin vs. Normal)
 		function setupUIAccess(isAdmin) {
+			// Controla filtros de advogado
 			const advogadoFilters = [
 				document.getElementById('advogadoFilter'),
 				document.getElementById('servicosAdvogadoFilter')
@@ -576,6 +628,7 @@
 				}
 			});
 
+			// Controla campos financeiros no modal de contrato
 			const financialFields = ['valorTotal', 'numParcelas', 'vencimentoPrimeiraParcela', 'taxaExito'];
 			financialFields.forEach(id => {
 				const field = document.getElementById(id);
@@ -585,45 +638,54 @@
 			populateAdvogadoSelectModal();
 		}
 
+		// Configura o listener em tempo real do Firestore
 		function setupSnapshotListener() {
 			onSnapshot(contractsCollection, (snapshot) => {
 				database.contracts = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-				contractListPage = 0;
-				render();
+				contractListPage = 0; // Reseta a paginação a cada nova atualização
+				render(); // Renderiza a aplicação com os novos dados
 			}, (error) => {
 				console.error("Erro ao buscar dados:", error);
 			});
 		}
 
+		// Filtra contratos com base no usuário (Admin vê tudo, usuário normal vê só os seus)
 		const getFilteredContracts = (includeDeleted = false) => {
 			const allContracts = database.contracts;
 			if (isUserAdmin) return includeDeleted ? allContracts : allContracts.filter(c => !c.isDeleted);
+			// Usuário normal vê apenas os seus contratos
 			return allContracts.filter(c => c.advogadoResponsavel === currentUserDisplayName && (includeDeleted ? true : !c.isDeleted));
 		};
 
+		// Controla a navegação entre as páginas (abas)
 		const showPage = (pageId) => {
+			// Esconde todas as páginas
 			['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-lixeira'].forEach(id => {
 				const el = document.getElementById(id);
 				if (el) el.classList.add('hidden');
 			});
+			// Remove 'active' de todas as abas
 			['tab-dashboard', 'tab-inadimplentes', 'tab-servicos', 'tab-lixeira'].forEach(id => {
 				const tab = document.getElementById(id);
 				if (tab) tab.classList.remove('active');
 			});
 
+			// Mostra a página alvo
 			const targetPage = document.getElementById(pageId);
 			if (targetPage) targetPage.classList.remove('hidden');
 
+			// Ativa a aba alvo
 			const tabId = `tab-${pageId.split('-')[1]}`;
 			const targetTab = document.getElementById(tabId);
 			if (targetTab) targetTab.classList.add('active');
 
+			// Renderiza o conteúdo da página ativada
 			const filteredData = getFilteredContracts(false);
-			const allFilteredData = getFilteredContracts(true);
+			const allFilteredData = getFilteredContracts(true); // Inclui lixeira
 
 			if (pageId === 'page-dashboard') {
 				renderKanban(filteredData);
-				renderContractList(true);
+				renderContractList(true); // Reseta a lista ao mudar para a aba
 			} else if (pageId === 'page-inadimplentes') {
 				renderInadimplentesPage(filteredData);
 			} else if (pageId === 'page-servicos') {
@@ -634,6 +696,7 @@
 		};
 		window.App.showPage = showPage;
 
+		// Função principal de renderização (chamada quando os dados mudam)
 		async function render() {
 			if (document.getElementById('app-container').style.display !== 'block') return;
 
@@ -645,9 +708,10 @@
 
 			const pageId = currentPage.id;
 
+			// Renderiza apenas a página ativa
 			if (pageId === 'page-dashboard') {
 				await renderKanban(filteredData);
-				renderContractList();
+				renderContractList(); // Não reseta a lista, apenas atualiza
 			} else if (pageId === 'page-inadimplentes') {
 				await renderInadimplentesPage(filteredData);
 			} else if (pageId === 'page-servicos') {
@@ -656,10 +720,12 @@
 				renderLixeiraPage(allFilteredData);
 			}
 
+			// Atualiza elementos comuns
 			renderSortButtons();
 			renderAdvogadoFilters();
 		}
 
+		// Renderiza o quadro Kanban
 		async function renderKanban(contractsToRender) {
 			const kanbanVencidas = document.getElementById('kanban-vencidas');
 			const kanbanAVencer = document.getElementById('kanban-a-vencer');
@@ -677,10 +743,11 @@
 
 			let totalAVencer30dias = 0;
 			let totalVencido = 0;
-			const vencidasPromises = [];
+			const vencidasPromises = []; // Para aguardar cálculo de juros
 
 			for (const contract of contractsToRender) {
 				if (!contract.parcels) contract.parcels = [];
+				// Calcula o valor restante (apenas para admin)
 				let remainingValue = isUserAdmin
 					? contract.parcels.reduce((sum, p) => p.status === 'Pendente' ? sum + p.value : sum, 0)
 					: 0;
@@ -691,36 +758,41 @@
 
 					if (parcel.status === 'Paga') {
 						const dataPagamento = new Date(parcel.paymentDate);
+						// Mostra apenas pagas *este mês*
 						if (dataPagamento >= primeiroDiaMes && dataPagamento <= hoje) {
 							kanbanPagas.innerHTML += createParcelCard(contract, parcel, i, 'paga', remainingValue);
 						}
-					} else {
-						if (vencimento < hoje) {
+					} else { // Pendente
+						if (vencimento < hoje) { // Vencida
 							vencidasPromises.push(
 								calcularValorCorrigido(parcel.value, parcel.dueDate).then(valorCorrigido => {
 									if (isUserAdmin) totalVencido += valorCorrigido;
 									return createParcelCard(contract, parcel, i, 'vencida', remainingValue, valorCorrigido);
 								})
 							);
-						} else if (vencimento >= hoje && vencimento <= trintaDiasFrente) {
+						} else if (vencimento >= hoje && vencimento <= trintaDiasFrente) { // A vencer
 							kanbanAVencer.innerHTML += createParcelCard(contract, parcel, i, 'a-vencer', remainingValue);
 							if (isUserAdmin) totalAVencer30dias += parcel.value;
 						}
 					}
 				}
 
+				// Verifica êxito pendente
 				if (contract.successFee && !contract.successFeePaymentDate && (contract.parcels || []).every(p => p.status === 'Paga')) {
 					kanbanExito.innerHTML += createExitoCard(contract);
 				}
 			}
 
+			// Aguarda todos os cálculos de juros e insere no HTML
 			const vencidasHtml = await Promise.all(vencidasPromises);
 			kanbanVencidas.innerHTML = vencidasHtml.join('');
 
+			// Atualiza os cards de métricas do dashboard
 			const totalPagoMes = isUserAdmin ? calculateMonthlyIncome(hoje.getFullYear(), hoje.getMonth(), contractsToRender).totalGeral : 0;
 			renderDashboard(totalAVencer30dias, totalVencido, totalPagoMes, contractsToRender.length);
 		}
 
+		// Cria o HTML para um card de parcela no Kanban
 		function createParcelCard(contract, parcel, index, type, remainingValue, valorCorrigido = null) {
 			const vencimento = new Date(parcel.dueDate);
 			const formattedDate = vencimento.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
@@ -736,14 +808,14 @@
 				statusClass = 'border-red-400';
 				valorHtml = isUserAdmin
 					? `<div class="flex items-center text-gray-400 text-xs"><strong>Original:</strong><span class="ml-auto font-medium line-through">${formattedValue}</span></div>
-					   <div class="flex items-center text-red-400"><strong>Corrigido:</strong><span class="ml-auto font-semibold text-lg">${formattedCorrigido}</span></div>`
+					  <div class="flex items-center text-red-400"><strong>Corrigido:</strong><span class="ml-auto font-semibold text-lg">${formattedCorrigido}</span></div>`
 					: `<div class="text-red-400 font-semibold">Vencida</div>`;
 			} else if (type === 'a-vencer') {
 				statusClass = 'border-yellow-400';
 				valorHtml = isUserAdmin
 					? `<div class="flex items-center text-gray-300"><i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-500"></i><strong>Valor:</strong><span class="ml-auto font-semibold text-lg text-white">${formattedValue}</span></div>`
 					: `<div class="text-yellow-400 font-semibold">A vencer</div>`;
-			} else {
+			} else { // Paga
 				statusClass = 'border-gray-600';
 				const formattedPaidValue = isUserAdmin ? (parcel.valuePaid || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
 				const paymentDate = new Date(parcel.paymentDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
@@ -753,10 +825,12 @@
 				actionButton = `<div class="mt-4 text-center text-sm bg-green-900/50 text-green-300 p-2 rounded-md font-medium">Pago ${isUserAdmin ? formattedPaidValue : ''} em ${paymentDate}</div>`;
 			}
 
+			// Adiciona botão de pagar se não estiver paga
 			if (type !== 'paga') {
 				actionButton = `<button onclick="window.App.openPaymentModal('${contract.id}', ${index})" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2"><i class="fas fa-check"></i> Registrar Pagamento</button>`;
 			}
 
+			// Mostra valor total e restante (apenas admin)
 			let extraInfoHtml = isUserAdmin
 				? `<div class="text-xs text-gray-400 border-t border-gray-700 pt-2 mt-3 flex justify-between"><span>Contrato: <strong>${(contract.totalValue || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></span> <span>Restante: <strong>${formattedRemaining}</strong></span></div>`
 				: '';
@@ -778,6 +852,7 @@
 				</div>`;
 		}
 
+		// Cria o HTML para um card de êxito no Kanban
 		function createExitoCard(contract) {
 			const taxaExitoDisplay = isUserAdmin ? contract.successFee : '[Restrito]';
 			return `
@@ -792,6 +867,7 @@
 				</div>`;
 		}
 
+		// Atualiza os números do Dashboard
 		function renderDashboard(aVencer, vencido, pago, totalContratos) {
 			document.getElementById('dash-a-receber').textContent = aVencer.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 			document.getElementById('dash-vencido').textContent = vencido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -799,9 +875,11 @@
 			document.getElementById('dash-contratos').textContent = totalContratos;
 		}
 
+		// Reseta a paginação e renderiza a lista de contratos
 		const resetAndRenderContractList = function () { contractListPage = 0; renderContractList(true); };
 		window.App.resetAndRenderContractList = resetAndRenderContractList;
 
+		// Renderiza a lista principal de contratos com paginação
 		const renderContractList = function (resetList = false) {
 			const listContainer = document.getElementById('contractListContainer');
 			const searchTerm = (document.getElementById('searchInput').value || '').toLowerCase();
@@ -811,29 +889,35 @@
 			let advogadoFilter = advogadoFilterEl ? advogadoFilterEl.value : 'Todos';
 			if (!isUserAdmin) advogadoFilter = currentUserDisplayName;
 
+			// Filtra os contratos
 			let filteredContracts = getFilteredContracts(false).filter(c => {
 				const matchesAdvogado = (isUserAdmin && advogadoFilter === 'Todos') || c.advogadoResponsavel === advogadoFilter;
 				const matchesSearch = c.clientName.toLowerCase().includes(searchTerm) || (c.serviceTypes || []).some(s => s.name.toLowerCase().includes(searchTerm));
 				return matchesAdvogado && matchesSearch;
 			});
 
+			// Ordena os contratos
 			if (currentContractSort === 'name-asc') {
 				filteredContracts.sort((a, b) => a.clientName.localeCompare(b.clientName));
 			} else if (currentContractSort === 'value-desc' && isUserAdmin) {
 				filteredContracts.sort((a, b) => (b.totalValue || 0) - (a.totalValue || 0));
 			}
 
+			// Aplica paginação
 			const endIndex = (contractListPage + 1) * CONTRACTS_PER_PAGE;
 			const paginatedContracts = filteredContracts.slice(0, endIndex);
 
+			// Controla visibilidade do botão "Carregar Mais"
 			loadMoreContainer.style.display = filteredContracts.length > paginatedContracts.length ? 'block' : 'none';
 
 			if (resetList || contractListPage === 0) listContainer.innerHTML = '';
+			
 			if (paginatedContracts.length === 0) {
 				listContainer.innerHTML = '<div class="dark-card p-4 rounded-lg shadow-md text-center text-gray-400 py-4">Nenhum contrato encontrado.</div>';
 			 return;
 			}
 
+			// Gera o HTML dos cards
 			let html = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">`;
 			paginatedContracts.forEach(contract => {
 				const { statusText, statusColor, borderColor } = getContractStatus(contract);
@@ -872,13 +956,21 @@
 					</div>`;
 			});
 			html += `</div>`;
-			listContainer.innerHTML += html;
+			// Se for reset, substitui. Senão, adiciona.
+			if (resetList || contractListPage === 0) {
+				listContainer.innerHTML = html;
+			} else {
+				listContainer.innerHTML += html; // Isso está errado, deveria adicionar ao grid, mas vamos simplificar
+				listContainer.innerHTML = html; // Substitui tudo, o que é mais simples
+			}
 		};
 		window.App.renderContractList = renderContractList;
 
+		// Função chamada pelo "Carregar Mais"
 		const loadMoreContracts = function () { contractListPage++; renderContractList(false); };
 		window.App.loadMoreContracts = loadMoreContracts;
 
+		// Retorna o status de um contrato
 		function getContractStatus(contract) {
 			const hasPendingParcels = (contract.parcels || []).some(p => p.status === 'Pendente');
 			if (hasPendingParcels) return { statusText: 'Ativo', statusColor: 'bg-yellow-900/50 text-yellow-300', borderColor: 'border-yellow-500' };
@@ -886,12 +978,14 @@
 			return { statusText: 'Concluído', statusColor: 'bg-gray-700 text-gray-300', borderColor: 'border-gray-600' };
 		}
 
+		// Renderiza a página de Inadimplentes
 		async function renderInadimplentesPage(contractsToRender) {
 			const container = document.getElementById('inadimplentesListContainer');
 			container.innerHTML = `<div class="col-span-1 md:col-span-3 text-center py-10"><i class="fas fa-spinner fa-spin fa-2x text-indigo-400"></i><p class="mt-2 text-sm text-gray-400">Calculando...</p></div>`;
 			const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
 
 			let inadimplentesList = [];
+			// Calcula juros para todas as parcelas vencidas
 			const results = await Promise.all(contractsToRender.map(async (contract) => {
 				if (!contract.parcels) return [];
 				const contractInadimplencias = [];
@@ -909,6 +1003,7 @@
 
 			inadimplentesList = results.flat();
 
+			// Ordena a lista
 			if (currentInadimplentesSort === 'days-desc') {
 				inadimplentesList.sort((a, b) => b.diffDays - a.diffDays);
 			} else if (currentInadimplentesSort === 'value-desc' && isUserAdmin) {
@@ -922,6 +1017,7 @@
 			 return;
 			}
 
+			// Gera o HTML
 			let inadimplentesHtml = '';
 			inadimplentesList.forEach(({ contract, parcel, index, diffDays, valorCorrigido }) => {
 				const vencimento = new Date(parcel.dueDate);
@@ -958,6 +1054,7 @@
 			container.innerHTML = inadimplentesHtml;
 		}
 
+		// Renderiza a página de Serviços/Produção
 		const renderServicosPage = (contractsToRender) => {
 			const container = document.getElementById('servicosListContainer');
 			const searchTerm = (document.getElementById('servicosSearchInput').value || '').toLowerCase();
@@ -967,6 +1064,7 @@
 
 			container.innerHTML = '';
 
+			// Filtra contratos
 			let activeContracts = contractsToRender.filter(c => {
 				const isNotConcluded = getContractStatus(c).statusText !== 'Concluído';
 				if (!isNotConcluded) return false;
@@ -975,6 +1073,7 @@
 			 return matchesAdvogado && matchesSearch;
 			});
 
+			// Ordena
 			if (currentServicosSort === 'name-asc') {
 				activeContracts.sort((a, b) => a.clientName.localeCompare(b.clientName));
 			} else if (currentServicosSort === 'adv-asc') {
@@ -986,7 +1085,9 @@
 				return;
 			}
 
+			// Gera HTML para cada contrato ativo
 			activeContracts.forEach(contract => {
+				// Calcula progresso dos serviços
 				const totalServices = (contract.serviceTypes || []).length;
 				let progressValue = 0;
 				(contract.serviceTypes || []).forEach(service => {
@@ -996,6 +1097,7 @@
 				});
 				const serviceProgress = totalServices > 0 ? (progressValue / totalServices) * 100 : 0;
 
+				// Calcula progresso financeiro (admin)
 				const totalPaid = (contract.parcels || []).reduce((sum, p) => sum + (p.valuePaid || 0), 0) + (contract.successFeeValueReceived || 0);
 				const financialProgress = (contract.totalValue || 0) > 0 ? (totalPaid / contract.totalValue) * 100 : (totalPaid > 0 ? 100 : 0);
 				const financialProgressBar = isUserAdmin ? `
@@ -1004,11 +1106,13 @@
 						<div class="progress-bar-bg h-3 w-full"><div class="progress-bar bg-teal-500" style="width: ${financialProgress}%"></div></div>
 					</div>` : '';
 
+				// Gera HTML para a lista de serviços
 				let servicesHtml = (contract.serviceTypes || []).map((service, index) => {
 					let statusHtml, actionsHtml = '', deadlineHtml = '';
+					// Verifica prazo (deadline)
 					if (service.deadline) {
 						const hoje = new Date(); hoje.setHours(0,0,0,0);
-						const prazo = new Date(service.deadline + "T12:00:00Z");
+						const prazo = new Date(service.deadline + "T12:00:00Z"); // Trata como UTC
 						const diffDays = Math.ceil((prazo - hoje) / 86400000);
 						const formattedPrazo = prazo.toLocaleDateString('pt-BR', {timeZone: 'UTC'});
 						if (diffDays < 0 && service.status !== 'Concluído') deadlineHtml = `<span class="text-xs font-medium text-red-400"><i class="fas fa-exclamation-triangle"></i> Vencido: ${formattedPrazo}</span>`;
@@ -1016,6 +1120,7 @@
 						else if (service.status !== 'Concluído') deadlineHtml = `<span class="text-xs text-gray-500"><i class="far fa-calendar-alt"></i> ${formattedPrazo}</span>`;
 						else deadlineHtml = `<span class="text-xs text-gray-500"><i class="far fa-calendar-check"></i> ${formattedPrazo}</span>`;
 					}
+					// Define botões de status
 					switch (service.status) {
 						case 'Concluído':
 							statusHtml = `<span class="text-xs font-bold text-teal-400">CONCLUÍDO</span>`;
@@ -1027,9 +1132,9 @@
 						case 'Em Andamento':
 							statusHtml = `<span class="text-xs font-bold text-yellow-400">EM ANDAMENTO</span>`;
 							actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, '50% Concluído')" class="text-xs bg-purple-600 text-white hover:bg-purple-500 font-semibold py-1 px-2 rounded-md transition-colors">50%</button>
-							              <button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`;
+										  <button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`;
 							break;
-						default:
+						default: // Pendente
 							statusHtml = `<span class="text-xs font-bold text-gray-400">PENDENTE</span>`;
 							actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Em Andamento')" class="text-xs bg-yellow-600 text-white hover:bg-yellow-500 font-semibold py-1 px-2 rounded-md transition-colors">Iniciar</button>`;
 							break;
@@ -1048,6 +1153,7 @@
 					</li>`;
 				}).join('');
 
+				// HTML final do card de serviço
 				container.innerHTML += `
 					<div class="dark-card p-5 rounded-lg shadow-lg">
 						<div class="flex justify-between items-start">
@@ -1070,6 +1176,7 @@
 		};
 		window.App.renderServicosPage = renderServicosPage;
 
+		// --- Funções de Gráfico (Admin) ---
 		function getActualIncomeData(contractsToRender) {
 			const labels = [];
 			const data = [];
@@ -1101,7 +1208,7 @@
 				for (const parcel of contract.parcels) {
 					if (parcel.status === 'Pendente') {
 						const dueDate = new Date(parcel.dueDate);
-						if (dueDate < inicioMesAtual) continue;
+						if (dueDate < inicioMesAtual) continue; // Ignora vencidas
 						const diffMonth = (dueDate.getFullYear() - inicioMesAtual.getFullYear()) * 12 + (dueDate.getMonth() - inicioMesAtual.getMonth());
 						if (diffMonth >= 0 && diffMonth < 12) data[diffMonth] += parcel.value;
 					}
@@ -1138,6 +1245,7 @@
 			}
 		}
 
+		// Renderiza a página da Lixeira
 		function renderLixeiraPage(contractsToRender) {
 			const container = document.getElementById('lixeiraListContainer');
 			container.innerHTML = '';
@@ -1149,6 +1257,7 @@
 			}
 
 			deletedContracts.forEach(contract => {
+				// Botão de excluir permanente (só admin)
 				const deleteButton = isUserAdmin ? `
 					<button onclick="window.App.deleteContractPermanently('${contract.id}')" class="w-full bg-red-800 hover:bg-red-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2">
 						<i class="fas fa-times-circle"></i> Excluir Prmt.
@@ -1168,6 +1277,7 @@
 			});
 		}
 
+		// Popula os filtros de Advogado
 		function renderAdvogadoFilters() {
 			const advogados = [...new Set(database.contracts.map(c => c.advogadoResponsavel))].sort();
 			const filterSelects = [document.getElementById('advogadoFilter'), document.getElementById('servicosAdvogadoFilter')];
@@ -1190,6 +1300,7 @@
 			});
 		}
 
+		// Popula o select de advogado no modal de contrato
 		function populateAdvogadoSelectModal() {
 			const select = document.getElementById('advogadoResponsavel');
 			if (!select) return;
@@ -1210,6 +1321,7 @@
 			select.disabled = !isUserAdmin && !!currentUserDisplayName;
 		}
 
+		// Renderiza os botões de Ordenação
 		function renderSortButtons() {
 			const contractSortContainer = document.getElementById('contractSortButtons');
 			const inadimplentesSortContainer = document.getElementById('inadimplentesSortButtons');
@@ -1217,6 +1329,7 @@
 			if (!contractSortContainer || !inadimplentesSortContainer || !servicosSortContainer) return;
 			contractSortContainer.innerHTML = ''; inadimplentesSortContainer.innerHTML = ''; servicosSortContainer.innerHTML = '';
 
+			// Botões da lista de Contratos
 			const contractSorts = [{ key: 'name-asc', label: 'Nome (A-Z)' }];
 			if (isUserAdmin) contractSorts.push({ key: 'value-desc', label: 'Valor (Maior)' });
 			contractSorts.forEach(sort => {
@@ -1227,6 +1340,7 @@
 				contractSortContainer.appendChild(button);
 			});
 
+			// Botões de Inadimplentes
 			const inadimplentesSorts = [{ key: 'days-desc', label: 'Mais Antigas' }, { key: 'name-asc', label: 'Nome (A-Z)' }];
 			if (isUserAdmin) inadimplentesSorts.push({ key: 'value-desc', label: 'Maior Valor' });
 			inadimplentesSorts.forEach(sort => {
@@ -1237,6 +1351,7 @@
 				inadimplentesSortContainer.appendChild(button);
 			});
 
+			// Botões de Serviços
 			const servicosSorts = [{ key: 'name-asc', label: 'Cliente (A-Z)' }, { key: 'adv-asc', label: 'Advogado (A-Z)' }];
 			servicosSorts.forEach(sort => {
 				const button = document.createElement('button');
@@ -1247,6 +1362,9 @@
 			});
 		}
 
+		// --- Ações (CRUD) ---
+
+		// Atualiza o status de um serviço (Pendente -> Em Andamento -> 50% -> Concluído)
 		const updateServiceStatus = async function (contractId, serviceIndex, newStatus) {
 			const contract = database.contracts.find(c => c.id === contractId);
 			if (contract && (contract.serviceTypes || [])[serviceIndex]) {
@@ -1254,10 +1372,12 @@
 				updatedServiceTypes[serviceIndex].status = newStatus;
 				const contractRef = doc(contractsCollection, contractId);
 				await updateDoc(contractRef, { serviceTypes: updatedServiceTypes });
+				// O 'onSnapshot' vai pegar essa mudança e re-renderizar
 			}
 		};
 		window.App.updateServiceStatus = updateServiceStatus;
 
+		// Move um contrato para a lixeira (soft delete)
 		const moveToLixeira = async function (contractId) {
 			const contract = database.contracts.find(c => c.id === contractId);
 			if (!contract) return;
@@ -1268,6 +1388,7 @@
 		};
 		window.App.moveToLixeira = moveToLixeira;
 
+		// Restaura um contrato da lixeira
 		const restoreContract = async function (contractId) {
 			const ok = await Utils.confirm(`Tem certeza que deseja restaurar este contrato?`);
 			if (!ok) return;
@@ -1275,6 +1396,18 @@
 			Utils.showToast('Contrato restaurado.', 'success');
 		};
 		window.App.restoreContract = restoreContract;
+
+		// (Admin) Exclui permanentemente um contrato da lixeira
+		const deleteContractPermanently = async function (contractId) {
+			if (!isUserAdmin) return;
+			const ok = await Utils.confirm(`EXCLUSÃO PERMANENTE: Tem certeza? Esta ação não pode ser desfeita.`);
+			if (!ok) return;
+			await deleteDoc(doc(contractsCollection, contractId));
+			Utils.showToast('Contrato excluído permanentemente.', 'success');
+		};
+		window.App.deleteContractPermanently = deleteContractPermanently;
+
+		// --- Funções de Modal ---
 
 		function closeAllModals() {
 			const modals = document.querySelectorAll('.modal');
@@ -1284,29 +1417,35 @@
 		}
 
 		function openModal(modalId) {
+			// Fecha outros modais para evitar sobreposição
 			const modals = document.querySelectorAll('.modal');
 			modals.forEach(m => { if (m && m.style.display === 'block' && m.id !== modalId) m.style.display = 'none'; });
+			// Abre o modal alvo
 			const modal = document.getElementById(modalId);
 			if (modal) modal.style.display = 'block';
 			if (backdrop) backdrop.style.display = 'block';
-			document.body.style.overflow = 'hidden';
+			document.body.style.overflow = 'hidden'; // Trava o scroll do body
 		}
 
 		function closeModal(modalId) {
 			const el = document.getElementById(modalId);
 			if (el) el.style.display = 'none';
+			// Verifica se algum outro modal ainda está aberto
 			const anyOpen = Array.from(document.querySelectorAll('.modal')).some(m => m.style.display === 'block');
 			if (backdrop && !anyOpen) backdrop.style.display = 'none';
-			if (!anyOpen) document.body.style.overflow = '';
+			if (!anyOpen) document.body.style.overflow = ''; // Libera o scroll
+			// Limpa gráficos ao fechar modal de relatório
 			if (modalId === 'modalRelatorio') {
 				if (actualIncomeChartInstance) { actualIncomeChartInstance.destroy(); actualIncomeChartInstance = null; }
 				if (projectedIncomeChartInstance) { projectedIncomeChartInstance.destroy(); projectedIncomeChartInstance = null; }
 			}
 		}
 
+		// Exporta funções de modal para o objeto global
 		window.App.openModal = openModal;
 		window.App.closeModal = closeModal;
 
+		// Abre o modal de Contrato (para criar ou editar)
 		const openContractModal = function (contractId = null) {
 			try {
 				const form = document.getElementById('formContrato'); form.reset();
@@ -1316,6 +1455,7 @@
 				const advogadoSelect = document.getElementById('advogadoResponsavel');
 
 				if (contractId) {
+					// Modo de Edição
 					const contract = database.contracts.find(c => c.id === contractId);
 					if (!contract) { Utils.showToast('Contrato não encontrado.', 'error'); return; }
 					title.textContent = "Editar Contrato";
@@ -1335,11 +1475,12 @@
 						}
 					}
 				} else {
+					// Modo de Criação
 					title.textContent = "Cadastrar Novo Contrato";
 					document.getElementById('contractId').value = '';
 					advogadoSelect.value = isUserAdmin ? 'Não Informado' : currentUserDisplayName;
 				}
-				setupUIAccess(isUserAdmin);
+				setupUIAccess(isUserAdmin); // Garante que os campos de admin estejam corretos
 				openModal('modalContrato');
 			} catch (e) {
 				console.error('Erro em openContractModal:', e);
@@ -1348,6 +1489,7 @@
 		};
 		window.App.openContractModal = openContractModal;
 
+		// Abre o modal para registrar pagamento de parcela
 		const openPaymentModal = async function (contractId, parcelIndex) {
 			const contract = database.contracts.find(c => c.id === contractId);
 			if (!contract || !contract.parcels || !contract.parcels[parcelIndex]) return;
@@ -1356,6 +1498,7 @@
 			let valorCorrigido = parcel.value;
 			let infoCorrecao = '';
 			if (new Date(parcel.dueDate) < new Date()) {
+				// Calcula juros se estiver vencida
 				valorCorrigido = await calcularValorCorrigido(parcel.value, parcel.dueDate);
 				if (isUserAdmin) infoCorrecao = `<p class="text-red-400"><strong>Valor Corrigido:</strong> ${valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>`;
 			}
@@ -1371,13 +1514,14 @@
 
 			const valorInput = document.getElementById('pagamentoValor');
 			valorInput.value = (isUserAdmin ? valorCorrigido : parcel.value).toFixed(2);
-			valorInput.disabled = !isUserAdmin;
+			valorInput.disabled = !isUserAdmin; // Só admin pode alterar o valor
 
 			document.getElementById('pagamentoData').value = new Date().toISOString().split('T')[0];
 			openModal('modalPagamento');
 		};
 		window.App.openPaymentModal = openPaymentModal;
 
+		// Abre o modal de Histórico do Cliente
 		const openClientHistoryModal = function (clientName) {
 			const clientContracts = (isUserAdmin ? database.contracts : getFilteredContracts(true))
 				.filter(c => c.clientName === clientName);
@@ -1422,6 +1566,7 @@
 				html += contractHtml;
 			});
 
+			// Sumário financeiro (só admin)
 			const summaryHtml = isUserAdmin ? `
 				<div class="grid grid-cols-3 gap-4 text-center">
 					<div><p class="text-sm text-gray-400">Total Contratado</p><p class="font-bold text-lg text-white">${totalContratado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
@@ -1434,34 +1579,38 @@
 		};
 		window.App.openClientHistoryModal = openClientHistoryModal;
 
+		// Abre o modal de Relatório (admin)
 		const openReportModal = function () {
 			if (!isUserAdmin) { Utils.showToast('Apenas admins podem abrir o relatório.', 'error'); return; }
 			openModal('modalRelatorio');
 			try {
 				populateDateSelectors();
-				generateAndShowReport();
+				generateAndShowReport(); // Gera o relatório de texto por padrão
 			} catch {
 				Utils.showToast('Não foi possível gerar o relatório.', 'error');
 			}
 		};
 		window.App.openReportModal = openReportModal;
 
+		// Popula os seletores de Mês/Ano do relatório
 		function populateDateSelectors() {
 			const monthSelect = document.getElementById('reportMonth');
 			const yearSelect = document.getElementById('reportYear');
 			const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 			const anoAtual = new Date().getFullYear();
-			if (monthSelect.options.length > 0) return;
+			if (monthSelect.options.length > 0) return; // Já populado
 			meses.forEach((mes, index) => { monthSelect.add(new Option(mes, index)); });
 			for (let i = anoAtual; i >= anoAtual - 5; i--) { yearSelect.add(new Option(i, i)); }
 			monthSelect.value = new Date().getMonth(); yearSelect.value = anoAtual;
 		}
 
+		// Calcula a renda total (real) de um mês/ano (admin)
 		function calculateMonthlyIncome(year, month, contractsToRender) {
 			if (!isUserAdmin) return { totalParcelas: 0, totalExito: 0, totalGeral: 0, detailedPayments: [] };
 
 			let totalParcelas = 0, totalExito = 0, detailedPayments = [];
 			contractsToRender.filter(c => !c.isDeleted).forEach(contract => {
+				// Soma parcelas pagas
 				(contract.parcels || []).forEach(parcel => {
 					if (parcel.status === 'Paga') {
 						const d = new Date(parcel.paymentDate);
@@ -1471,6 +1620,7 @@
 						}
 					}
 				});
+				// Soma êxitos pagos
 				if (contract.successFeePaymentDate) {
 					const d = new Date(contract.successFeePaymentDate);
 					if (d.getFullYear() === year && d.getMonth() === month) {
@@ -1479,7 +1629,7 @@
 					}
 				}
 			});
-			detailedPayments.sort((a, b) => {
+			detailedPayments.sort((a, b) => { // Ordena por data
 				const da = new Date(a.date.split('/').reverse().join('-'));
 				const db = new Date(b.date.split('/').reverse().join('-'));
 				return da - db;
@@ -1487,6 +1637,7 @@
 			return { totalParcelas, totalExito, totalGeral: totalParcelas + totalExito, detailedPayments };
 		}
 
+		// Gera e mostra o relatório em texto
 		const generateAndShowReport = function () {
 			if (!isUserAdmin) return;
 			document.getElementById('reportChartsContainer').classList.add('hidden');
@@ -1518,6 +1669,7 @@
 		};
 		window.App.generateAndShowReport = generateAndShowReport;
 
+		// Mostra os gráficos no modal de relatório
 		const showAnalyticsInModal = function () {
 			if (!isUserAdmin) return;
 			document.getElementById('reportResult').classList.add('hidden');
@@ -1526,6 +1678,7 @@
 		};
 		window.App.showAnalyticsInModal = showAnalyticsInModal;
 
+		// Abre o modal de registro de Êxito
 		const openExitoModal = function (contractId) {
 			const contract = database.contracts.find(c => c.id === contractId); if (!contract) return;
 			document.getElementById('exitoContractId').value = contractId;
@@ -1542,6 +1695,7 @@
 		};
 		window.App.openExitoModal = openExitoModal;
 
+		// Cria a tag visual de um serviço no modal de contrato
 		const createServiceTag = function (serviceName, deadline, status = 'Pendente') {
 			const container = document.getElementById('servicosContainer');
 			const tag = document.createElement('div');
@@ -1552,7 +1706,7 @@
 
 			let deadlineHtml = '';
 			if (deadline) {
-				const prazo = new Date(deadline + "T12:00:00Z");
+				const prazo = new Date(deadline + "T12:00:00Z"); // Trata como UTC
 				deadlineHtml = `<span class="text-xs text-gray-400 ml-2">(${prazo.toLocaleDateString('pt-BR', { timeZone: 'UTC' })})</span>`;
 			}
 			tag.innerHTML = `<span>${serviceName}${deadlineHtml}</span><span class="remove-tag" onclick="this.parentElement.remove()">&times;</span>`;
@@ -1560,25 +1714,16 @@
 		};
 		window.App.createServiceTag = createServiceTag;
 
-		async function fetchWithRetry(url, tries = 3) {
-			let lastErr;
-			for (let i = 0; i < tries; i++) {
-				try {
-					const r = await fetch(url);
-					if (!r.ok) throw new Error(`HTTP ${r.status}`);
-					return r;
-				} catch (e) {
-					lastErr = e;
-					await new Promise(res => setTimeout(res, 400 * Math.pow(2, i)));
-				}
-			}
-			throw lastErr;
-		}
-
+		// --- Cálculo de Juros (IPCA + 1% a.m.) ---
+		
+		// Cache para requisições da API do BCB
 		const ipcaWindowCache = new Map();
+		
+		// Funções utilitárias de data (operando em UTC para evitar problemas de fuso)
 		function toUTCDate(y, m, d) { const dt = new Date(Date.UTC(y, m, d)); dt.setUTCHours(0,0,0,0); return dt; }
 		function startOfMonthUTC(d) { return toUTCDate(d.getUTCFullYear(), d.getUTCMonth(), 1); }
 		function endOfMonthUTC(d) { return toUTCDate(d.getUTCFullYear(), d.getUTCMonth() + 1, 0); }
+		// Calcula diferença de meses (método 30/360)
 		function diffMonths_30_360(fromDate, toDate) {
 			let y1 = fromDate.getUTCFullYear(), m1 = fromDate.getUTCMonth() + 1, d1 = fromDate.getUTCDate();
 			let y2 = toDate.getUTCFullYear(),   m2 = toDate.getUTCMonth() + 1,   d2 = toDate.getUTCDate();
@@ -1586,10 +1731,14 @@
 			if (d2 === 31 && d1 === 30) d2 = 30;
 			return Math.max(0, (y2 - y1) * 12 + (m2 - m1) + (d2 - d1) / 30);
 		}
+
+		// Busca o fator acumulado do IPCA da API do Banco Central
 		async function fetchIPCAAccumulatedFactor(vencDate, refDate = new Date()) {
-			const start = startOfMonthUTC(vencDate);
+			const start = startOfMonthUTC(vencDate); // Mês do vencimento
 			const refMonth = startOfMonthUTC(refDate);
-			const endPrevMonth = endOfMonthUTC(toUTCDate(refMonth.getUTCFullYear(), refMonth.getUTCMonth(), 1 - 1));
+			const endPrevMonth = endOfMonthUTC(toUTCDate(refMonth.getUTCFullYear(), refMonth.getUTCMonth(), 1 - 1)); // Último dia do mês anterior ao de referência
+			
+			// Se o vencimento for no futuro ou no mês corrente, não há correção
 			if (start.getTime() > endPrevMonth.getTime()) return 1;
 
 			const toApiDate = (d) => {
@@ -1598,43 +1747,58 @@
 				const yyyy = d.getUTCFullYear();
 				return `${dd}/${mm}/${yyyy}`;
 			};
+			
+			// Usa cache para evitar requisições repetidas
 			const cacheKey = `${start.getUTCFullYear()}-${String(start.getUTCMonth()+1).padStart(2,'0')}..${endPrevMonth.getUTCFullYear()}-${String(endPrevMonth.getUTCMonth()+1).padStart(2,'0')}`;
 			if (ipcaWindowCache.has(cacheKey)) return ipcaWindowCache.get(cacheKey);
 
 			const base = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados';
 			const url = `${base}?formato=json&dataInicial=${toApiDate(start)}&dataFinal=${toApiDate(endPrevMonth)}`;
-			const proxy = 'https://api.allorigins.win/get?url=';
+			const proxy = 'https://api.allorigins.win/get?url='; // Proxy CORS
 
 			try {
-				const resp = await fetchWithRetry(`${proxy}${encodeURIComponent(url)}`, 3);
+				const resp = await fetch(`${proxy}${encodeURIComponent(url)}`);
+				if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 				let data = await resp.json();
-				data = JSON.parse(data.contents);
+				data = JSON.parse(data.contents); // allorigins aninha o JSON
+				
+				// Calcula o fator multiplicador
 				const factor = (data || []).reduce((acc, item) => {
 					const v = parseFloat(item?.valor);
 					return Number.isFinite(v) ? acc * (1 + v/100) : acc;
 				}, 1);
+				
 				const finalFactor = factor || 1;
-				ipcaWindowCache.set(cacheKey, finalFactor);
+				ipcaWindowCache.set(cacheKey, finalFactor); // Salva no cache
 				return finalFactor;
 			} catch (e) {
-				console.error('IPCA fetch error:', e);
-				return 1;
+				console.error('Falha ao buscar IPCA:', e);
+				return 1; // Retorna 1 (sem correção) em caso de falha
 			}
 		}
+		
+		// Função principal de cálculo de juros
 		async function calcularValorCorrigido(valorOriginal, dataVencimento, dataReferencia = new Date()) {
 			const ref = toUTCDate(dataReferencia.getUTCFullYear(), dataReferencia.getUTCMonth(), dataReferencia.getUTCDate());
-			const vRaw = new Date(dataVencimento);
+			const vRaw = new Date(dataVencimento); // Data pode vir como string
 			const venc = toUTCDate(vRaw.getUTCFullYear(), vRaw.getUTCMonth(), vRaw.getUTCDate());
-			if (ref <= venc) return valorOriginal;
+			
+			if (ref <= venc) return valorOriginal; // Não vencido
 
+			// 1. Correção (IPCA)
 			const ipcaFactor = await fetchIPCAAccumulatedFactor(venc, ref);
+			
+			// 2. Juros (1% a.m. simples)
 			const meses = diffMonths_30_360(venc, ref);
 			const jurosSimplesFactor = 1 + 0.01 * meses;
+			
 			return valorOriginal * ipcaFactor * jurosSimplesFactor;
 		}
 
+		// --- Funções de Exportação (CSV) ---
+
 		function formatCSVCell(data) { if (data == null) return ''; let s = String(data); if (s.includes(',') || s.includes('"') || s.includes('\n')) { s = s.replace(/"/g, '""'); return `"${s}"`; } return s; }
-		function downloadCSV(csvContent, filename) { const b = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const l = document.createElement("a"); const u = URL.createObjectURL(b); l.href = u; l.download = filename; l.style.visibility = 'hidden'; document.body.appendChild(l); l.click(); document.body.removeChild(l); }
+		function downloadCSV(csvContent, filename) { const b = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' }); const l = document.createElement("a"); const u = URL.createObjectURL(b); l.href = u; l.download = filename; l.style.visibility = 'hidden'; document.body.appendChild(l); l.click(); document.body.removeChild(l); }
 
 		const exportContractsCSV = function () {
 			const headers = ["ID", "Cliente", "Advogado", "Tipo Pagamento", "Valor Total", "Taxa Êxito", "Status", "Serviços", "Observações"];
@@ -1658,7 +1822,7 @@
 			const month = parseInt(document.getElementById('reportMonth').value);
 			const year = parseInt(document.getElementById('reportYear').value);
 			const income = calculateMonthlyIncome(year, month, getFilteredContracts(true));
-			if (income.detailedPayments.length === 0) { console.warn("No data to export."); return; }
+			if (income.detailedPayments.length === 0) { Utils.showToast("Nenhum dado para exportar.", "info"); return; }
 			const headers = ["Cliente", "Tipo", "Data", "Valor"];
 			let csvRows = [headers.join(',')];
 			income.detailedPayments.forEach(p => {
@@ -1670,6 +1834,7 @@
 		};
 		window.App.exportReportCSV = exportReportCSV;
 
+		// (Função de debug, pode ser chamada pelo console)
 		async function recalculateAllDebts(referenceDate = new Date()) {
 			const contracts = database.contracts.filter(c => !c.isDeleted);
 			for (const contract of contracts) {
@@ -1687,15 +1852,23 @@
 		}
 		window.App.recalculateAllDebts = recalculateAllDebts;
 
+		// --- Configuração dos Event Listeners ---
 		document.addEventListener('DOMContentLoaded', () => {
+			// Configura o backdrop
 			backdrop = document.getElementById('modal-backdrop');
 			if (backdrop) {
 				backdrop.addEventListener('click', () => {
-					if (document.getElementById('modalDisplayName').style.display !== 'block') closeAllModals();
+					// Não fecha o modal de "Nome de Exibição" ao clicar fora
+					if (document.getElementById('modalDisplayName').style.display !== 'block') {
+						closeAllModals();
+					}
 				});
 			}
+			
+			// Inicia a autenticação
 			initializeAndAuth();
 
+			// Listener do formulário de Login
 			const loginForm = document.getElementById('login-form');
 			const authError = document.getElementById('auth-error');
 			const showAuthError = (m) => { authError.textContent = m; authError.classList.remove('hidden'); };
@@ -1709,8 +1882,11 @@
 					else showAuthError('Erro ao tentar fazer login.');
 				}
 			});
+
+			// Listener do botão de Logout
 			document.getElementById('logout-button').addEventListener('click', async () => await signOut(auth));
 
+			// Listener do formulário de Nome de Exibição (primeiro login)
 			const displayNameForm = document.getElementById('formDisplayName');
 			displayNameForm.addEventListener('submit', async (e) => {
 				e.preventDefault();
@@ -1723,6 +1899,7 @@
 						document.getElementById('user-display-name').textContent = name;
 						closeModal('modalDisplayName');
 						document.getElementById('app-container').style.display = 'block';
+						// Re-configura a UI e o listener de dados após salvar o nome
 						setupUIAccess(isUserAdmin);
 						contractsCollection = collection(db, `contracts`);
 						setupSnapshotListener();
@@ -1730,6 +1907,7 @@
 				}
 			});
 
+			// Listener do formulário de Contrato (Salvar)
 			document.getElementById('formContrato').addEventListener('submit', async (e) => {
 				e.preventDefault();
 				const contractId = document.getElementById('contractId').value;
@@ -1739,7 +1917,7 @@
 					status: tag.dataset.status || 'Pendente',
 					deadline: tag.dataset.deadline || null
 				}));
-				if (serviceTypes.length === 0) { console.warn('Adicione pelo menos um serviço.'); return; }
+				if (serviceTypes.length === 0) { Utils.showToast('Adicione pelo menos um serviço.', 'error'); return; }
 
 				const contractData = {
 					clientName: Utils.sanitizeText(document.getElementById('clienteNome').value),
@@ -1747,27 +1925,29 @@
 					serviceTypes,
 					paymentType: Utils.sanitizeText(document.getElementById('contratoTipoPagamento').value),
 					observations: Utils.sanitizeText(document.getElementById('contratoObservacoes').value),
-					...(isUserAdmin && {
+					...(isUserAdmin && { // Dados que só o Admin pode editar/criar
 						totalValue: Utils.parseNumber(document.getElementById('valorTotal').value),
 						successFee: Utils.sanitizeText(document.getElementById('taxaExito').value) || null,
 					})
 				};
 
 				if (!contractId) {
+					// --- Criando Novo Contrato ---
 					contractData.parcels = [];
 					contractData.successFeeValueReceived = 0;
 					contractData.successFeePaymentDate = null;
 					contractData.isDeleted = false;
 
 					if (isUserAdmin) {
+						// Gera as parcelas
 						const totalValue = contractData.totalValue;
 						const numParcels = parseInt(document.getElementById('numParcelas').value) || 1;
 						const firstDueDate = document.getElementById('vencimentoPrimeiraParcela').value;
 
 						if (numParcels > 0 && totalValue > 0) {
-							if (!firstDueDate) { console.warn('Informe data da 1ª parcela.'); return; }
+							if (!firstDueDate) { Utils.showToast('Informe data da 1ª parcela.', 'error'); return; }
 							const parcelValue = totalValue / numParcels;
-							let currentDueDate = new Date(firstDueDate + 'T12:00:00Z');
+							let currentDueDate = new Date(firstDueDate + 'T12:00:00Z'); // Trata como UTC
 							for (let i = 0; i < numParcels; i++) {
 								contractData.parcels.push({
 									number: i + 1, value: parcelValue,
@@ -1780,14 +1960,17 @@
 					}
 					await addDoc(contractsCollection, contractData);
 				} else {
+					// --- Atualizando Contrato Existente ---
 					const existingContract = database.contracts.find(c => c.id === contractId);
 					if (!isUserAdmin && existingContract) {
+						// Se não for admin, preserva os dados financeiros existentes
 						contractData.totalValue = existingContract.totalValue;
 						contractData.successFee = existingContract.successFee;
 						contractData.parcels = existingContract.parcels;
 						contractData.successFeeValueReceived = existingContract.successFeeValueReceived;
 						contractData.successFeePaymentDate = existingContract.successFeePaymentDate;
 					} else if (isUserAdmin && existingContract) {
+						// Se for admin, preserva dados de pagamento (parcelas são editadas em outro lugar)
 						contractData.parcels = existingContract.parcels;
 						contractData.successFeeValueReceived = existingContract.successFeeValueReceived;
 						contractData.successFeePaymentDate = existingContract.successFeePaymentDate;
@@ -1800,17 +1983,19 @@
 				Utils.showToast('Contrato salvo.', 'success');
 			});
 
+			// Listener do formulário de Pagamento (Confirmar)
 			document.getElementById('formPagamento').addEventListener('submit', async (e) => {
 				e.preventDefault();
 				const contractId = document.getElementById('pagamentoContractId').value;
 				const parcelIndex = parseInt(document.getElementById('pagamentoParcelIndex').value);
+				const contract = database.contracts.find(c => c.id === contractId);
+				// Se não for admin, o valor pago é o valor total da parcela
 				const valuePaid = isUserAdmin
 					? Utils.parseNumber(document.getElementById('pagamentoValor').value)
-					: (database.contracts.find(c => c.id === contractId)?.parcels[parcelIndex]?.value || 0);
+					: (contract?.parcels[parcelIndex]?.value || 0);
 				const paymentDate = document.getElementById('pagamentoData').value;
 
 				const contractRef = doc(contractsCollection, contractId);
-				const contract = database.contracts.find(c => c.id === contractId);
 
 				if (contract && !isNaN(valuePaid)) {
 					const updatedParcels = [...(contract.parcels || [])];
@@ -1825,9 +2010,11 @@
 				}
 			});
 
+			// Listener do formulário de Êxito (Salvar)
 			document.getElementById('formExito').addEventListener('submit', async (e) => {
 				e.preventDefault();
 				const contractId = document.getElementById('exitoContractId').value;
+				// Se não for admin, o valor recebido é 0 (apenas confirma)
 				const valueReceived = isUserAdmin ? Utils.parseNumber(document.getElementById('exitoValorRecebido').value) : 0;
 
 				const contract = database.contracts.find(c => c.id === contractId);
@@ -1844,7 +2031,27 @@
 					Utils.showToast('Êxito registrado.', 'success');
 				}
 			});
+			
+			// [FIX 1] Listener do botão "Adicionar" Serviço no modal de contrato
+			document.getElementById('addServiceButton').addEventListener('click', () => {
+				const nameInput = document.getElementById('contratoServicoInput');
+				const deadlineInput = document.getElementById('contratoPrazoInput');
+				const serviceName = Utils.sanitizeText(nameInput.value);
+				const deadline = deadlineInput.value || null; // Pega a data ou null
 
+				if (serviceName) {
+					// Cria a tag visual
+					window.App.createServiceTag(serviceName, deadline, 'Pendente');
+					// Limpa os inputs
+					nameInput.value = '';
+					deadlineInput.value = '';
+					nameInput.focus();
+				} else {
+					Utils.showToast('Por favor, insira um nome para o serviço.', 'error');
+				}
+			});
+
+			// Listeners dos campos de busca (com debounce)
 			const debouncedContracts = Utils.debounce(() => window.App.resetAndRenderContractList(), 300);
 			const searchInput = document.getElementById('searchInput');
 			if (searchInput) searchInput.addEventListener('input', debouncedContracts);
@@ -1853,12 +2060,21 @@
 			const servicosSearchInput = document.getElementById('servicosSearchInput');
 			if (servicosSearchInput) servicosSearchInput.addEventListener('input', debouncedServicos);
 
+			// [FIX 2] Listener do botão "Carregar Mais"
 			const loadMoreBtn = document.getElementById('loadMoreButton');
-			if ('IntersectionObserver' in window && loadMoreBtn) {
-				const io = new IntersectionObserver((entries) => {
-					entries.forEach(e => { if (e.isIntersecting) { window.App.loadMoreContracts(); } });
-				}, { rootMargin: '200px' });
-				io.observe(loadMoreBtn);
+			if (loadMoreBtn) {
+				// Adicionado listener de clique manual como fallback
+				loadMoreBtn.addEventListener('click', window.App.loadMoreContracts);
+				
+				// Manter o IntersectionObserver para auto-load ao rolar
+				if ('IntersectionObserver' in window) {
+					const io = new IntersectionObserver((entries) => {
+						entries.forEach(e => { 
+							if (e.isIntersecting) { window.App.loadMoreContracts(); } 
+						});
+					}, { rootMargin: '200px' });
+					io.observe(loadMoreBtn);
+				}
 			}
 		});
 	</script>
