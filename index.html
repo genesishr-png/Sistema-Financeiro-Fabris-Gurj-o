@@ -26,8 +26,9 @@
 			background-position: center center;
 			opacity: 0.12;
 		}
-		.modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 40; }
-		.modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 50; max-height: 90vh; overflow-y: auto; }
+		/* z-index fixo e seguro para evitar bloqueios de clique */
+		.modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 999; }
+		.modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; max-height: 90vh; overflow-y: auto; }
 		.kanban-column { min-width: 320px; }
 		.kanban-content { max-height: 60vh; overflow-y: auto; padding-right: 8px; }
 		::-webkit-scrollbar { width: 8px; }
@@ -451,7 +452,6 @@
 		let currentUserDisplayName = null;
 		let isUserAdmin = false;
 
-		// Utils centrais
 		const Utils = {
 			toastContainer: null,
 			initToast() {
@@ -1111,25 +1111,30 @@
 
 		function renderAnalyticsInModal(allContracts) {
 			if (!isUserAdmin) return;
-			const actualCtx = document.getElementById('actualIncomeChartModal')?.getContext('2d');
-			const projectedCtx = document.getElementById('projectedIncomeChartModal')?.getContext('2d');
-			if (!actualCtx || !projectedCtx) return;
+			try {
+				const actualCtx = document.getElementById('actualIncomeChartModal')?.getContext('2d');
+				const projectedCtx = document.getElementById('projectedIncomeChartModal')?.getContext('2d');
+				if (!actualCtx || !projectedCtx) return;
 
-			const actualData = getActualIncomeData(allContracts);
-			if (actualIncomeChartInstance) actualIncomeChartInstance.destroy();
-			actualIncomeChartInstance = new Chart(actualCtx, {
-				type: 'bar',
-				data: { labels: actualData.labels, datasets: [{ label: 'Faturamento Real', data: actualData.data, backgroundColor: 'rgba(74, 222, 128, 0.6)', borderColor: 'rgba(74, 222, 128, 1)', borderWidth: 1 }] },
-				options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: '#9ca3af' } }, x: { ticks: { color: '#9ca3af' } } }, plugins: { legend: { labels: { color: '#d1d5db' } } } }
-			});
+				const actualData = getActualIncomeData(allContracts);
+				if (actualIncomeChartInstance) actualIncomeChartInstance.destroy();
+				actualIncomeChartInstance = new Chart(actualCtx, {
+					type: 'bar',
+					data: { labels: actualData.labels, datasets: [{ label: 'Faturamento Real', data: actualData.data, backgroundColor: 'rgba(74, 222, 128, 0.6)', borderColor: 'rgba(74, 222, 128, 1)', borderWidth: 1 }] },
+					options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: '#9ca3af' } }, x: { ticks: { color: '#9ca3af' } } }, plugins: { legend: { labels: { color: '#d1d5db' } } } }
+				});
 
-			const projectedData = getProjectedIncomeData(allContracts);
-			if (projectedIncomeChartInstance) projectedIncomeChartInstance.destroy();
-			projectedIncomeChartInstance = new Chart(projectedCtx, {
-				type: 'bar',
-				data: { labels: projectedData.labels, datasets: [{ label: 'Projeção (Parcelas)', data: projectedData.data, backgroundColor: 'rgba(139, 92, 246, 0.6)', borderColor: 'rgba(139, 92, 246, 1)', borderWidth: 1 }] },
-				options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: '#9ca3af' } }, x: { ticks: { color: '#9ca3af' } } }, plugins: { legend: { labels: { color: '#d1d5db' } } } }
-			});
+				const projectedData = getProjectedIncomeData(allContracts);
+				if (projectedIncomeChartInstance) projectedIncomeChartInstance.destroy();
+				projectedIncomeChartInstance = new Chart(projectedCtx, {
+					type: 'bar',
+					data: { labels: projectedData.labels, datasets: [{ label: 'Projeção (Parcelas)', data: projectedData.data, backgroundColor: 'rgba(139, 92, 246, 0.6)', borderColor: 'rgba(139, 92, 246, 1)', borderWidth: 1 }] },
+					options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: '#9ca3af' } }, x: { ticks: { color: '#9ca3af' } } }, plugins: { legend: { labels: { color: '#d1d5db' } } } }
+				});
+			} catch (e) {
+				console.error('Erro ao renderizar gráficos:', e);
+				Utils.showToast('Erro ao carregar gráficos.', 'error');
+			}
 		}
 
 		function renderLixeiraPage(contractsToRender) {
@@ -1226,7 +1231,7 @@
 			inadimplentesSorts.forEach(sort => {
 				const button = document.createElement('button');
 				button.textContent = sort.label;
-			         	button.className = `sort-button ${currentInadimplentesSort === sort.key ? 'active' : ''}`;
+				button.className = `sort-button ${currentInadimplentesSort === sort.key ? 'active' : ''}`;
 				button.onclick = () => { currentInadimplentesSort = sort.key; renderInadimplentesPage(getFilteredContracts(false)); renderSortButtons(); };
 				inadimplentesSortContainer.appendChild(button);
 			});
@@ -1270,43 +1275,31 @@
 		};
 		window.App.restoreContract = restoreContract;
 
-		const deleteContractPermanently = async function (contractId) {
-			if (!isUserAdmin) { Utils.showToast('Ação permitida apenas a administradores.', 'error'); return; }
-			const contract = database.contracts.find(c => c.id === contractId);
-			if (!contract) return;
-			const ok = await Utils.confirm(`EXCLUSÃO PERMANENTE: apagar o contrato de "${contract.clientName}" para sempre?`);
-			if (!ok) return;
-			await deleteDoc(doc(contractsCollection, contractId));
-			Utils.showToast('Contrato excluído permanentemente.', 'success');
-		};
-		window.App.deleteContractPermanently = deleteContractPermanently;
-
-		// Fecha todos os modais e mantém o backdrop consistente
+		/* Fecha todos os modais e backdrop */
 		function closeAllModals() {
 			const modals = document.querySelectorAll('.modal');
 			modals.forEach(m => { if (m && m.style.display === 'block') m.style.display = 'none'; });
 			if (backdrop) backdrop.style.display = 'none';
 		}
 
+		/* Abre modal garantindo que nenhum outro fique aberto e backdrop fique por baixo */
 		const openModal = function (modalId) {
-			// Fecha quaisquer outros modais abertos antes de abrir o alvo
 			const modals = document.querySelectorAll('.modal');
-			modals.forEach(m => { if (m && m.style.display === 'block') m.style.display = 'none'; });
+			modals.forEach(m => { if (m && m.style.display === 'block' && m.id !== modalId) m.style.display = 'none'; });
 
-			setTimeout(() => {
-				const modal = document.getElementById(modalId);
-				if (modal) { modal.style.display = 'block'; modal.style.zIndex = '1000'; }
-				if (backdrop) { backdrop.style.display = 'block'; backdrop.style.zIndex = '999'; }
-			}, 0);
+			const modal = document.getElementById(modalId);
+			if (modal) modal.style.display = 'block';
+			if (backdrop) backdrop.style.display = 'block';
 		};
 		window.App.openModal = openModal;
 
 		const closeModal = function (modalId) {
 			const el = document.getElementById(modalId);
 			if (el) el.style.display = 'none';
-			// Só esconde o backdrop se nenhum outro modal estiver visível
+
 			const anyOpen = Array.from(document.querySelectorAll('.modal')).some(m => m.style.display === 'block');
 			if (backdrop && !anyOpen) backdrop.style.display = 'none';
+
 			if (modalId === 'modalRelatorio') {
 				if (actualIncomeChartInstance) { actualIncomeChartInstance.destroy(); actualIncomeChartInstance = null; }
 				if (projectedIncomeChartInstance) { projectedIncomeChartInstance.destroy(); projectedIncomeChartInstance = null; }
@@ -1438,10 +1431,8 @@
 		const openReportModal = function () {
 			if (!isUserAdmin) return;
 
-			// Abre o modal primeiro para evitar sobreposição/erro silencioso
 			openModal('modalRelatorio');
 
-			// Depois popula e gera com segurança
 			try {
 				populateDateSelectors();
 				generateAndShowReport();
@@ -1566,7 +1557,6 @@
 		};
 		window.App.createServiceTag = createServiceTag;
 
-		// Retry helper
 		async function fetchWithRetry(url, tries = 3) {
 			let lastErr;
 			for (let i = 0; i < tries; i++) {
@@ -1582,7 +1572,6 @@
 			throw lastErr;
 		}
 
-		// IPCA + juros simples 1%/mês (30/360)
 		const ipcaWindowCache = new Map();
 		function toUTCDate(y, m, d) { const dt = new Date(Date.UTC(y, m, d)); dt.setUTCHours(0,0,0,0); return dt; }
 		function startOfMonthUTC(d) { return toUTCDate(d.getUTCFullYear(), d.getUTCMonth(), 1); }
@@ -1596,7 +1585,7 @@
 		}
 		async function fetchIPCAAccumulatedFactor(vencDate, refDate = new Date()) {
 			const start = startOfMonthUTC(vencDate);
-			const refMonth = startOfMonthUTC(refDate);
+		 const refMonth = startOfMonthUTC(refDate);
 			const endPrevMonth = endOfMonthUTC(toUTCDate(refMonth.getUTCFullYear(), refMonth.getUTCMonth(), 1 - 1));
 			if (start.getTime() > endPrevMonth.getTime()) return 1;
 
@@ -1623,7 +1612,7 @@
 				}, 1);
 				const finalFactor = factor || 1;
 				ipcaWindowCache.set(cacheKey, finalFactor);
-				return finalFactor;
+			 return finalFactor;
 			} catch (e) {
 				console.error('IPCA fetch error:', e);
 				return 1;
@@ -1641,7 +1630,6 @@
 			return valorOriginal * ipcaFactor * jurosSimplesFactor;
 		}
 
-		// Export CSV helpers
 		function formatCSVCell(data) { if (data == null) return ''; let s = String(data); if (s.includes(',') || s.includes('"') || s.includes('\n')) { s = s.replace(/"/g, '""'); return `"${s}"`; } return s; }
 		function downloadCSV(csvContent, filename) { const b = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const l = document.createElement("a"); const u = URL.createObjectURL(b); l.href = u; l.download = filename; l.style.visibility = 'hidden'; document.body.appendChild(l); l.click(); document.body.removeChild(l); }
 
@@ -1679,7 +1667,6 @@
 		};
 		window.App.exportReportCSV = exportReportCSV;
 
-		// Recalcular tudo (opcional)
 		async function recalculateAllDebts(referenceDate = new Date()) {
 			const contracts = database.contracts.filter(c => !c.isDeleted);
 			for (const contract of contracts) {
@@ -1858,7 +1845,6 @@
 				});
 			}
 
-			// Debounce das buscas
 			const debouncedContracts = Utils.debounce(() => window.App.resetAndRenderContractList(), 300);
 			const searchInput = document.getElementById('searchInput');
 			if (searchInput) searchInput.addEventListener('input', debouncedContracts);
@@ -1867,7 +1853,6 @@
 			const servicosSearchInput = document.getElementById('servicosSearchInput');
 			if (servicosSearchInput) servicosSearchInput.addEventListener('input', debouncedServicos);
 
-			// Paginação infinita
 			const loadMoreBtn = document.getElementById('loadMoreButton');
 			if ('IntersectionObserver' in window && loadMoreBtn) {
 				const io = new IntersectionObserver((entries) => {
@@ -1876,7 +1861,6 @@
 				io.observe(loadMoreBtn);
 			}
 
-			// Add service tag
 			const addServiceButton = document.getElementById('addServiceButton');
 			if (addServiceButton) {
 				addServiceButton.addEventListener('click', () => {
