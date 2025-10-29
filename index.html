@@ -503,7 +503,7 @@
 		let contractListPage = 0;
 
 		// Constantes
-		const CONTRACTS_PER_PAGE = 30;
+		const CONTRACTS_PER_PAGE = 12; // Modificado para 12 por página
 		const ADMIN_USERS = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "D'Arc"];
 		let currentUserDisplayName = null;
 		let isUserAdmin = false;
@@ -1995,12 +1995,12 @@
 						if (numParcels > 0 && totalValue > 0) {
 							if (!firstDueDate && !jaQuitado) { // Se não estiver quitado, a data é obrigatória
 								Utils.showToast('Informe data da 1ª parcela.', 'error');
-								return; 
+								return;BRL
 							}
 							
 							const parcelValue = totalValue / numParcels;
 							// Se já quitado, usa a data de hoje. Senão, a data informada.
-							let currentDueDate = new Date((firstDueDate || new Date().toISOString().split('T')[0]) + 'T12:00:00Z'); 
+							let currentDueDate = new Date((firstDueDate || new Date().toISOString().split('T')[0]) + 'T12:00:00Z'); 
 
 							for (let i = 0; i < numParcels; i++) {
 								// === LÓGICA DA NOVA FUNÇÃO ===
@@ -2008,12 +2008,12 @@
 								const isPaid = jaQuitado && numParcels === 1;
 								
 								contractData.parcels.push({
-									number: i + 1, 
+									number: i + 1, 
 									value: parcelValue,
 									dueDate: new Date(currentDueDate).toISOString(),
-									status: isPaid ? 'Paga' : 'Pendente', 
-									valuePaid: isPaid ? parcelValue : 0, 
-									paymentDate: isPaid ? new Date().toISOString() : null 
+									status: isPaid ? 'Paga' : 'Pendente', 
+									valuePaid: isPaid ? parcelValue : 0, 
+									paymentDate: isPaid ? new Date().toISOString() : null 
 								});
 								// === FIM DA LÓGICA ===
 								
@@ -2037,7 +2037,7 @@
 						// NOTA: A lógica de recriar parcelas ao editar foi removida, o que é CORRETO.
 						// Para editar parcelas, deve-se usar a tela de pagamento.
 						// Apenas preservamos o que já existe.
-						contractData.parcels = existingContract.parcels; 
+						contractData.parcels = existingContract.parcels; 
 						contractData.successFeeValueReceived = existingContract.successFeeValueReceived;
 						contractData.successFeePaymentDate = existingContract.successFeePaymentDate;
 					}
@@ -2135,8 +2135,8 @@
 				// Manter o IntersectionObserver para auto-load ao rolar
 				if ('IntersectionObserver' in window) {
 					const io = new IntersectionObserver((entries) => {
-						entries.forEach(e => { 
-							if (e.isIntersecting) { window.App.loadMoreContracts(); } 
+						entries.forEach(e => { 
+							if (e.isIntersecting) { window.App.loadMoreContracts(); } 
 						});
 					}, { rootMargin: '200px' });
 					io.observe(loadMoreBtn);
