@@ -723,7 +723,7 @@
 			// Renderiza apenas a página ativa
 			if (pageId === 'page-dashboard') {
 				await renderKanban(filteredData);
-				renderContractList(); // Não reseta a lista, apenas atualiza
+				renderContractList(true); // [MODIFICADO] Reseta a lista ao atualizar dados
 			} else if (pageId === 'page-inadimplentes') {
 				await renderInadimplentesPage(filteredData);
 			} else if (pageId === 'page-servicos') {
@@ -891,12 +891,21 @@
 		const resetAndRenderContractList = function () { contractListPage = 0; renderContractList(true); };
 		window.App.resetAndRenderContractList = resetAndRenderContractList;
 
+		// ===================================================================================
+		// ======================= INÍCIO DA MODIFICAÇÃO DE PAGINAÇÃO ======================
+		// ===================================================================================
+
 		// Renderiza a lista principal de contratos com paginação
 		const renderContractList = function (resetList = false) {
 			const listContainer = document.getElementById('contractListContainer');
 			const searchTerm = (document.getElementById('searchInput').value || '').toLowerCase();
 			const advogadoFilterEl = document.getElementById('advogadoFilter');
 			const loadMoreContainer = document.getElementById('loadMoreContainer');
+
+			// [MODIFICADO] Se for reset, reseta a paginação
+			if (resetList) {
+				contractListPage = 0;
+			}
 
 			let advogadoFilter = advogadoFilterEl ? advogadoFilterEl.value : 'Todos';
 			if (!isUserAdmin) advogadoFilter = currentUserDisplayName;
@@ -915,29 +924,41 @@
 				filteredContracts.sort((a, b) => (b.totalValue || 0) - (a.totalValue || 0));
 			}
 
-			// Aplica paginação
+			// [MODIFICADO] Aplica paginação por slice (startIndex, endIndex)
+			const startIndex = contractListPage * CONTRACTS_PER_PAGE;
 			const endIndex = (contractListPage + 1) * CONTRACTS_PER_PAGE;
-			const paginatedContracts = filteredContracts.slice(0, endIndex);
+			const paginatedContracts = filteredContracts.slice(startIndex, endIndex);
 
-			// Controla visibilidade do botão "Carregar Mais"
-			loadMoreContainer.style.display = filteredContracts.length > paginatedContracts.length ? 'block' : 'none';
+			// [MODIFICADO] Controla visibilidade do botão "Carregar Mais"
+			loadMoreContainer.style.display = filteredContracts.length > endIndex ? 'block' : 'none';
 
-			if (resetList || contractListPage === 0) listContainer.innerHTML = '';
-			
-			if (paginatedContracts.length === 0) {
+			// [MODIFICADO] Limpa o container *apenas* se for a primeira página (reset)
+			if (resetList || contractListPage === 0) {
+				listContainer.innerHTML = '';
+			}
+
+			// [MODIFICADO] Se for a *primeira página* E *vazia*, mostra a mensagem.
+			if ((resetList || contractListPage === 0) && paginatedContracts.length === 0) {
 				listContainer.innerHTML = '<div class="dark-card p-4 rounded-lg shadow-md text-center text-gray-400 py-4">Nenhum contrato encontrado.</div>';
 			 return;
 			}
 
-			// Gera o HTML dos cards
-			let html = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">`;
+			// [MODIFICADO] Procura o grid. Se não existir, cria.
+			let gridContainer = listContainer.querySelector('.grid');
+			if (!gridContainer) {
+				listContainer.innerHTML = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>';
+				gridContainer = listContainer.querySelector('.grid');
+			}
+			
+			// [MODIFICADO] Gera o HTML *apenas* dos *novos* cards
+			let newCardsHtml = ``;
 			paginatedContracts.forEach(contract => {
 				const { statusText, statusColor, borderColor } = getContractStatus(contract);
 				let servicesHtml = (contract.serviceTypes || []).map(s => `<span class="service-tag-small">${s.name}</span>`).join('');
 				const valorFixoDisplay = isUserAdmin ? (contract.totalValue || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
 				const exitoDisplay = isUserAdmin && contract.successFee ? contract.successFee : (contract.successFee ? '[Restrito]' : '');
 
-				html += `
+				newCardsHtml += `
 					<div class="dark-card rounded-lg shadow-lg overflow-hidden border-l-4 ${borderColor} flex flex-col justify-between transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl">
 						<div class="p-5">
 							<div class="flex justify-between items-start mb-3">
@@ -967,18 +988,15 @@
 						</div>
 					</div>`;
 			});
-			html += `</div>`;
-			// Se for reset, substitui. Senão, adiciona.
-			if (resetList || contractListPage === 0) {
-				listContainer.innerHTML = html;
-			} else {
-				// Correção: A paginação deveria adicionar, mas para simplificar, está substituindo o bloco todo.
-				// O ideal seria: listContainer.querySelector('.grid').innerHTML += html;
-				// Mas como a paginação não é por "append", e sim por "slice", substituir o innerHTML está correto.
-				listContainer.innerHTML = html; 
-			}
+			
+			// [MODIFICADO] Adiciona o HTML dos novos cards ao grid existente
+			gridContainer.innerHTML += newCardsHtml;
 		};
 		window.App.renderContractList = renderContractList;
+
+		// ===================================================================================
+		// ======================== FIM DA MODIFICAÇÃO DE PAGINAÇÃO ========================
+		// ===================================================================================
 
 		// Função chamada pelo "Carregar Mais"
 		const loadMoreContracts = function () { contractListPage++; renderContractList(false); };
@@ -1976,7 +1994,7 @@
 
 						if (numParcels > 0 && totalValue > 0) {
 							if (!firstDueDate && !jaQuitado) { // Se não estiver quitado, a data é obrigatória
-								Utils.showToast('Informe data da 1ª parcela.', 'error'); 
+								Utils.showToast('Informe data da 1ª parcela.', 'error');
 								return; 
 							}
 							
@@ -2128,4 +2146,3 @@
 	</script>
 </body>
 </html>
-
