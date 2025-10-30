@@ -9,78 +9,324 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+	
 	<style>
-		/* [SEÇÃO 1: Estilos Gerais] */
+		/* === GERAL === */
 		body {
 			font-family: 'Inter', sans-serif;
-			position: relative;
-			background-color: #0f172a;
-			color: #d1d5db;
+			/* Fundo do app (tema claro) */
+			background-color: #f9fafb; /* bg-gray-50 */
+			color: #1f2937; /* text-gray-800 */
 		}
-		body::after {
-			content: '';
-			position: fixed;
-			z-index: -1;
-			top: 0; left: 0; right: 0; bottom: 0;
-			background-image: url('https://i.postimg.cc/x81V8QJg/Imagem-do-Whats-App-de-2025-10-27-a-s-09-49-28-f966cd35.jpg');
-			background-repeat: no-repeat;
-			background-size: cover;
-			background-position: center center;
-			opacity: 0.12;
+		
+		/* === OVERLAY DE LOGIN === */
+		#loading-overlay {
+			position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+			background-color: rgba(17, 24, 39, 0.9);
+			display: flex; justify-content: center; align-items: center;
+			z-index: 10000; color: white; font-size: 1.2rem;
 		}
-		.modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 9000; }
-		.modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9001; max-height: 90vh; overflow-y: auto; }
-		.kanban-column { min-width: 320px; }
-		.kanban-content { max-height: 60vh; overflow-y: auto; padding-right: 8px; }
-		::-webkit-scrollbar { width: 8px; }
-		::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; }
-		::-webkit-scrollbar-thumb:hover { background: #6b7280; }
-		.service-tag { display: inline-flex; justify-content: space-between; align-items: center; background-color: #374151; color: #d1d5db; padding: 4px 10px; border-radius: 12px; font-size: 14px; margin-right: 4px; margin-bottom: 4px; width: 100%; }
-		.service-tag-small { display: inline-block; background-color: #374151; color: #9ca3af; padding: 2px 8px; border-radius: 9999px; font-size: 12px; margin-right: 4px; margin-bottom: 4px; }
-		.service-tag .remove-tag { margin-left: 8px; cursor: pointer; font-weight: bold; }
-		.nav-tab { cursor: pointer; padding: 10px 20px; border-bottom: 3px solid transparent; color: #9ca3af; transition: all 0.2s; }
-		.nav-tab:hover { color: #e5e7eb; }
-		.nav-tab.active { border-bottom-color: #6366f1; color: #e5e7eb; }
-		.nav-tab-icon { cursor: pointer; padding: 10px 15px; color: #9ca3af; transition: all 0.2s; }
-		.nav-tab-icon:hover { color: #e5e7eb; }
-		.nav-tab-icon.active { color: #6366f1; }
-		.progress-bar-bg { background-color: #374151; border-radius: 9999px; overflow: hidden; }
-		.progress-bar { height: 100%; border-radius: 9999px; transition: width 0.5s ease-in-out; }
-		.dark-card { background-color: #1f2937; border: 1px solid #374151; }
-		.header-with-logo { position: relative; display: flex; justify-content: space-between; align-items: center; }
-		.header-user-block { margin-right: 160px; }
-		.header-logo { position: absolute; right: 0; top: 50%; transform: translateY(-50%); max-height: 60px; opacity: 0.8; }
-		.sort-button, .filter-button { background-color: #374151; border: 1px solid #4b5563; color: #9ca3af; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
-		.sort-button:hover, .filter-button:hover { background-color: #4b5563; color: white; }
-		.sort-button.active, .filter-button.active { background-color: #4f46e5; border-color: #4f46e5; color: white; }
-		.filter-select { background-color: #374151; border: 1px solid #4b5563; color: #9ca3af; padding: 8px 12px; border-radius: 6px; font-size: 14px; }
-		.filter-select:disabled { background-color: #4b5563; opacity: 0.7; cursor: not-allowed; }
-		#loading-overlay, #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(17, 24, 39, 0.9); display: flex; justify-content: center; align-items: center; z-index: 10000; color: white; font-size: 1.2rem; transition: opacity 0.3s; }
-		#auth-overlay { z-index: 9999; }
-		#app-container { display: none; }
-		.admin-only { display: none; }
-		body.is-admin .admin-only { display: block; }
-		body.is-admin .flex.admin-only { display: flex; }
-		body:not(.is-admin) .non-admin-hidden { display: none; }
-		.login-modal { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); animation: fadeIn 0.3s ease; }
-		.login-modal h2 { color: #ffffff; font-weight: 700; }
-		.login-modal input { background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: #ffffff; transition: border-color 0.2s; }
-		.login-modal input:focus { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5); }
-		.login-modal button { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); transition: transform 0.2s, box-shadow 0.2s; }
-		.login-modal button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4); }
-		@keyframes fadeIn { from { opacity: 0; transform: translate(-50%, -60%); } to { opacity: 1; transform: translate(-50%, -50%); } }
-		.notification { position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 12px 16px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 11000; animation: slideIn 0.3s ease; }
-		@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-		body.light-theme { background-color: #f8fafc; color: #1e293b; }
-		body.light-theme .dark-card { background-color: #ffffff; border-color: #e2e8f0; }
-		body.light-theme .login-modal { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); }
-		@media (max-width: 768px) { .kanban-column { min-width: 100%; } .header-user-block { margin-right: 0; } }
+		
+		#auth-overlay {
+			position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+			display: flex; justify-content: center; align-items: center;
+			z-index: 9999;
+			/* Fundo de gradiente (do LoginPage.jsx) */
+			background-image: linear-gradient(to bottom right, #eff6ff, #e0e7ff); /* from-blue-50 to-indigo-100 */
+			transition: opacity 0.3s;
+		}
 
-		/* === INÍCIO: NOVOS ESTILOS DE PAGINAÇÃO === */
+		/* === MODAIS (Pop-ups) === */
+		.modal-backdrop { 
+			display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+			background-color: rgba(0,0,0,0.5); z-index: 9000; 
+		}
+		.modal { 
+			display: none; position: fixed; top: 50%; left: 50%; 
+			transform: translate(-50%, -50%); z-index: 9001; 
+			max-height: 90vh; overflow-y: auto;
+			/* Estilo de card claro */
+			background-color: #ffffff;
+			border: 1px solid #e5e7eb; /* border-gray-200 */
+			border-radius: 0.75rem; /* rounded-xl */
+			box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* shadow-lg */
+			color: #1f2937; /* text-gray-800 */
+		}
+		/* Inputs dentro dos modais */
+		.modal input[type="text"],
+		.modal input[type="number"],
+		.modal input[type="date"],
+		.modal select,
+		.modal textarea {
+			background-color: #f9fafb; /* bg-gray-50 */
+			border: 1px solid #d1d5db; /* border-gray-300 */
+			color: #111827; /* text-gray-900 */
+			border-radius: 0.375rem; /* rounded-md */
+		}
+		.modal input:focus,
+		.modal select:focus,
+		.modal textarea:focus {
+			border-color: #3b82f6; /* focus:border-blue-500 */
+			box-shadow: 0 0 0 2px #bfdbfe; /* focus:ring-blue-200 */
+			outline: none;
+		}
+		.modal label {
+			color: #4b5563; /* text-gray-600 */
+		}
+		.modal h2, .modal h3 {
+			color: #111827; /* text-gray-900 */
+		}
+		/* Tags de serviço no modal */
+		.service-tag { 
+			display: inline-flex; justify-content: space-between; align-items: center; 
+			background-color: #e5e7eb; /* bg-gray-200 */
+			color: #1f2937; /* text-gray-800 */
+			padding: 4px 10px; border-radius: 12px; font-size: 14px; 
+			margin-right: 4px; margin-bottom: 4px; width: 100%; 
+		}
+		.service-tag .remove-tag { margin-left: 8px; cursor: pointer; font-weight: bold; }
+		
+		/* === LAYOUT DO APP (Sidebar + Conteúdo) === */
+		#app-container {
+			display: none; /* Inicia oculto, JS mostra ao logar */
+			height: 100vh;
+		}
+		
+		#sidebar {
+			position: fixed;
+			height: 100%;
+			z-index: 50;
+			transition: width 0.3s ease-in-out;
+			/* Gradiente escuro da sidebar (do DashboardLayout.jsx) */
+			background-image: linear-gradient(to bottom, #111827, #1f2937); /* from-gray-900 to-gray-800 */
+			color: #d1d5db; /* text-gray-300 */
+			display: flex;
+			flex-direction: column;
+		}
+		#main-content {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			overflow: hidden;
+			transition: margin-left 0.3s ease-in-out;
+		}
+		#main-content-area {
+			flex: 1;
+			overflow-y: auto;
+			padding: 2rem; /* p-8 */
+		}
+		
+		/* Estilos dos itens da Sidebar */
+		.sidebar-item {
+			display: flex;
+			align-items: center;
+			width: 100%;
+			padding: 0.75rem 1rem; /* px-4 py-3 */
+			border-radius: 0.5rem; /* rounded-lg */
+			transition: background-color 0.2s;
+			color: #d1d5db; /* text-gray-300 */
+			cursor: pointer;
+		}
+		.sidebar-item:hover {
+			background-color: #374151; /* hover:bg-gray-700 */
+		}
+		.sidebar-item.active {
+			/* Destaque do item ativo (do DashboardLayout.jsx) */
+			background-color: rgba(255, 255, 255, 0.15); /* bg-white bg-opacity-15 */
+			border-left: 4px solid #60a5fa; /* border-l-4 border-blue-400 */
+			color: #ffffff;
+			font-weight: 500;
+		}
+		.sidebar-item.active i {
+			color: #60a5fa; /* text-blue-400 */
+		}
+		/* Ajuste para ícones quando sidebar está fechada */
+		#sidebar.w-20 .sidebar-item {
+			justify-content: center;
+			padding-left: 0.75rem;
+			padding-right: 0.75rem;
+		}
+		#sidebar.w-20 .sidebar-item i {
+			margin-right: 0 !important;
+		}
+		
+		/* === [REDEFINIÇÃO] CARDS E COMPONENTES === */
+		
+		/* .dark-card foi REDEFINIDO para ser um .light-card */
+		.dark-card {
+			background-color: #ffffff;
+			border: 1px solid #f3f4f6; /* border-gray-100 */
+			border-radius: 0.75rem; /* rounded-xl */
+			box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07); /* shadow-md */
+			color: #1f2937; /* text-gray-800 */
+		}
+		
+		/* Card de Métrica (do Dashboard.jsx) */
+		.metric-card {
+			border-radius: 0.75rem; /* rounded-xl */
+			padding: 1.5rem; /* p-6 */
+			box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07); /* shadow-md */
+			transition: all 0.2s;
+		}
+		.metric-card:hover {
+			box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.07); /* hover:shadow-lg */
+		}
+		
+		/* Kanban (do Dashboard.jsx) */
+		.kanban-column {
+			min-width: 320px;
+			background-color: #ffffff;
+			border-radius: 0.75rem; /* rounded-xl */
+			box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1); /* shadow-sm */
+			border: 1px solid #f3f4f6; /* border-gray-100 */
+			padding: 1rem; /* p-4 */
+			flex: 1;
+		}
+		.kanban-content { max-height: 60vh; overflow-y: auto; padding-right: 8px; }
+
+		/* Cards de Parcela (do Dashboard.jsx) */
+		.kanban-card-base {
+			padding: 1rem; /* p-4 */
+			border-radius: 0.5rem; /* rounded-lg */
+			margin-bottom: 0.75rem; /* space-y-3 */
+		}
+		.kanban-card-vencida {
+			background-color: #feedec; /* bg-red-50 */
+			border-left: 4px solid #ef4444; /* border-l-4 border-red-500 */
+		}
+		.kanban-card-avencer {
+			background-color: #eef2ff; /* bg-blue-50 */
+			border-left: 4px solid #3b82f6; /* border-l-4 border-blue-500 */
+		}
+		.kanban-card-paga {
+			background-color: #f0fdf4; /* bg-green-50 */
+			border-left: 4px solid #22c55e; /* border-l-4 border-green-500 */
+		}
+		.kanban-card-exito {
+			background-color: #fefce8; /* bg-yellow-50 */
+			border-left: 4px solid #eab308; /* border-l-4 border-yellow-500 */
+		}
+
+		/* Tags de Status (do Contracts.jsx) */
+		.status-tag {
+			padding: 0.25rem 0.75rem; /* px-3 py-1 */
+			border-radius: 9999px; /* rounded-full */
+			font-size: 0.75rem; /* text-xs */
+			font-weight: 600; /* font-semibold */
+		}
+		.status-tag-green { background-color: #dcfce7; color: #166534; } /* bg-green-100 text-green-700 */
+		.status-tag-red { background-color: #fee2e2; color: #991b1b; } /* bg-red-100 text-red-700 */
+		.status-tag-indigo { background-color: #e0e7ff; color: #4338ca; } /* bg-indigo-100 text-indigo-700 */
+		.status-tag-gray { background-color: #f3f4f6; color: #374151; } /* bg-gray-100 text-gray-700 */
+
+		/* Tabela (do Contracts.jsx) */
+		.table-card {
+			background-color: #ffffff;
+			border-radius: 0.75rem; /* rounded-xl */
+			box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07); /* shadow-md */
+			border: 1px solid #f3f4f6; /* border-gray-100 */
+			overflow: hidden;
+		}
+		.table-header {
+			background-color: #f9fafb; /* bg-gray-50 */
+			border-bottom: 1px solid #e5e7eb; /* border-gray-200 */
+		}
+		.table-header th {
+			padding: 1rem 1.5rem; /* px-6 py-4 */
+			text-align: left;
+			font-size: 0.75rem; /* text-xs */
+			font-weight: 600; /* font-semibold */
+			color: #374151; /* text-gray-700 */
+			text-transform: uppercase;
+		}
+		.table-row-light { background-color: #ffffff; }
+		.table-row-dark { background-color: #f9fafb; } /* bg-gray-50 */
+		.table-row-light:hover, .table-row-dark:hover { background-color: #f3f4f6; } /* hover:bg-gray-100 */
+		.table-card td {
+			padding: 1rem 1.5rem; /* px-6 py-4 */
+			color: #374151; /* text-gray-700 */
+			font-size: 0.875rem; /* text-sm */
+			border-bottom: 1px solid #f3f4f6; /* border-gray-100 */
+		}
+		
+		/* === [REDEFINIÇÃO] FORMULÁRIOS === */
+		.filter-select, .sort-button {
+			background-color: #ffffff;
+			border: 1px solid #d1d5db; /* border-gray-300 */
+			color: #374151; /* text-gray-700 */
+			border-radius: 0.375rem; /* rounded-lg */
+			font-size: 0.875rem; /* text-sm */
+			padding: 0.5rem 0.75rem; /* px-3 py-2 */
+			transition: all 0.2s;
+		}
+		.filter-select:hover, .sort-button:hover {
+			background-color: #f9fafb; /* hover:bg-gray-50 */
+		}
+		.sort-button.active {
+			background-color: #4f46e5;
+			border-color: #4f46e5;
+			color: white;
+		}
+		.filter-select:disabled {
+			background-color: #f3f4f6;
+			opacity: 0.7;
+			cursor: not-allowed;
+		}
+		
+		/* Barra de Busca */
+		#searchInput, #servicosSearchInput {
+			background-color: #ffffff;
+			border: 1px solid #d1d5db; /* border-gray-300 */
+			color: #1f2937; /* text-gray-800 */
+			padding: 0.75rem; /* p-3 */
+			border-radius: 0.5rem; /* rounded-lg */
+		}
+		#searchInput::placeholder, #servicosSearchInput::placeholder {
+			color: #6b7280; /* placeholder-gray-500 */
+		}
+		
+		/* Botões de Ação */
+		.btn-primary {
+			background-image: linear-gradient(to right, #2563eb, #4f46e5); /* from-blue-600 to-indigo-600 */
+			color: white;
+			border-radius: 0.5rem; /* rounded-lg */
+			padding: 0.5rem 1rem; /* px-4 py-2 */
+			font-weight: 500; /* font-medium */
+			transition: all 0.2s;
+			box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1); /* shadow-sm */
+		}
+		.btn-primary:hover {
+			box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* hover:shadow-lg */
+		}
+		.btn-secondary {
+			background-color: #ffffff;
+			border: 1px solid #d1d5db; /* border-gray-300 */
+			color: #374151; /* text-gray-700 */
+			border-radius: 0.5rem; /* rounded-lg */
+			padding: 0.5rem 1rem; /* px-4 py-2 */
+			font-weight: 500; /* font-medium */
+			transition: all 0.2s;
+		}
+		.btn-secondary:hover {
+			background-color: #f9fafb; /* hover:bg-gray-50 */
+		}
+		.btn-icon {
+			padding: 0.5rem; /* p-2 */
+			border-radius: 0.5rem; /* rounded-lg */
+			transition: all 0.2s;
+		}
+		.btn-icon-blue { color: #2563eb; }
+		.btn-icon-blue:hover { background-color: #dbeafe; } /* hover:bg-blue-100 */
+		.btn-icon-gray { color: #4b5563; }
+		.btn-icon-gray:hover { background-color: #e5e7eb; } /* hover:bg-gray-200 */
+		.btn-icon-red { color: #dc2626; }
+		.btn-icon-red:hover { background-color: #fee2e2; } /* hover:bg-red-100 */
+		
+		/* Paginação (Atualizada para tema claro) */
 		.pagination-button {
-			background-color: #374151;
-			border: 1px solid #4b5563;
-			color: #9ca3af;
+			background-color: #ffffff;
+			border: 1px solid #d1d5db;
+			color: #374151;
 			padding: 6px 12px;
 			border-radius: 6px;
 			font-size: 14px;
@@ -89,8 +335,8 @@
 			font-weight: 500;
 		}
 		.pagination-button:hover:not(:disabled) {
-			background-color: #4b5563;
-			color: white;
+			background-color: #f9fafb;
+			color: #1f2937;
 		}
 		.pagination-button.active {
 			background-color: #4f46e5;
@@ -107,338 +353,409 @@
 			font-size: 14px;
 			color: #6b7280;
 		}
-		/* === FIM: NOVOS ESTILOS DE PAGINAÇÃO === */
+		
+		/* === SCROLLBAR === */
+		::-webkit-scrollbar { width: 8px; }
+		::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; } /* bg-gray-300 */
+		::-webkit-scrollbar-thumb:hover { background: #9ca3af; } /* hover:bg-gray-400 */
+		
+		/* === ADMIN/PERMISSÕES === */
+		.admin-only { display: none; }
+		body.is-admin .admin-only { display: block; }
+		body.is-admin .flex.admin-only { display: flex; }
+		body:not(.is-admin) .non-admin-hidden { display: none; }
+		
+		/* === COMPATIBILIDADE (Não mexido) === */
+		@media (max-width: 768px) { .kanban-column { min-width: 100%; } }
 	</style>
 </head>
-<body class="text-gray-300">
+
+<body class="bg-gray-50">
 	<div id="notifications"></div>
 
 	<div id="loading-overlay">
 		<i class="fas fa-spinner fa-spin mr-3"></i> Conectando...
 	</div>
 
-	<div id="auth-overlay">
-		<div class="w-full max-w-sm p-8 space-y-6 bg-transparent rounded-lg shadow-xl border border-indigo-800 login-modal">
-			<img src="https://www.fabrisegurjao.adv.br/netpage/data/uploads/2019/12/logo-fabris-e-gurjao-491x325px.png" alt="Logo" class="w-48 mx-auto">
-			<h2 class="text-2xl font-bold text-center">Bem-vindo ao Sistema</h2>
-			<div id="auth-error" class="hidden p-3 text-sm text-red-300 bg-red-800/50 border border-red-700 rounded-lg"></div>
-			<form id="login-form" class="space-y-4">
+	<div id="auth-overlay" class="bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
+		<div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+			<div class="text-center mb-8">
+				<img src="https://www.fabrisegurjao.adv.br/netpage/data/uploads/2019/12/logo-fabris-e-gurjao-491x325px.png" alt="Logo" class="h-16 mx-auto mb-4">
+				<h1 class="text-2xl font-bold text-gray-800">Sistema Financeiro</h1>
+				<p class="text-gray-600 text-sm mt-2">Gestão de Contratos e Parcelas</p>
+			</div>
+			
+			<div id="auth-error" class="hidden p-3 mb-4 text-sm text-red-700 bg-red-100 border border-red-300 rounded-lg"></div>
+
+			<form id="login-form" class="space-y-5">
 				<div>
-					<label for="login-email" class="block text-sm font-medium text-gray-200">Email</label>
-					<input type="email" id="login-email" required class="mt-1 block w-full px-3 py-2 bg-transparent border border-gray-400 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white placeholder-gray-400">
+					<label for="login-email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+					<div class="relative">
+						<i class="fas fa-envelope absolute left-3 top-3.5 text-gray-400"></i>
+						<input type="email" id="login-email" required class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition" placeholder="seu@email.com">
+					</div>
 				</div>
 				<div>
-					<label for="login-password" class="block text-sm font-medium text-gray-200">Senha</label>
-					<input type="password" id="login-password" required class="mt-1 block w-full px-3 py-2 bg-transparent border border-gray-400 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white placeholder-gray-400">
+					<label for="login-password" class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
+					<div class="relative">
+						<i class="fas fa-lock absolute left-3 top-3.5 text-gray-400"></i>
+						<input type="password" id="login-password" required class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition" placeholder="••••••••">
+					</div>
 				</div>
-				<button type="submit" class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mt-8">Entrar</button>
+				<button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-2.5 rounded-lg hover:shadow-lg transition duration-200 mt-6">
+					Entrar
+				</button>
 			</form>
-			<button id="theme-toggle" class="absolute top-4 right-4 text-white"><i class="fas fa-sun"></i></button>
+
+			<p class="text-center text-gray-600 text-sm mt-6">
+				Acesso restrito a usuários autorizados
+			</p>
 		</div>
 	</div>
 
-	<div id="app-container" class="container mx-auto p-4 md:p-8">
-		<header class="mb-6 header-with-logo">
-			<div>
-				<h1 class="text-3xl font-bold text-white">Painel de Gestão</h1>
-				<p class="text-gray-400">Controle Financeiro e de Produção do Escritório</p>
-			</div>
-			<div class="flex items-center header-user-block">
-				<span id="user-display-name" class="text-sm text-gray-300 font-medium mr-4"></span>
-				<button id="logout-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded-lg shadow-md text-sm flex items-center gap-2">
-					<i class="fas fa-sign-out-alt"></i> Sair
+	<div id="app-container" class="flex h-screen">
+		
+		<div id="sidebar" class="w-64 bg-gradient-to-b from-gray-900 to-gray-800 text-white shadow-lg z-50 flex flex-col fixed h-full">
+			<div class="p-6 border-b border-gray-700 flex items-center justify-between">
+				<div id="sidebar-logo-text" class="transition-opacity duration-300">
+					<h2 class="font-bold text-lg text-white">FinHub</h2>
+					<p class="text-xs text-gray-400">Fabris & Gurjão</p>
+				</div>
+				<button id="sidebar-toggle" class="p-2 hover:bg-gray-700 rounded-lg transition text-gray-300">
+					<i id="sidebar-toggle-icon" class="fas fa-times"></i>
 				</button>
 			</div>
-			<img src="https://www.fabrisegurjao.adv.br/netpage/data/uploads/2019/12/logo-fabris-e-gurjao-491x325px.png" alt="Fabris e Gurjão Logo" class="header-logo">
-		</header>
 
-		<div class="border-b border-gray-700 mb-8">
-			<nav class="flex justify-between items-center -mb-px">
-				<div class="flex">
-					<a onclick="window.App.showPage('page-dashboard')" id="tab-dashboard" class="nav-tab active">
-						<i class="fas fa-tachometer-alt mr-2"></i>Painel Principal
-					</a>
-					<a onclick="window.App.showPage('page-inadimplentes')" id="tab-inadimplentes" class="nav-tab">
-						<i class="fas fa-exclamation-triangle mr-2"></i>Inadimplentes
-					</a>
-					<a onclick="window.App.showPage('page-servicos')" id="tab-servicos" class="nav-tab">
-						<i class="fas fa-tasks mr-2"></i>Serviços
-					</a>
-				</div>
-				<div>
-					<a onclick="window.App.showPage('page-lixeira')" id="tab-lixeira" class="nav-tab-icon" title="Lixeira">
-						<i class="fas fa-trash-alt"></i>
-					</a>
-				</div>
+			<nav class="p-4 space-y-2 flex-1">
+				<button onclick="window.App.showPage('page-dashboard')" id="tab-dashboard" class="sidebar-item active">
+					<i class="fas fa-tachometer-alt w-5 text-center mr-3"></i>
+					<span class="text-sm font-medium">Painel Principal</span>
+				</button>
+				<button onclick="window.App.showPage('page-inadimplentes')" id="tab-inadimplentes" class="sidebar-item">
+					<i class="fas fa-exclamation-triangle w-5 text-center mr-3"></i>
+					<span class="text-sm font-medium">Inadimplentes</span>
+				</button>
+				<button onclick="window.App.showPage('page-servicos')" id="tab-servicos" class="sidebar-item">
+					<i class="fas fa-tasks w-5 text-center mr-3"></i>
+					<span class="text-sm font-medium">Serviços</span>
+				</button>
+				<button onclick="window.App.showPage('page-lixeira')" id="tab-lixeira" class="sidebar-item">
+					<i class="fas fa-trash-alt w-5 text-center mr-3"></i>
+					<span class="text-sm font-medium">Lixeira</span>
+				</button>
 			</nav>
+
+			<div class="p-4 border-t border-gray-700">
+				<button id="logout-button" class="sidebar-item hover:bg-red-600/80">
+					<i class="fas fa-sign-out-alt w-5 text-center mr-3"></i>
+					<span class="text-sm font-medium">Sair</span>
+				</button>
+			</div>
 		</div>
 
-		<div id="page-dashboard">
-			<div class="flex flex-wrap gap-4 mb-8">
-				<button onclick="window.App.openContractModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
-					<i class="fas fa-plus-circle"></i> Novo Contrato
-				</button>
-				<button onclick="window.App.openReportModal()" class="admin-only bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
-					<i class="fas fa-chart-line"></i> Relatório Mensal
-				</button>
-			</div>
-
-			<div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-				<div class="dark-card p-6 rounded-lg shadow-lg admin-only">
-					<h3 class="text-lg font-semibold text-gray-400">A Receber (Próx. 30 dias)</h3>
-					<p id="dash-a-receber" class="text-3xl font-bold text-green-400"></p>
-				</div>
-				<div class="dark-card p-6 rounded-lg shadow-lg admin-only">
-					<h3 class="text-lg font-semibold text-gray-400">Vencido (Corrigido)</h3>
-					<p id="dash-vencido" class="text-3xl font-bold text-red-400"></p>
-				</div>
-				<div class="dark-card p-6 rounded-lg shadow-lg admin-only">
-					<h3 class="text-lg font-semibold text-gray-400">Recebido (Este Mês)</h3>
-					<p id="dash-recebido" class="text-3xl font-bold text-indigo-400"></p>
-				</div>
-				<div class="dark-card p-6 rounded-lg shadow-lg">
-					<h3 class="text-lg font-semibold text-gray-400">Meus Contratos Ativos</h3>
-					<p id="dash-contratos" class="text-3xl font-bold text-white"></p>
+		<div id="main-content" class="ml-64 flex-1 flex flex-col">
+			
+			<div id="top-bar" class="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between shadow-sm z-40">
+				<h1 id="page-title" class="text-2xl font-bold text-gray-800">
+					Painel Principal
+				</h1>
+				
+				<div class="flex items-center space-x-4">
+					<div class="text-right">
+						<p id="user-display-name" class="text-sm font-medium text-gray-800">Usuário</p>
+						<p class="text-xs text-gray-500">Online</p>
+					</div>
+					<div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold">
+						<i class="fas fa-user"></i>
+					</div>
 				</div>
 			</div>
 
-			<div class="mb-4 border-b border-gray-700">
-				<h2 class="text-2xl font-semibold mb-4 text-white">Situação das Parcelas (Meus Contratos)</h2>
-			</div>
-
-			<div id="kanban-board" class="flex overflow-x-auto space-x-4 pb-4">
-				<div class="kanban-column bg-gray-900/70 rounded-lg p-4 flex-1">
-					<h3 class="font-bold text-lg mb-4 text-red-400 flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i>Vencidas</h3>
-					<div id="kanban-vencidas" class="kanban-content space-y-3"></div>
-				</div>
-				<div class="kanban-column bg-gray-900/70 rounded-lg p-4 flex-1">
-					<h3 class="font-bold text-lg mb-4 text-yellow-400 flex items-center gap-2"><i class="far fa-clock"></i>A Vencer (Próx. 30 dias)</h3>
-					<div id="kanban-a-vencer" class="kanban-content space-y-3"></div>
-				</div>
-				<div class="kanban-column bg-gray-900/70 rounded-lg p-4 flex-1">
-					<h3 class="font-bold text-lg mb-4 text-gray-400 flex items-center gap-2"><i class="fas fa-check-circle"></i>Pagas (Este Mês)</h3>
-					<div id="kanban-pagas" class="kanban-content space-y-3"></div>
-				</div>
-				<div class="kanban-column bg-gray-900/70 rounded-lg p-4 flex-1">
-					<h3 class="font-bold text-lg mb-4 text-indigo-400 flex items-center gap-2"><i class="fas fa-gavel"></i>Aguardando Êxito</h3>
-					<div id="kanban-exito" class="kanban-content space-y-3"></div>
-				</div>
-			</div>
-
-			<div class="mt-12">
-				<div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-4">
-					<h2 class="text-2xl font-semibold text-white">Meus Contratos</h2>
-					<div class="flex items-center gap-4">
-						<button onclick="window.App.exportContractsCSV()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2 text-sm">
-							<i class="fas fa-file-csv"></i> Exportar (CSV)
+			<div id="main-content-area" class="flex-1 overflow-auto">
+				
+				<div id="page-dashboard">
+					<div class="flex flex-wrap gap-4 mb-8">
+						<button onclick="window.App.openContractModal()" class="btn-primary flex items-center gap-2">
+							<i class="fas fa-plus-circle"></i> Novo Contrato
 						</button>
-						<select id="advogadoFilter" onchange="window.App.resetAndRenderContractList()" class="filter-select admin-only"></select>
-						<div class="flex items-center gap-2">
-							<span class="text-sm text-gray-400">Ordenar por:</span>
-							<div id="contractSortButtons" class="flex gap-1"></div>
+						<button onclick="window.App.openReportModal()" class="admin-only btn-secondary flex items-center gap-2" style="background-color: #14b8a6; color: white; border: none;">
+							<i class="fas fa-chart-line"></i> Relatório Mensal
+						</button>
+					</div>
+
+					<div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+						<div class="metric-card bg-blue-50 border-blue-200 admin-only">
+							<div class="flex items-start justify-between mb-4">
+								<div class="text-blue-600 bg-white p-3 rounded-lg"><i class="fas fa-clock"></i></div>
+								<i class="fas fa-arrow-up text-green-500"></i>
+							</div>
+							<h3 class="text-sm text-gray-600 font-medium mb-2">A Receber (Próx. 30 dias)</h3>
+							<p id="dash-a-receber" class="text-2xl font-bold text-blue-700"></p>
+						</div>
+						<div class="metric-card bg-red-50 border-red-200 admin-only">
+							<div class="flex items-start justify-between mb-4">
+								<div class="text-red-600 bg-white p-3 rounded-lg"><i class="fas fa-exclamation-triangle"></i></div>
+								<i class="fas fa-arrow-down text-red-500"></i>
+							</div>
+							<h3 class="text-sm text-gray-600 font-medium mb-2">Vencido (Corrigido)</h3>
+							<p id="dash-vencido" class="text-2xl font-bold text-red-700"></p>
+						</div>
+						<div class="metric-card bg-green-50 border-green-200 admin-only">
+							<div class="flex items-start justify-between mb-4">
+								<div class="text-green-600 bg-white p-3 rounded-lg"><i class="fas fa-check-circle"></i></div>
+								<i class="fas fa-arrow-up text-green-500"></i>
+							</div>
+							<h3 class="text-sm text-gray-600 font-medium mb-2">Recebido (Este Mês)</h3>
+							<p id="dash-recebido" class="text-2xl font-bold text-green-700"></p>
+						</div>
+						<div class="metric-card bg-purple-50 border-purple-200">
+							<div class="flex items-start justify-between mb-4">
+								<div class="text-purple-600 bg-white p-3 rounded-lg"><i class="fas fa-file-signature"></i></div>
+								<i class="fas fa-arrow-up text-green-500"></i>
+							</div>
+							<h3 class="text-sm text-gray-600 font-medium mb-2">Meus Contratos Ativos</h3>
+							<p id="dash-contratos" class="text-2xl font-bold text-purple-700"></p>
+						</div>
+					</div>
+
+					<div class="mb-4">
+						<h2 class="text-2xl font-bold text-gray-800 mb-4">Situação das Parcelas (Meus Contratos)</h2>
+					</div>
+
+					<div id="kanban-board" class="flex overflow-x-auto space-x-4 pb-4">
+						<div class="kanban-column">
+							<h3 class="font-bold text-lg mb-4 text-red-600 flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i>Vencidas</h3>
+							<div id="kanban-vencidas" class="kanban-content space-y-3"></div>
+						</div>
+						<div class="kanban-column">
+							<h3 class="font-bold text-lg mb-4 text-blue-600 flex items-center gap-2"><i class="far fa-clock"></i>A Vencer (Próx. 30 dias)</h3>
+							<div id="kanban-a-vencer" class="kanban-content space-y-3"></div>
+						</div>
+						<div class="kanban-column">
+							<h3 class="font-bold text-lg mb-4 text-green-600 flex items-center gap-2"><i class="fas fa-check-circle"></i>Pagas (Este Mês)</h3>
+							<div id="kanban-pagas" class="kanban-content space-y-3"></div>
+						</div>
+						<div class="kanban-column">
+							<h3 class="font-bold text-lg mb-4 text-yellow-600 flex items-center gap-2"><i class="fas fa-gavel"></i>Aguardando Êxito</h3>
+							<div id="kanban-exito" class="kanban-content space-y-3"></div>
+						</div>
+					</div>
+
+					<div class="mt-12">
+						<div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+							<h2 class="text-2xl font-bold text-gray-800">Meus Contratos</h2>
+							<div class="flex items-center gap-4">
+								<button onclick="window.App.exportContractsCSV()" class="btn-secondary flex items-center gap-2 text-sm" style="color: #15803d; border-color: #bbf7d0;">
+									<i class="fas fa-file-csv"></i> Exportar (CSV)
+								</button>
+								<select id="advogadoFilter" onchange="window.App.resetAndRenderContractList()" class="filter-select admin-only"></select>
+								<div class="flex items-center gap-2">
+									<span class="text-sm text-gray-600">Ordenar por:</span>
+									<div id="contractSortButtons" class="flex gap-1"></div>
+								</div>
+							</div>
+						</div>
+						<div class="mb-4">
+							<input type="text" id="searchInput" placeholder="🔎 Pesquisar por cliente ou tipo de serviço..." class="w-full">
+						</div>
+						
+						<div id="contractListContainer" class="table-card">
+							</div>
+						
+						<div id="paginationContainer" class="flex justify-center items-center gap-2 mt-8">
 						</div>
 					</div>
 				</div>
-				<div class="mb-4">
-					<input type="text" id="searchInput" placeholder="🔎 Pesquisar por cliente ou tipo de serviço..." class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white">
+
+				<div id="page-inadimplentes" class="hidden">
+					<div class="flex justify-between items-center mb-4">
+						<h2 class="text-2xl font-bold text-gray-800">Controle de Inadimplentes (Meus Contratos)</h2>
+						<div class="flex items-center gap-2">
+							<span class="text-sm text-gray-600">Ordenar por:</span>
+							<div id="inadimplentesSortButtons" class="flex gap-1"></div>
+						</div>
+					</div>
+					<div id="inadimplentesListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 				</div>
-				<div id="contractListContainer"></div>
+
+				<div id="page-servicos" class="hidden">
+					<div class="flex justify-between items-center mb-4">
+						<h2 class="text-2xl font-bold text-gray-800">Controle de Produção de Serviços</h2>
+						<div class="flex items-center gap-4">
+							<select id="servicosAdvogadoFilter" onchange="window.App.renderServicosPage()" class="filter-select admin-only"></select>
+							<div class="flex items-center gap-2">
+								<span class="text-sm text-gray-600">Ordenar por:</span>
+								<div id="servicosSortButtons" class="flex gap-1"></div>
+							</div>
+							<input type="text" id="servicosSearchInput" placeholder="🔎 Pesquisar..." class="w-full md:w-auto">
+						</div>
+					</div>
+					<div id="servicosListContainer" class="space-y-6"></div>
+				</div>
+
+				<div id="page-lixeira" class="hidden">
+					<div class="flex justify-between items-center mb-4">
+						<h2 class="text-2xl font-bold text-gray-800">Lixeira de Contratos</h2>
+					</div>
+					<p class="text-gray-600 mb-6">Contratos excluídos são mantidos aqui. Você pode restaurá-los ou excluí-los permanentemente (apenas admins).</p>
+					<div id="lixeiraListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+				</div>
 				
-				<div id="paginationContainer" class="flex justify-center items-center gap-2 mt-8">
-					</div>
-				</div>
-		</div>
-
-		<div id="page-inadimplentes" class="hidden">
-			<div class="flex justify-between items-center mb-4">
-				<h2 class="text-2xl font-semibold text-white">Controle de Inadimplentes (Meus Contratos)</h2>
-				<div class="flex items-center gap-2">
-					<span class="text-sm text-gray-400">Ordenar por:</span>
-					<div id="inadimplentesSortButtons" class="flex gap-1"></div>
-				</div>
-			</div>
-			<div id="inadimplentesListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-		</div>
-
-		<div id="page-servicos" class="hidden">
-			<div class="flex justify-between items-center mb-4">
-				<h2 class="text-2xl font-semibold text-white">Controle de Produção de Serviços (Meus Contratos)</h2>
-				<div class="flex items-center gap-4">
-					<select id="servicosAdvogadoFilter" onchange="window.App.renderServicosPage()" class="filter-select admin-only"></select>
-					<div class="flex items-center gap-2">
-						<span class="text-sm text-gray-400">Ordenar por:</span>
-						<div id="servicosSortButtons" class="flex gap-1"></div>
-					</div>
-					<input type="text" id="servicosSearchInput" placeholder="🔎 Pesquisar..." class="w-full md:w-auto p-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white">
-				</div>
-			</div>
-			<div id="servicosListContainer" class="space-y-6"></div>
-		</div>
-
-		<div id="page-lixeira" class="hidden">
-			<div class="flex justify-between items-center mb-4">
-				<h2 class="text-2xl font-semibold text-white">Lixeira de Contratos</h2>
-			</div>
-			<p class="text-gray-400 mb-6">Contratos excluídos são mantidos aqui. Você pode restaurá-los ou excluí-los permanentemente (apenas admins).</p>
-			<div id="lixeiraListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-		</div>
-	</div>
-
-	<div id="modalDisplayName" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
+			</div> </div> </div> <div id="modalDisplayName" class="modal w-11/12 md:w-1/3">
 		<div class="p-6">
-			<h2 class="text-2xl font-bold text-white mb-4">Bem-vindo(a)!</h2>
-			<p class="text-gray-400 mb-4">Percebemos que é seu primeiro acesso. Como você gostaria de ser chamado(a)?</p>
+			<h2 class="text-2xl font-bold mb-4">Bem-vindo(a)!</h2>
+			<p class="text-gray-600 mb-4">Percebemos que é seu primeiro acesso. Como você gostaria de ser chamado(a)?</p>
 			<form id="formDisplayName">
 				<div class="mb-4">
-					<label for="inputDisplayName" class="block text-sm font-medium text-gray-400">Seu Nome de Exibição</label>
-					<input type="text" id="inputDisplayName" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" required>
+					<label for="inputDisplayName" class="block text-sm font-medium text-gray-600">Seu Nome de Exibição</label>
+					<input type="text" id="inputDisplayName" class="mt-1 block w-full px-3 py-2" required>
 				</div>
-				<button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Salvar e Entrar</button>
+				<button type="submit" class="w-full btn-primary py-2">Salvar e Entrar</button>
 			</form>
 		</div>
 	</div>
 
-	<div id="modalContrato" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/2 lg:w-2/5">
+	<div id="modalContrato" class="modal w-11/12 md:w-1/2 lg:w-2/5">
 		<div class="p-6">
 			<div class="flex justify-between items-center mb-4">
-				<h2 id="modalContratoTitle" class="text-2xl font-bold text-white">Cadastrar Novo Contrato</h2>
-				<button onclick="window.App.closeModal('modalContrato')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+				<h2 id="modalContratoTitle" class="text-2xl font-bold">Cadastrar Novo Contrato</h2>
+				<button onclick="window.App.closeModal('modalContrato')" class="text-gray-400 hover:text-gray-800 text-2xl">&times;</button>
 			</div>
 			<form id="formContrato">
 				<input type="hidden" id="contractId">
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
 					<div>
-						<label for="clienteNome" class="block text-sm font-medium text-gray-400">Nome do Cliente</label>
-						<input type="text" id="clienteNome" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" required>
+						<label for="clienteNome" class="block text-sm font-medium">Nome do Cliente</label>
+						<input type="text" id="clienteNome" class="mt-1 block w-full px-3 py-2" required>
 					</div>
 					<div>
-						<label for="advogadoResponsavel" class="block text-sm font-medium text-gray-400">Advogado Responsável</label>
-						<select id="advogadoResponsavel" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" required></select>
+						<label for="advogadoResponsavel" class="block text-sm font-medium">Advogado Responsável</label>
+						<select id="advogadoResponsavel" class="mt-1 block w-full px-3 py-2" required></select>
 					</div>
 				</div>
 				<div class="mb-4">
-					<label class="block text-sm font-medium text-gray-400">Adicionar Serviços</label>
-					<div id="servicosContainerWrapper" class="mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm">
+					<label class="block text-sm font-medium">Adicionar Serviços</label>
+					<div id="servicosContainerWrapper" class="mt-1 p-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm">
 						<div id="servicosContainer" class="flex flex-wrap items-center gap-1 w-full mb-2">
-							</div>
+						</div>
 						<div class="flex gap-2">
-							<input type="text" id="contratoServicoInput" class="flex-grow outline-none bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white" placeholder="Nome do Serviço...">
-							<input type="date" id="contratoPrazoInput" class="bg-gray-800 border border-gray-600 rounded-md shadow-sm text-gray-400 px-3 py-2" style="color-scheme: dark;">
-							<button type="button" id="addServiceButton" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 px-3 rounded-lg">Adicionar</button>
+							<input type="text" id="contratoServicoInput" class="flex-grow outline-none bg-white border border-gray-300 rounded-md px-3 py-2" placeholder="Nome do Serviço...">
+							<input type="date" id="contratoPrazoInput" class="bg-white border border-gray-300 rounded-md shadow-sm text-gray-600 px-3 py-2">
+							<button type="button" id="addServiceButton" class="btn-primary text-sm px-3">Adicionar</button>
 						</div>
 					</div>
 				</div>
 				<div class="mb-4">
-					<label for="contratoTipoPagamento" class="block text-sm font-medium text-gray-400">Modalidade de Pagamento</label>
-					<select id="contratoTipoPagamento" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white">
+					<label for="contratoTipoPagamento" class="block text-sm font-medium">Modalidade de Pagamento</label>
+					<select id="contratoTipoPagamento" class="mt-1 block w-full px-3 py-2">
 						<option>Parcelado</option>
 						<option>Pró-Abono</option>
 						<option>Entrada única</option>
 					</select>
 				</div>
 				<div class="mb-4">
-					<label for="contratoObservacoes" class="block text-sm font-medium text-gray-400">Observações</label>
-					<textarea id="contratoObservacoes" rows="3" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" placeholder="Detalhes da negociação, informações do caso, etc..."></textarea>
+					<label for="contratoObservacoes" class="block text-sm font-medium">Observações</label>
+					<textarea id="contratoObservacoes" rows="3" class="mt-1 block w-full px-3 py-2" placeholder="Detalhes da negociação, informações do caso, etc..."></textarea>
 				</div>
 				
 				<div class="admin-only">
-					<h3 class="text-lg font-semibold mb-2 border-t border-gray-700 pt-4 text-white">Detalhes Financeiros</h3>
+					<h3 class="text-lg font-semibold mb-2 border-t border-gray-200 pt-4">Detalhes Financeiros</h3>
 					
-					<div class="mb-4 p-3 bg-gray-900/50 rounded-lg border border-gray-700">
+					<div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
 						<label for="contratoJaQuitado" class="flex items-center">
-							<input type="checkbox" id="contratoJaQuitado" class="h-4 w-4 bg-gray-700 border-gray-600 rounded text-indigo-600 focus:ring-indigo-500">
-							<span class="ml-2 text-sm font-medium text-gray-300">Marcar valor fixo como já quitado (contrato antigo)</span>
+							<input type="checkbox" id="contratoJaQuitado" class="h-4 w-4 bg-gray-100 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500">
+							<span class="ml-2 text-sm font-medium text-gray-700">Marcar valor fixo como já quitado (contrato antigo)</span>
 						</label>
 						<p class="text-xs text-gray-500 ml-6 mt-1">Isso criará 1 parcela única já "Paga" com o Valor Total. Deixe o N° de Parcelas como 1.</p>
 					</div>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div class="mb-4">
-							<label for="valorTotal" class="block text-sm font-medium text-gray-400">Valor Fixo Total (R$)</label>
-							<input type="number" step="0.01" id="valorTotal" placeholder="0 se for só êxito" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white">
+							<label for="valorTotal" class="block text-sm font-medium">Valor Fixo Total (R$)</label>
+							<input type="number" step="0.01" id="valorTotal" placeholder="0 se for só êxito" class="mt-1 block w-full px-3 py-2">
 						</div>
 						<div class="mb-4">
-							<label for="numParcelas" class="block text-sm font-medium text-gray-400">N° de Parcelas</label>
-							<input type="number" id="numParcelas" placeholder="1 para 'À Vista'" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white" value="1">
+							<label for="numParcelas" class="block text-sm font-medium">N° de Parcelas</label>
+							<input type="number" id="numParcelas" placeholder="1 para 'À Vista'" class="mt-1 block w-full px-3 py-2" value="1">
 						</div>
 					</div>
 					<div class="mb-4">
-						<label for="vencimentoPrimeiraParcela" class="block text-sm font-medium text-gray-400">Vencimento da 1ª Parcela</label>
-						<input type="date" id="vencimentoPrimeiraParcela" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white" style="color-scheme: dark;">
+						<label for="vencimentoPrimeiraParcela" class="block text-sm font-medium">Vencimento da 1ª Parcela</label>
+						<input type="date" id="vencimentoPrimeiraParcela" class="mt-1 block w-full px-3 py-2">
 					</div>
 					<div class="mb-4">
-						<label for="taxaExito" class="block text-sm font-medium text-gray-400">Taxa de Êxito (Bonificação)</label>
-						<input type="text" id="taxaExito" placeholder="Ex: 20%, 10000, 5 SALARIOS" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white">
+						<label for="taxaExito" class="block text-sm font-medium">Taxa de Êxito (Bonificação)</label>
+						<input type="text" id="taxaExito" placeholder="Ex: 20%, 10000, 5 SALARIOS" class="mt-1 block w-full px-3 py-2">
 					</div>
 				</div>
 
 				<div class="flex justify-end mt-6">
-					<button type="button" onclick="window.App.closeModal('modalContrato')" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg mr-2">Cancelar</button>
-					<button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Salvar</button>
+					<button type="button" onclick="window.App.closeModal('modalContrato')" class="btn-secondary mr-2">Cancelar</button>
+					<button type="submit" class="btn-primary">Salvar</button>
 				</div>
 			</form>
 		</div>
 	</div>
 
-	<div id="modalPagamento" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
+	<div id="modalPagamento" class="modal w-11/12 md:w-1/3">
 		<div class="p-6">
 			<div class="flex justify-between items-center mb-4">
-				<h2 class="text-2xl font-bold text-white">Registrar Pagamento</h2>
-				<button onclick="window.App.closeModal('modalPagamento')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+				<h2 class="text-2xl font-bold">Registrar Pagamento</h2>
+				<button onclick="window.App.closeModal('modalPagamento')" class="text-gray-400 hover:text-gray-800 text-2xl">&times;</button>
 			</div>
 			<form id="formPagamento">
-				<div id="pagamentoInfo" class="mb-4 bg-gray-700 p-3 rounded-md text-white"></div>
+				<div id="pagamentoInfo" class="mb-4 bg-gray-100 p-3 rounded-md text-gray-700"></div>
 				<div class="mb-4">
-					<label for="pagamentoValor" class="block text-sm font-medium text-gray-400">Valor Pago (R$)</label>
-					<input type="number" step="0.01" id="pagamentoValor" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white" required>
+					<label for="pagamentoValor" class="block text-sm font-medium">Valor Pago (R$)</label>
+					<input type="number" step="0.01" id="pagamentoValor" class="mt-1 block w-full px-3 py-2" required>
 				</div>
 				<div class="mb-4">
-					<label for="pagamentoData" class="block text-sm font-medium text-gray-400">Data do Pagamento</label>
-					<input type="date" id="pagamentoData" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white" required style="color-scheme: dark;">
+					<label for="pagamentoData" class="block text-sm font-medium">Data do Pagamento</label>
+					<input type="date" id="pagamentoData" class="mt-1 block w-full px-3 py-2" required>
 				</div>
 				<input type="hidden" id="pagamentoContractId">
 				<input type="hidden" id="pagamentoParcelIndex">
 				<div class="flex justify-end mt-6">
-					<button type="button" onclick="window.App.closeModal('modalPagamento')" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg mr-2">Cancelar</button>
-					<button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Confirmar Pagamento</button>
+					<button type="button" onclick="window.App.closeModal('modalPagamento')" class="btn-secondary mr-2">Cancelar</button>
+					<button type="submit" class="btn-primary" style="background-color: #16a34a;">Confirmar Pagamento</button>
 				</div>
 			</form>
 		</div>
 	</div>
 
-	<div id="modalCliente" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-3/4 lg:w-2/3">
+	<div id="modalCliente" class="modal w-11/12 md:w-3/4 lg:w-2/3">
 		<div class="p-6">
 			<div class="flex justify-between items-center mb-4">
-				<h2 id="clienteModalTitle" class="text-2xl font-bold text-white"></h2>
-				<button onclick="window.App.closeModal('modalCliente')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+				<h2 id="clienteModalTitle" class="text-2xl font-bold"></h2>
+				<button onclick="window.App.closeModal('modalCliente')" class="text-gray-400 hover:text-gray-800 text-2xl">&times;</button>
 			</div>
 			<div id="clienteModalContent" class="space-y-6"></div>
 		</div>
 	</div>
 
-	<div id="modalRelatorio" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-3/4 lg:w-2/3 admin-only">
+	<div id="modalRelatorio" class="modal w-11/12 md:w-3/4 lg:w-2/3 admin-only">
 		<div class="p-6">
 			<div class="flex justify-between items-center mb-6">
-				<h2 class="text-2xl font-bold text-white">Relatório e Análise</h2>
-				<button onclick="window.App.closeModal('modalRelatorio')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+				<h2 class="text-2xl font-bold">Relatório e Análise</h2>
+				<button onclick="window.App.closeModal('modalRelatorio')" class="text-gray-400 hover:text-gray-800 text-2xl">&times;</button>
 			</div>
 			<div class="flex gap-4 mb-4">
 				<div class="flex-1">
-					<label for="reportMonth" class="block text-sm font-medium text-gray-400">Mês</label>
-					<select id="reportMonth" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white"></select>
+					<label for="reportMonth" class="block text-sm font-medium">Mês</label>
+					<select id="reportMonth" class="mt-1 block w-full px-3 py-2"></select>
 				</div>
 				<div class="flex-1">
-					<label for="reportYear" class="block text-sm font-medium text-gray-400">Ano</label>
-					<select id="reportYear" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white"></select>
+					<label for="reportYear" class="block text-sm font-medium">Ano</label>
+					<select id="reportYear" class="mt-1 block w-full px-3 py-2"></select>
 				</div>
 			</div>
 			<div class="flex gap-4 mb-6">
-				<button onclick="window.App.generateAndShowReport()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg">
+				<button onclick="window.App.generateAndShowReport()" class="flex-1 btn-primary" style="background-color: #0d9488;">
 					<i class="fas fa-file-invoice-dollar mr-2"></i> Relatório
 				</button>
-				<button onclick="window.App.showAnalyticsInModal()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg">
+				<button onclick="window.App.showAnalyticsInModal()" class="flex-1 btn-primary" style="background-color: #7c3aed;">
 					<i class="fas fa-chart-bar mr-2"></i> Gráficos
 				</button>
-				<button onclick="window.App.exportReportCSV()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">
+				<button onclick="window.App.exportReportCSV()" class="flex-1 btn-primary" style="background-color: #16a34a;">
 					<i class="fas fa-file-csv mr-2"></i> Exportar (CSV)
 				</button>
 			</div>
@@ -448,14 +765,14 @@
 
 			<div id="reportChartsContainer" class="hidden space-y-8">
 				<div class="dark-card p-6 rounded-lg shadow-lg">
-					<h3 class="text-lg font-semibold text-gray-300 mb-4">Faturamento Real (Últimos 12 Meses)</h3>
+					<h3 class="text-lg font-semibold text-gray-700 mb-4">Faturamento Real (Últimos 12 Meses)</h3>
 					<div class="relative" style="height: 350px;">
 						<canvas id="actualIncomeChartModal"></canvas>
 					</div>
 				</div>
 				<div class="dark-card p-6 rounded-lg shadow-lg">
-					<h3 class="text-lg font-semibold text-gray-300 mb-4">Projeção de Ganhos (Próximos 12 Meses)</h3>
-					<p class="text-sm text-gray-400 mb-4 -mt-3">(Baseado em parcelas pendentes)</p>
+					<h3 class="text-lg font-semibold text-gray-700 mb-4">Projeção de Ganhos (Próximos 12 Meses)</h3>
+					<p class="text-sm text-gray-500 mb-4 -mt-3">(Baseado em parcelas pendentes)</p>
 					<div class="relative" style="height: 350px;">
 						<canvas id="projectedIncomeChartModal"></canvas>
 					</div>
@@ -464,23 +781,23 @@
 		</div>
 	</div>
 
-	<div id="modalExito" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
+	<div id="modalExito" class="modal w-11/12 md:w-1/3">
 		<div class="p-6">
 			<div class="flex justify-between items-center mb-4">
-				<h2 class="text-2xl font-bold text-white">Registrar Recebimento de Êxito</h2>
-				<button onclick="window.App.closeModal('modalExito')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+				<h2 class="text-2xl font-bold">Registrar Recebimento de Êxito</h2>
+				<button onclick="window.App.closeModal('modalExito')" class="text-gray-400 hover:text-gray-800 text-2xl">&times;</button>
 			</div>
 			<form id="formExito">
-				<div id="exitoInfo" class="mb-4 bg-gray-700 p-3 rounded-md"></div>
+				<div id="exitoInfo" class="mb-4 bg-gray-100 p-3 rounded-md text-gray-700"></div>
 				<div class="mb-4 admin-only">
-					<label for="exitoValorRecebido" class="block text-sm font-medium text-gray-400">Valor Líquido Recebido (R$)</label>
-					<input type="number" step="0.01" id="exitoValorRecebido" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white" placeholder="Ex: 9500.00" required>
+					<label for="exitoValorRecebido" class="block text-sm font-medium">Valor Líquido Recebido (R$)</label>
+					<input type="number" step="0.01" id="exitoValorRecebido" class="mt-1 block w-full px-3 py-2" placeholder="Ex: 9500.00" required>
 				</div>
-				<p class="mb-4 text-gray-400 non-admin-hidden">Confirme o recebimento do valor de êxito.</p>
+				<p class="mb-4 text-gray-600 non-admin-hidden">Confirme o recebimento do valor de êxito.</p>
 				<input type="hidden" id="exitoContractId">
 				<div class="flex justify-end mt-6">
-					<button type="button" onclick="window.App.closeModal('modalExito')" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg mr-2">Cancelar</button>
-					<button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Salvar Recebimento</button>
+					<button type="button" onclick="window.App.closeModal('modalExito')" class="btn-secondary mr-2">Cancelar</button>
+					<button type="submit" class="btn-primary">Salvar Recebimento</button>
 				</div>
 			</form>
 		</div>
@@ -507,10 +824,8 @@
 		let projectedIncomeChartInstance = null;
 		let backdrop;
 		
-		// === INÍCIO DA MUDANÇA JS: VARIÁVEIS DE PAGINAÇÃO ===
-		let contractListPage = 0; // Página atual (base 0)
-		const CONTRACTS_PER_PAGE = 12; // Itens por página
-		// === FIM DA MUDANÇA JS ===
+		let contractListPage = 0;
+		const CONTRACTS_PER_PAGE = 12;
 
 		// Constantes
 		const ADMIN_USERS = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "D'Arc"];
@@ -537,8 +852,19 @@
 				this.initToast();
 				const n = document.createElement('div');
 				n.className = 'px-4 py-3 rounded-lg shadow-lg text-sm';
-				n.style.background = type === 'error' ? '#7f1d1d' : (type === 'success' ? '#065f46' : '#374151');
-				n.style.color = '#fff';
+				// Estilo do Toast (do HotReload.tsx)
+				n.style.background = '#18191B'; // bg-[#18191B]
+				n.style.border = '1px solid #2C2D2F'; // border-[#2C2D2F]
+				n.style.color = 'white';
+				if (type === 'error') {
+					n.style.background = '#fee2e2'; // bg-red-100
+					n.style.color = '#991b1b'; // text-red-700
+					n.style.border = '1px solid #fecaca'; // border-red-200
+				} else if (type === 'success') {
+					n.style.background = '#dcfce7'; // bg-green-100
+					n.style.color = '#166534'; // text-green-700
+					n.style.border = '1px solid #bbf7d0'; // border-green-200
+				}
 				n.textContent = message;
 				this.toastContainer.appendChild(n);
 				setTimeout(() => n.remove(), 2500);
@@ -554,11 +880,11 @@
 						modal.id = 'confirmModal';
 						modal.innerHTML = `
 <div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:12000">
-	<div class="dark-card" style="width:100%;max-width:420px;border-radius:12px;border:1px solid #374151;padding:16px;background:#111827">
-		<p id="confirmMessage" class="text-gray-200 mb-4"></p>
-		<div class="flex justify-end gap-2">
-			<button id="confirmCancel" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Cancelar</button>
-			<button id="confirmOk" class="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg">Confirmar</button>
+	<div style="border-radius:12px;border:1px solid #e5e7eb;padding:24px;background:#ffffff;color:#1f2937;width:100%;max-width:420px;">
+		<p id="confirmMessage" class="text-gray-700 mb-6 text-lg">${message}</p>
+		<div class="flex justify-end gap-3">
+			<button id="confirmCancel" class="btn-secondary">Cancelar</button>
+			<button id="confirmOk" class="btn-primary" style="background-color: #dc2626;">Confirmar</button>
 		</div>
 	</div>
 </div>`;
@@ -607,10 +933,11 @@
 							appContainer.style.display = 'none';
 							openModal('modalDisplayName');
 						} else {
+							// Atualiza o nome na top-bar
 							document.getElementById('user-display-name').textContent = user.displayName;
 							loadingOverlay.style.display = 'none'; 
 							authOverlay.style.display = 'none';
-							appContainer.style.display = 'block';
+							appContainer.style.display = 'flex'; // Alterado de 'block' para 'flex'
 							setupUIAccess(isUserAdmin);
 							contractsCollection = collection(db, `contracts`);
 							setupSnapshotListener();
@@ -656,8 +983,8 @@
 		function setupSnapshotListener() {
 			onSnapshot(contractsCollection, (snapshot) => {
 				database.contracts = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-				contractListPage = 0; // Reseta a paginação a cada nova atualização
-				render(); // Renderiza a aplicação com os novos dados
+				contractListPage = 0; 
+				render();
 			}, (error) => {
 				console.error("Erro ao buscar dados:", error);
 			});
@@ -673,27 +1000,31 @@
 		// Controla a navegação entre as páginas (abas)
 		const showPage = (pageId) => {
 			['page-dashboard', 'page-inadimplentes', 'page-servicos', 'page-lixeira'].forEach(id => {
-				const el = document.getElementById(id);
-				if (el) el.classList.add('hidden');
+				document.getElementById(id)?.classList.add('hidden');
 			});
+			// Os IDs das abas agora são os botões
 			['tab-dashboard', 'tab-inadimplentes', 'tab-servicos', 'tab-lixeira'].forEach(id => {
-				const tab = document.getElementById(id);
-				if (tab) tab.classList.remove('active');
+				document.getElementById(id)?.classList.remove('active');
 			});
 
-			const targetPage = document.getElementById(pageId);
-			if (targetPage) targetPage.classList.remove('hidden');
+			document.getElementById(pageId)?.classList.remove('hidden');
 
 			const tabId = `tab-${pageId.split('-')[1]}`;
 			const targetTab = document.getElementById(tabId);
-			if (targetTab) targetTab.classList.add('active');
-
+			if (targetTab) {
+				targetTab.classList.add('active');
+				// Atualiza o título da página na top-bar
+				const pageTitleEl = document.getElementById('page-title');
+				const tabText = targetTab.querySelector('span').textContent.trim();
+				if(pageTitleEl) pageTitleEl.textContent = tabText;
+			}
+			
 			const filteredData = getFilteredContracts(false);
 			const allFilteredData = getFilteredContracts(true); 
 
 			if (pageId === 'page-dashboard') {
 				renderKanban(filteredData);
-				renderContractList(); // [MODIFICADO] Não precisa mais do 'true'
+				renderContractList();
 			} else if (pageId === 'page-inadimplentes') {
 				renderInadimplentesPage(filteredData);
 			} else if (pageId === 'page-servicos') {
@@ -706,7 +1037,7 @@
 
 		// Função principal de renderização (chamada quando os dados mudam)
 		async function render() {
-			if (document.getElementById('app-container').style.display !== 'block') return;
+			if (document.getElementById('app-container').style.display !== 'flex') return;
 
 			const filteredData = getFilteredContracts(false);
 			const allFilteredData = getFilteredContracts(true);
@@ -718,7 +1049,7 @@
 
 			if (pageId === 'page-dashboard') {
 				await renderKanban(filteredData);
-				renderContractList(); // [MODIFICADO]
+				renderContractList();
 			} else if (pageId === 'page-inadimplentes') {
 				await renderInadimplentesPage(filteredData);
 			} else if (pageId === 'page-servicos') {
@@ -753,10 +1084,7 @@
 
 			for (const contract of contractsToRender) {
 				if (!contract.parcels) contract.parcels = [];
-				let remainingValue = isUserAdmin
-					? contract.parcels.reduce((sum, p) => p.status === 'Pendente' ? sum + p.value : sum, 0)
-					: 0;
-
+				
 				for (let i = 0; i < contract.parcels.length; i++) {
 					const parcel = contract.parcels[i];
 					const vencimento = new Date(parcel.dueDate);
@@ -764,18 +1092,18 @@
 					if (parcel.status === 'Paga') {
 						const dataPagamento = new Date(parcel.paymentDate);
 						if (dataPagamento >= primeiroDiaMes && dataPagamento <= hoje) {
-							kanbanPagas.innerHTML += createParcelCard(contract, parcel, i, 'paga', remainingValue);
+							kanbanPagas.innerHTML += createParcelCard(contract, parcel, i, 'paga');
 						}
 					} else { // Pendente
 						if (vencimento < hoje) { // Vencida
 							vencidasPromises.push(
 								calcularValorCorrigido(parcel.value, parcel.dueDate).then(valorCorrigido => {
 									if (isUserAdmin) totalVencido += valorCorrigido;
-									return createParcelCard(contract, parcel, i, 'vencida', remainingValue, valorCorrigido);
+									return createParcelCard(contract, parcel, i, 'vencida', valorCorrigido);
 								})
 							);
 						} else if (vencimento >= hoje && vencimento <= trintaDiasFrente) { // A vencer
-							kanbanAVencer.innerHTML += createParcelCard(contract, parcel, i, 'a-vencer', remainingValue);
+							kanbanAVencer.innerHTML += createParcelCard(contract, parcel, i, 'a-vencer');
 							if (isUserAdmin) totalAVencer30dias += parcel.value;
 						}
 					}
@@ -792,60 +1120,54 @@
 			renderDashboard(totalAVencer30dias, totalVencido, totalPagoMes, contractsToRender.length);
 		}
 
-		// Cria o HTML para um card de parcela no Kanban
-		function createParcelCard(contract, parcel, index, type, remainingValue, valorCorrigido = null) {
+		// Cria o HTML para um card de parcela no Kanban (usa novas classes CSS)
+		function createParcelCard(contract, parcel, index, type, valorCorrigido = null) {
 			const vencimento = new Date(parcel.dueDate);
 			const formattedDate = vencimento.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
 			const formattedValue = isUserAdmin ? parcel.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
-			const formattedRemaining = isUserAdmin ? remainingValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
 			const formattedCorrigido = isUserAdmin && valorCorrigido ? valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
 
 			let actionButton = '';
-			let statusClass = '';
+			let cardClass = '';
 			let valorHtml = '';
 
 			if (type === 'vencida') {
-				statusClass = 'border-red-400';
+				cardClass = 'kanban-card-vencida'; // bg-red-50 border-l-4 border-red-500
 				valorHtml = isUserAdmin
-					? `<div class="flex items-center text-gray-400 text-xs"><strong>Original:</strong><span class="ml-auto font-medium line-through">${formattedValue}</span></div>
-					  <div class="flex items-center text-red-400"><strong>Corrigido:</strong><span class="ml-auto font-semibold text-lg">${formattedCorrigido}</span></div>`
-					: `<div class="text-red-400 font-semibold">Vencida</div>`;
+					? `<div class="flex items-center text-gray-500 text-xs"><strong>Original:</strong><span class="ml-auto font-medium line-through">${formattedValue}</span></div>
+					  <div class="flex items-center text-red-600"><strong>Corrigido:</strong><span class="ml-auto font-semibold text-lg">${formattedCorrigido}</span></div>`
+					: `<div class="text-red-600 font-semibold">Vencida</div>`;
 			} else if (type === 'a-vencer') {
-				statusClass = 'border-yellow-400';
+				cardClass = 'kanban-card-avencer'; // bg-blue-50 border-l-4 border-blue-500
 				valorHtml = isUserAdmin
-					? `<div class="flex items-center text-gray-300"><i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-500"></i><strong>Valor:</strong><span class="ml-auto font-semibold text-lg text-white">${formattedValue}</span></div>`
-					: `<div class="text-yellow-400 font-semibold">A vencer</div>`;
+					? `<div class="flex items-center text-gray-700"><i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-400"></i><strong>Valor:</strong><span class="ml-auto font-semibold text-lg text-gray-900">${formattedValue}</span></div>`
+					: `<div class="text-blue-600 font-semibold">A vencer</div>`;
 			} else { // Paga
-				statusClass = 'border-gray-600';
+				cardClass = 'kanban-card-paga'; // bg-green-50 border-l-4 border-green-500
 				const formattedPaidValue = isUserAdmin ? (parcel.valuePaid || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
 				const paymentDate = new Date(parcel.paymentDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
 				valorHtml = isUserAdmin
-					? `<div class="flex items-center text-gray-300"><i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-500"></i><strong>Valor:</strong><span class="ml-auto font-semibold text-lg text-white">${formattedValue}</span></div>`
+					? `<div class="flex items-center text-gray-700"><i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-400"></i><strong>Valor:</strong><span class="ml-auto font-semibold text-lg text-gray-900">${formattedValue}</span></div>`
 					: '';
-				actionButton = `<div class="mt-4 text-center text-sm bg-green-900/50 text-green-300 p-2 rounded-md font-medium">Pago ${isUserAdmin ? formattedPaidValue : ''} em ${paymentDate}</div>`;
+				actionButton = `<div class="mt-4 text-center text-sm bg-green-100 text-green-700 p-2 rounded-md font-medium">Pago ${isUserAdmin ? formattedPaidValue : ''} em ${paymentDate}</div>`;
 			}
 
 			if (type !== 'paga') {
-				actionButton = `<button onclick="window.App.openPaymentModal('${contract.id}', ${index})" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2"><i class="fas fa-check"></i> Registrar Pagamento</button>`;
+				actionButton = `<button onclick="window.App.openPaymentModal('${contract.id}', ${index})" class="mt-4 w-full btn-primary" style="background-color: #16a34a;"><i class="fas fa-check mr-2"></i> Registrar Pagamento</button>`;
 			}
 
-			let extraInfoHtml = isUserAdmin
-				? `<div class="text-xs text-gray-400 border-t border-gray-700 pt-2 mt-3 flex justify-between"><span>Contrato: <strong>${(contract.totalValue || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></span> <span>Restante: <strong>${formattedRemaining}</strong></span></div>`
-				: '';
-
 			return `
-				<div class="dark-card p-4 rounded-lg shadow-md border-l-4 ${statusClass}">
-					<p class="font-bold text-white">${contract.clientName}</p>
-					<p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')} - Parcela ${parcel.number}/${contract.parcels.length || 1}</p>
+				<div class="kanban-card-base ${cardClass}">
+					<p class="font-bold text-gray-800">${contract.clientName}</p>
+					<p class="text-sm text-gray-600 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')} - Parcela ${parcel.number}/${contract.parcels.length || 1}</p>
 					<div class="space-y-2 text-sm">
 						${valorHtml}
-						<div class="flex items-center text-gray-300">
-							<i class="fas fa-calendar-alt w-5 text-center mr-2 text-gray-500"></i>
+						<div class="flex items-center text-gray-700">
+							<i class="fas fa-calendar-alt w-5 text-center mr-2 text-gray-400"></i>
 							<strong>Vencimento:</strong>
 							<span class="ml-auto font-medium">${formattedDate}</span>
 						</div>
 					</div>
-					${extraInfoHtml}
 					${actionButton}
 				</div>`;
 		}
@@ -854,14 +1176,14 @@
 		function createExitoCard(contract) {
 			const taxaExitoDisplay = isUserAdmin ? contract.successFee : '[Restrito]';
 			return `
-				<div class="dark-card p-4 rounded-lg shadow-md border-l-4 border-indigo-400">
-					<p class="font-bold text-white">${contract.clientName}</p>
-					<p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
+				<div class="kanban-card-base kanban-card-exito">
+					<p class="font-bold text-gray-800">${contract.clientName}</p>
+					<p class="text-sm text-gray-600 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
 					<div class="my-4 text-center">
-						<p class="text-sm text-gray-400">Bonificação Pendente</p>
-						<p class="text-2xl font-semibold text-indigo-400">${taxaExitoDisplay}</p>
+						<p class="text-sm text-gray-600">Bonificação Pendente</p>
+						<p class="text-2xl font-semibold text-yellow-600">${taxaExitoDisplay}</p>
 					</div>
-					<button onclick="window.App.openExitoModal('${contract.id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2"><i class="fas fa-gavel"></i> Registrar Recebimento</button>
+					<button onclick="window.App.openExitoModal('${contract.id}')" class="w-full btn-primary"><i class="fas fa-gavel mr-2"></i> Registrar Recebimento</button>
 				</div>`;
 		}
 
@@ -873,72 +1195,51 @@
 			document.getElementById('dash-contratos').textContent = totalContratos;
 		}
 
-		// === INÍCIO DA MUDANÇA JS: LÓGICA DE PAGINAÇÃO ===
-
-		// Função chamada ao clicar em um filtro ou na busca (reseta para pág 1)
+		// Funções de Paginação (Sem alteração de lógica)
 		const resetAndRenderContractList = function () { 
-			contractListPage = 0; // Reseta para a primeira página
+			contractListPage = 0;
 			renderContractList(); 
 		};
 		window.App.resetAndRenderContractList = resetAndRenderContractList;
 
-		// Nova função para trocar de página
 		const changeContractPage = function(pageIndex) {
 			contractListPage = pageIndex;
 			renderContractList();
-			// Rola suavemente de volta para o topo da lista de contratos
-			document.getElementById('contractListContainer').scrollIntoView({ behavior: 'smooth' });
+			document.getElementById('main-content-area').scrollTop = 0; // Rola o novo container
 		}
 		window.App.changeContractPage = changeContractPage;
 
-		// Nova função para desenhar os botões de paginação
 		function renderPaginationControls(totalItems, totalPages) {
 			const container = document.getElementById('paginationContainer');
 			container.innerHTML = '';
 			if (totalPages <= 1) return;
-
-			const currentPage = contractListPage; // 0-indexed
-
+			const currentPage = contractListPage;
 			let paginationHtml = '';
-
-			// Botão "Anterior"
 			const prevDisabled = (currentPage === 0) ? 'disabled' : '';
 			const prevOnClick = (currentPage === 0) ? '' : `onclick="window.App.changeContractPage(${currentPage - 1})"`;
 			paginationHtml += `<button class="pagination-button" ${prevOnClick} ${prevDisabled}>&laquo; Ant</button>`;
-
-			// Lógica para os botões de número com "..."
 			const maxVisibleButtons = 5;
 			let startPage = Math.max(0, currentPage - Math.floor(maxVisibleButtons / 2));
 			let endPage = Math.min(totalPages - 1, startPage + maxVisibleButtons - 1);
-
-			// Ajusta a janela de botões se estiver perto do fim
 			if (endPage - startPage + 1 < maxVisibleButtons) {
 				startPage = Math.max(0, endPage - maxVisibleButtons + 1);
 			}
-
-			// Botão "Primeira Página" e "..."
 			if (startPage > 0) {
 				paginationHtml += `<button class="pagination-button" onclick="window.App.changeContractPage(0)">1</button>`;
 				if (startPage > 1) {
 					paginationHtml += `<span>...</span>`;
 				}
 			}
-
-			// Botões de números
 			for (let i = startPage; i <= endPage; i++) {
 				const activeClass = (i === currentPage) ? 'active' : '';
 				paginationHtml += `<button class="pagination-button ${activeClass}" onclick="window.App.changeContractPage(${i})">${i + 1}</button>`;
 			}
-
-			// Botão "Última Página" e "..."
 			if (endPage < totalPages - 1) {
 				if (endPage < totalPages - 2) {
 					paginationHtml += `<span>...</span>`;
 				}
 				paginationHtml += `<button class="pagination-button" onclick="window.App.changeContractPage(${totalPages - 1})">${totalPages}</button>`;
 			}
-
-			// Botão "Próximo"
 			const nextDisabled = (currentPage === totalPages - 1) ? 'disabled' : '';
 			const nextOnClick = (currentPage === totalPages - 1) ? '' : `onclick="window.App.changeContractPage(${currentPage + 1})"`;
 			paginationHtml += `<button class="pagination-button" ${nextOnClick} ${nextDisabled}>Próx &raquo;</button>`;
@@ -946,7 +1247,7 @@
 			container.innerHTML = paginationHtml;
 		}
 
-		// Função principal da lista de contratos (Modificada)
+		// [REFEITO] Renderiza a lista de contratos (agora como tabela)
 		const renderContractList = function () {
 			const listContainer = document.getElementById('contractListContainer');
 			const searchTerm = (document.getElementById('searchInput').value || '').toLowerCase();
@@ -955,109 +1256,119 @@
 			let advogadoFilter = advogadoFilterEl ? advogadoFilterEl.value : 'Todos';
 			if (!isUserAdmin) advogadoFilter = currentUserDisplayName;
 
-			// 1. Filtra os contratos (todos)
+			// 1. Filtra os contratos
 			let filteredContracts = getFilteredContracts(false).filter(c => {
 				const matchesAdvogado = (isUserAdmin && advogadoFilter === 'Todos') || c.advogadoResponsavel === advogadoFilter;
 				const matchesSearch = c.clientName.toLowerCase().includes(searchTerm) || (c.serviceTypes || []).some(s => s.name.toLowerCase().includes(searchTerm));
 				return matchesAdvogado && matchesSearch;
 			});
 
-			// 2. Ordena os contratos (todos)
+			// 2. Ordena
 			if (currentContractSort === 'name-asc') {
 				filteredContracts.sort((a, b) => a.clientName.localeCompare(b.clientName));
 			} else if (currentContractSort === 'value-desc' && isUserAdmin) {
 				filteredContracts.sort((a, b) => (b.totalValue || 0) - (a.totalValue || 0));
 			}
 
-			// 3. Calcula o total de itens e páginas
+			// 3. Paginação
 			const totalItems = filteredContracts.length;
 			const totalPages = Math.ceil(totalItems / CONTRACTS_PER_PAGE);
-
-			// 4. Garante que a página atual seja válida
 			if (contractListPage >= totalPages && totalPages > 0) {
-				contractListPage = totalPages - 1; // Ajusta se a página atual não existir mais
+				contractListPage = totalPages - 1;
 			}
 			if (contractListPage < 0) contractListPage = 0;
-
-			// 5. Pega apenas os itens da página atual
 			const startIndex = contractListPage * CONTRACTS_PER_PAGE;
 			const paginatedContracts = filteredContracts.slice(startIndex, startIndex + CONTRACTS_PER_PAGE);
 
-			// 6. Limpa o container e renderiza
+			// 4. Renderização da Tabela
 			listContainer.innerHTML = ''; // Limpa sempre
 
 			if (totalItems === 0) {
-				listContainer.innerHTML = '<div class="dark-card p-4 rounded-lg shadow-md text-center text-gray-400 py-4">Nenhum contrato encontrado.</div>';
-				renderPaginationControls(0, 0); // Limpa os controles de paginação
+				listContainer.innerHTML = '<div class="p-6 text-center text-gray-500">Nenhum contrato encontrado.</div>';
+				renderPaginationControls(0, 0);
 				return;
 			}
 
-			// Cria o grid
-			listContainer.innerHTML = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>';
-			const gridContainer = listContainer.querySelector('.grid');
-			
-			// 7. Gera o HTML dos cards
-			let newCardsHtml = ``;
-			paginatedContracts.forEach(contract => {
-				const { statusText, statusColor, borderColor } = getContractStatus(contract);
-				let servicesHtml = (contract.serviceTypes || []).map(s => `<span class="service-tag-small">${s.name}</span>`).join('');
+            // HTML da Tabela (baseado no Contracts.jsx)
+			let tableHtml = `
+				<div class="overflow-x-auto">
+					<table class="w-full">
+						<thead class="table-header">
+							<tr>
+								<th>Cliente</th>
+								<th>Serviços</th>
+								<th class="admin-only" style="display: none;">Valor Fixo</th>
+								<th class="admin-only" style="display: none;">Êxito</th>
+								<th>Status</th>
+								<th>Advogado</th>
+								<th class="text-center">Ações</th>
+							</tr>
+						</thead>
+						<tbody>
+			`;
+
+			paginatedContracts.forEach((contract, index) => {
+				const { statusText, statusColorClass } = getContractStatus(contract);
+				// Adiciona a classe CSS 'service-tag-small'
+				let servicesHtml = (contract.serviceTypes || []).map(s => `<span style="background-color: #e5e7eb; color: #4b5563; padding: 2px 8px; border-radius: 9999px; font-size: 12px; margin-right: 4px; margin-bottom: 4px; display: inline-block;">${s.name}</span>`).join(' ');
 				const valorFixoDisplay = isUserAdmin ? (contract.totalValue || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
-				const exitoDisplay = isUserAdmin && contract.successFee ? contract.successFee : (contract.successFee ? '[Restrito]' : '');
+				const exitoDisplay = isUserAdmin && contract.successFee ? contract.successFee : (contract.successFee ? '[Restrito]' : 'N/A');
+				const rowClass = index % 2 === 0 ? 'table-row-light' : 'table-row-dark';
 
-				newCardsHtml += `
-					<div class="dark-card rounded-lg shadow-lg overflow-hidden border-l-4 ${borderColor} flex flex-col justify-between transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl">
-						<div class="p-5">
-							<div class="flex justify-between items-start mb-3">
-								<h3 class="font-bold text-xl text-white">${contract.clientName}</h3>
-								<span class="px-2 py-1 rounded-full text-xs font-semibold ${statusColor}">${statusText}</span>
+				tableHtml += `
+					<tr class="${rowClass}">
+						<td>
+							<span class="font-medium text-gray-800">${contract.clientName}</span>
+						</td>
+						<td class="max-w-xs">${servicesHtml}</td>
+						<td class="admin-only" style="display: none;">
+							<span class="font-semibold text-gray-800">${valorFixoDisplay}</span>
+						</td>
+						<td class="admin-only" style="display: none;">
+							<span class="font-semibold text-indigo-600">${exitoDisplay}</span>
+						</td>
+						<td>
+							<span class="status-tag ${statusColorClass}">${statusText}</span>
+						</td>
+						<td>
+							<span class="text-gray-600 text-xs">${contract.advogadoResponsavel}</span>
+						</td>
+						<td class="text-center">
+							<div class="flex justify-center gap-1">
+								<button onclick="window.App.openClientHistoryModal('${contract.clientName}')" class="btn-icon btn-icon-blue" title="Ver Histórico do Cliente"><i class="fas fa-eye"></i></button>
+								<button onclick="window.App.openContractModal('${contract.id}')" class="btn-icon btn-icon-gray" title="Editar Contrato"><i class="fas fa-pencil-alt"></i></button>
+								<button onclick="window.App.moveToLixeira('${contract.id}')" class="btn-icon btn-icon-red" title="Mover para Lixeira"><i class="fas fa-trash-alt"></i></button>
 							</div>
-							<p class="text-xs text-indigo-300 mb-3"><i class="fas fa-user-tie mr-1"></i> ${contract.advogadoResponsavel}</p>
-							<div class="mb-4">${servicesHtml}</div>
-							<div class="border-t border-gray-700 pt-4 space-y-3 text-sm">
-								<div class="flex items-center text-gray-300">
-									<i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-500"></i>
-									<strong>Valor Fixo:</strong>
-									<span class="ml-auto font-medium">${valorFixoDisplay}</span>
-								</div>
-								${contract.successFee ? `
-								<div class="flex items-center text-gray-300">
-									<i class="fas fa-star w-5 text-center mr-2 text-gray-500"></i>
-									<strong>Êxito:</strong>
-									<span class="ml-auto font-medium text-indigo-400">${exitoDisplay}</span>
-								</div>` : ''}
-							</div>
-						</div>
-						<div class="bg-gray-900/50 px-4 py-2 flex justify-end gap-2">
-							<button onclick="window.App.openClientHistoryModal('${contract.clientName}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-indigo-400 hover:bg-indigo-900/20 py-1 px-3 rounded-md transition-colors" title="Ver Histórico do Cliente"><i class="fas fa-eye"></i> Histórico</button>
-							<button onclick="window.App.openContractModal('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-green-400 hover:bg-green-900/20 py-1 px-3 rounded-md transition-colors" title="Editar Contrato"><i class="fas fa-pencil-alt"></i> Editar</button>
-							<button onclick="window.App.moveToLixeira('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 py-1 px-3 rounded-md transition-colors" title="Mover para Lixeira"><i class="fas fa-trash-alt"></i></button>
-						</div>
-					</div>`;
+						</td>
+					</tr>
+				`;
 			});
-			
-			// 8. Insere o HTML dos cards (sem '+=')
-			gridContainer.innerHTML = newCardsHtml;
 
-			// 9. Renderiza os controles de paginação
+			tableHtml += `</tbody></table></div>`;
+			listContainer.innerHTML = tableHtml;
+
+			// 5. Renderiza controles de paginação
 			renderPaginationControls(totalItems, totalPages);
+            
+            // 6. Aplica visibilidade de admin nas colunas
+            if(isUserAdmin) {
+                listContainer.querySelectorAll('.admin-only').forEach(el => el.style.display = 'table-cell');
+            }
 		};
 		window.App.renderContractList = renderContractList;
 
-		// === FIM DA MUDANÇA JS ===
-
-
-		// Retorna o status de um contrato
+		// [REFEITO] Retorna o status de um contrato (com novas classes CSS)
 		function getContractStatus(contract) {
 			const hasPendingParcels = (contract.parcels || []).some(p => p.status === 'Pendente');
-			if (hasPendingParcels) return { statusText: 'Ativo', statusColor: 'bg-yellow-900/50 text-yellow-300', borderColor: 'border-yellow-500' };
-			if (contract.successFee && !contract.successFeePaymentDate) return { statusText: 'Aguardando Êxito', statusColor: 'bg-indigo-900/50 text-indigo-300', borderColor: 'border-indigo-500' };
-			return { statusText: 'Concluído', statusColor: 'bg-gray-700 text-gray-300', borderColor: 'border-gray-600' };
+			if (hasPendingParcels) return { statusText: 'Ativo', statusColorClass: 'status-tag-green' };
+			if (contract.successFee && !contract.successFeePaymentDate) return { statusText: 'Aguardando Êxito', statusColorClass: 'status-tag-indigo' };
+			return { statusText: 'Concluído', statusColorClass: 'status-tag-gray' };
 		}
 
-		// Renderiza a página de Inadimplentes
+		// [REFEITO] Renderiza a página de Inadimplentes (com tema claro)
 		async function renderInadimplentesPage(contractsToRender) {
 			const container = document.getElementById('inadimplentesListContainer');
-			container.innerHTML = `<div class="col-span-1 md:col-span-3 text-center py-10"><i class="fas fa-spinner fa-spin fa-2x text-indigo-400"></i><p class="mt-2 text-sm text-gray-400">Calculando...</p></div>`;
+			container.innerHTML = `<div class="col-span-1 md:col-span-3 text-center py-10"><i class="fas fa-spinner fa-spin fa-2x text-blue-500"></i><p class="mt-2 text-sm text-gray-500">Calculando...</p></div>`;
 			const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
 
 			let inadimplentesList = [];
@@ -1078,6 +1389,7 @@
 
 			inadimplentesList = results.flat();
 
+			// Ordenação
 			if (currentInadimplentesSort === 'days-desc') {
 				inadimplentesList.sort((a, b) => b.diffDays - a.diffDays);
 			} else if (currentInadimplentesSort === 'value-desc' && isUserAdmin) {
@@ -1087,7 +1399,7 @@
 			}
 
 			if (inadimplentesList.length === 0) {
-				container.innerHTML = `<div class="col-span-1 md:col-span-3 text-center py-10"><div class="inline-block bg-gray-800 border border-gray-700 text-green-400 p-6 rounded-lg shadow-md"><i class="fas fa-check-circle fa-3x mb-3"></i><p class="font-bold text-xl">Nenhuma pendência encontrada!</p><p class="text-sm text-gray-400">Todos os pagamentos estão em dia.</p></div></div>`;
+				container.innerHTML = `<div class="col-span-1 md:col-span-3 text-center py-10"><div class="inline-block dark-card text-green-600 p-6"><i class="fas fa-check-circle fa-3x mb-3"></i><p class="font-bold text-xl text-gray-800">Nenhuma pendência encontrada!</p><p class="text-sm text-gray-500">Todos os pagamentos estão em dia.</p></div></div>`;
 			 return;
 			}
 
@@ -1098,36 +1410,36 @@
 				const valorCorrigidoDisplay = isUserAdmin ? valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
 
 				inadimplentesHtml += `
-					<div class="dark-card p-5 rounded-lg shadow-lg border-l-4 border-red-500">
-						<p class="font-bold text-lg text-white">${contract.clientName}</p>
-						<p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
-						<div class="border-t border-gray-700 pt-3 mt-3 space-y-2">
+					<div class="dark-card p-5">
+						<p class="font-bold text-lg text-gray-800">${contract.clientName}</p>
+						<p class="text-sm text-gray-600 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
+						<div class="border-t border-gray-200 pt-3 mt-3 space-y-2">
 							<div class="flex justify-between items-center text-sm ${!isUserAdmin ? 'hidden' : ''}">
-								<span class="text-gray-400">Valor Original:</span>
-								<span class="font-medium text-gray-400 line-through">${valorOriginalDisplay}</span>
+								<span class="text-gray-500">Valor Original:</span>
+								<span class="font-medium text-gray-500 line-through">${valorOriginalDisplay}</span>
 							</div>
 							<div class="flex justify-between items-center ${!isUserAdmin ? 'hidden' : ''}">
-								<span class="text-sm text-white">Valor Corrigido:</span>
-								<span class="font-semibold text-lg text-red-400">${valorCorrigidoDisplay}</span>
+								<span class="text-sm text-gray-700">Valor Corrigido:</span>
+								<span class="font-semibold text-lg text-red-600">${valorCorrigidoDisplay}</span>
 							</div>
 							<div class="flex justify-between items-center text-sm">
-								<span class="text-gray-400">Venceu em:</span>
-								<span class="font-medium text-gray-300">${vencimento.toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</span>
+								<span class="text-gray-500">Venceu em:</span>
+								<span class="font-medium text-gray-700">${vencimento.toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</span>
 							</div>
-							<div class="flex justify-between items-center text-red-400 font-bold text-sm bg-red-900/30 px-2 py-1 rounded">
+							<div class="flex justify-between items-center text-red-600 font-bold text-sm bg-red-100 px-2 py-1 rounded">
 								<span>Atrasado há:</span>
 								<span>${diffDays} dia(s)</span>
 							</div>
 						</div>
-						<button onclick="window.App.openPaymentModal('${contract.id}', ${index})" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2">
-							<i class="fas fa-check"></i> Registrar Pagamento
+						<button onclick="window.App.openPaymentModal('${contract.id}', ${index})" class="mt-4 w-full btn-primary" style="background-color: #16a34a;">
+							<i class="fas fa-check mr-2"></i> Registrar Pagamento
 						</button>
 					</div>`;
 			});
 			container.innerHTML = inadimplentesHtml;
 		}
 
-		// Renderiza a página de Serviços/Produção
+		// [REFEITO] Renderiza a página de Serviços/Produção (com tema claro)
 		const renderServicosPage = (contractsToRender) => {
 			const container = document.getElementById('servicosListContainer');
 			const searchTerm = (document.getElementById('servicosSearchInput').value || '').toLowerCase();
@@ -1145,6 +1457,7 @@
 			 return matchesAdvogado && matchesSearch;
 			});
 
+			// Ordenação
 			if (currentServicosSort === 'name-asc') {
 				activeContracts.sort((a, b) => a.clientName.localeCompare(b.clientName));
 			} else if (currentServicosSort === 'adv-asc') {
@@ -1152,7 +1465,7 @@
 			}
 
 			if (activeContracts.length === 0) {
-				container.innerHTML = `<div class="text-center py-10"><div class="inline-block dark-card text-indigo-400 p-6 rounded-lg shadow-md"><i class="fas fa-coffee fa-3x mb-3"></i><p class="font-bold text-xl">Nenhum contrato ativo encontrado.</p><p class="text-sm text-gray-400">Nenhum resultado para a busca ou todos os trabalhos estão concluídos.</p></div></div>`;
+				container.innerHTML = `<div class="text-center py-10"><div class="inline-block dark-card text-indigo-600 p-6"><i class="fas fa-coffee fa-3x mb-3"></i><p class="font-bold text-xl text-gray-800">Nenhum contrato ativo encontrado.</p><p class="text-sm text-gray-500">Nenhum resultado para a busca ou todos os trabalhos estão concluídos.</p></div></div>`;
 				return;
 			}
 
@@ -1170,38 +1483,39 @@
 				const financialProgress = (contract.totalValue || 0) > 0 ? (totalPaid / contract.totalValue) * 100 : (totalPaid > 0 ? 100 : 0);
 				const financialProgressBar = isUserAdmin ? `
 					<div>
-						<div class="flex justify-between text-sm mb-1 text-gray-300"><label>Progresso Financeiro</label><span class="font-medium text-teal-300">${financialProgress.toFixed(0)}%</span></div>
-						<div class="progress-bar-bg h-3 w-full"><div class="progress-bar bg-teal-500" style="width: ${financialProgress}%"></div></div>
+						<div class="flex justify-between text-sm mb-1 text-gray-700"><label>Progresso Financeiro</label><span class="font-medium text-teal-600">${financialProgress.toFixed(0)}%</span></div>
+						<div class="progress-bar-bg"><div class="progress-bar bg-teal-500" style="width: ${financialProgress}%"></div></div>
 					</div>` : '';
 
 				let servicesHtml = (contract.serviceTypes || []).map((service, index) => {
 					let statusHtml, actionsHtml = '', deadlineHtml = '';
 					if (service.deadline) {
 						const hoje = new Date(); hoje.setHours(0,0,0,0);
-						const prazo = new Date(service.deadline + "T12:00:00Z"); // Trata como UTC
+						const prazo = new Date(service.deadline + "T12:00:00Z");
 						const diffDays = Math.ceil((prazo - hoje) / 86400000);
 						const formattedPrazo = prazo.toLocaleDateString('pt-BR', {timeZone: 'UTC'});
-						if (diffDays < 0 && service.status !== 'Concluído') deadlineHtml = `<span class="text-xs font-medium text-red-400"><i class="fas fa-exclamation-triangle"></i> Vencido: ${formattedPrazo}</span>`;
-						else if (diffDays <= 7 && service.status !== 'Concluído') deadlineHtml = `<span class="text-xs font-medium text-yellow-400"><i class="fas fa-clock"></i> Vence: ${formattedPrazo}</span>`;
+						if (diffDays < 0 && service.status !== 'Concluído') deadlineHtml = `<span class="text-xs font-medium text-red-500"><i class="fas fa-exclamation-triangle"></i> Vencido: ${formattedPrazo}</span>`;
+						else if (diffDays <= 7 && service.status !== 'Concluído') deadlineHtml = `<span class="text-xs font-medium text-yellow-600"><i class="fas fa-clock"></i> Vence: ${formattedPrazo}</span>`;
 						else if (service.status !== 'Concluído') deadlineHtml = `<span class="text-xs text-gray-500"><i class="far fa-calendar-alt"></i> ${formattedPrazo}</span>`;
 						else deadlineHtml = `<span class="text-xs text-gray-500"><i class="far fa-calendar-check"></i> ${formattedPrazo}</span>`;
 					}
+					// Botões com cores do novo design
 					switch (service.status) {
 						case 'Concluído':
-							statusHtml = `<span class="text-xs font-bold text-teal-400">CONCLUÍDO</span>`;
+							statusHtml = `<span class="text-xs font-bold text-teal-600">CONCLUÍDO</span>`;
 							break;
 						case '50% Concluído':
-							statusHtml = `<span class="text-xs font-bold text-purple-400">50%</span>`;
+							statusHtml = `<span class="text-xs font-bold text-purple-600">50%</span>`;
 							actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`;
 							break;
 						case 'Em Andamento':
-							statusHtml = `<span class="text-xs font-bold text-yellow-400">EM ANDAMENTO</span>`;
+							statusHtml = `<span class="text-xs font-bold text-yellow-600">EM ANDAMENTO</span>`;
 							actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, '50% Concluído')" class="text-xs bg-purple-600 text-white hover:bg-purple-500 font-semibold py-1 px-2 rounded-md transition-colors">50%</button>
-										  <button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`;
+										  <button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`;
 							break;
 						default: // Pendente
-							statusHtml = `<span class="text-xs font-bold text-gray-400">PENDENTE</span>`;
-							actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Em Andamento')" class="text-xs bg-yellow-600 text-white hover:bg-yellow-500 font-semibold py-1 px-2 rounded-md transition-colors">Iniciar</button>`;
+							statusHtml = `<span class="text-xs font-bold text-gray-500">PENDENTE</span>`;
+							actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Em Andamento')" class="text-xs bg-yellow-500 text-white hover:bg-yellow-400 font-semibold py-1 px-2 rounded-md transition-colors">Iniciar</button>`;
 							break;
 					}
 					const iconClass =
@@ -1209,8 +1523,8 @@
 						service.status === '50% Concluído' ? 'fas fa-adjust text-purple-500' :
 						service.status === 'Em Andamento' ? 'fas fa-spinner fa-spin text-yellow-500' :
 						'far fa-circle text-gray-500';
-					const textClass = service.status === 'Concluído' ? 'text-gray-500 line-through' : 'text-gray-300';
-					const hoverClass = service.status !== 'Concluído' ? 'hover:bg-gray-700/50' : 'bg-gray-900/50';
+					const textClass = service.status === 'Concluído' ? 'text-gray-400 line-through' : 'text-gray-700';
+					const hoverClass = service.status !== 'Concluído' ? 'hover:bg-gray-100' : 'bg-gray-50';
 
 					return `<li class="flex items-center justify-between p-2 ${hoverClass} rounded-md">
 						<span class="${textClass}"><i class="${iconClass} mr-2"></i>${service.name}</span>
@@ -1219,20 +1533,20 @@
 				}).join('');
 
 				container.innerHTML += `
-					<div class="dark-card p-5 rounded-lg shadow-lg">
+					<div class="dark-card p-5">
 						<div class="flex justify-between items-start">
-							<h3 class="font-bold text-xl text-indigo-300 mb-4">${contract.clientName}</h3>
-							<p class="text-sm text-gray-400"><i class="fas fa-user-tie mr-1"></i> ${contract.advogadoResponsavel}</p>
+							<h3 class="font-bold text-xl text-indigo-600 mb-4">${contract.clientName}</h3>
+							<p class="text-sm text-gray-500"><i class="fas fa-user-tie mr-1"></i> ${contract.advogadoResponsavel}</p>
 						</div>
 						<div class="space-y-4 mb-4">
 							${financialProgressBar}
 							<div>
-								<div class="flex justify-between text-sm mb-1 text-gray-300"><label>Progresso dos Serviços</label><span class="font-medium text-indigo-300">${serviceProgress.toFixed(0)}%</span></div>
-								<div class="progress-bar-bg h-3 w-full"><div class="progress-bar bg-indigo-500" style="width: ${serviceProgress}%"></div></div>
+								<div class="flex justify-between text-sm mb-1 text-gray-700"><label>Progresso dos Serviços</label><span class="font-medium text-indigo-600">${serviceProgress.toFixed(0)}%</span></div>
+								<div class="progress-bar-bg"><div class="progress-bar bg-indigo-500" style="width: ${serviceProgress}%"></div></div>
 							</div>
 						</div>
-						<div class="border-t border-gray-700 pt-3">
-							<h4 class="font-semibold text-sm mb-2 text-gray-400">Serviços do Contrato:</h4>
+						<div class="border-t border-gray-200 pt-3">
+							<h4 class="font-semibold text-sm mb-2 text-gray-500">Serviços do Contrato:</h4>
 							<ul class="space-y-1">${servicesHtml}</ul>
 						</div>
 					</div>`;
@@ -1272,7 +1586,7 @@
 				for (const parcel of contract.parcels) {
 					if (parcel.status === 'Pendente') {
 						const dueDate = new Date(parcel.dueDate);
-						if (dueDate < inicioMesAtual) continue; 
+						if (dueDate < inicioMesAtual) continue; 
 						const diffMonth = (dueDate.getFullYear() - inicioMesAtual.getFullYear()) * 12 + (dueDate.getMonth() - inicioMesAtual.getMonth());
 						if (diffMonth >= 0 && diffMonth < 12) data[diffMonth] += parcel.value;
 					}
@@ -1288,12 +1602,14 @@
 				const projectedCtx = document.getElementById('projectedIncomeChartModal')?.getContext('2d');
 				if (!actualCtx || !projectedCtx) return;
 
+				const chartTextColor = '#4b5563'; // text-gray-600
+
 				const actualData = getActualIncomeData(allContracts);
 				if (actualIncomeChartInstance) actualIncomeChartInstance.destroy();
 				actualIncomeChartInstance = new Chart(actualCtx, {
 					type: 'bar',
 					data: { labels: actualData.labels, datasets: [{ label: 'Faturamento Real', data: actualData.data, backgroundColor: 'rgba(74, 222, 128, 0.6)', borderColor: 'rgba(74, 222, 128, 1)', borderWidth: 1 }] },
-					options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: '#9ca3af' } }, x: { ticks: { color: '#9ca3af' } } }, plugins: { legend: { labels: { color: '#d1d5db' } } } }
+					options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: chartTextColor } }, x: { ticks: { color: chartTextColor } } }, plugins: { legend: { labels: { color: chartTextColor } } } }
 				});
 
 				const projectedData = getProjectedIncomeData(allContracts);
@@ -1301,7 +1617,7 @@
 				projectedIncomeChartInstance = new Chart(projectedCtx, {
 					type: 'bar',
 					data: { labels: projectedData.labels, datasets: [{ label: 'Projeção (Parcelas)', data: projectedData.data, backgroundColor: 'rgba(139, 92, 246, 0.6)', borderColor: 'rgba(139, 92, 246, 1)', borderWidth: 1 }] },
-					options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: '#9ca3af' } }, x: { ticks: { color: '#9ca3af' } } }, plugins: { legend: { labels: { color: '#d1d5db' } } } }
+					options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: chartTextColor } }, x: { ticks: { color: chartTextColor } } }, plugins: { legend: { labels: { color: chartTextColor } } } }
 				});
 			} catch (e) {
 				console.error('Erro ao renderizar gráficos:', e);
@@ -1309,30 +1625,30 @@
 			}
 		}
 
-		// Renderiza a página da Lixeira
+		// [REFEITO] Renderiza a página da Lixeira (com tema claro)
 		function renderLixeiraPage(contractsToRender) {
 			const container = document.getElementById('lixeiraListContainer');
 			container.innerHTML = '';
 			const deletedContracts = contractsToRender.filter(c => c.isDeleted === true);
 
 			if (deletedContracts.length === 0) {
-				container.innerHTML = `<div class="col-span-1 md:col-span-3 text-center py-10"><div class="inline-block dark-card text-gray-400 p-6 rounded-lg shadow-md"><i class="fas fa-trash fa-3x mb-3"></i><p class="font-bold text-xl">Lixeira Vazia</p><p class="text-sm">Nenhum contrato foi excluído.</p></div></div>`;
+				container.innerHTML = `<div class="col-span-1 md:col-span-3 text-center py-10"><div class="inline-block dark-card text-gray-500 p-6"><i class="fas fa-trash fa-3x mb-3"></i><p class="font-bold text-xl text-gray-800">Lixeira Vazia</p><p class="text-sm">Nenhum contrato foi excluído.</p></div></div>`;
 				return;
 			}
 
 			deletedContracts.forEach(contract => {
 				const deleteButton = isUserAdmin ? `
-					<button onclick="window.App.deleteContractPermanently('${contract.id}')" class="w-full bg-red-800 hover:bg-red-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2">
-						<i class="fas fa-times-circle"></i> Excluir Prmt.
+					<button onclick="window.App.deleteContractPermanently('${contract.id}')" class="w-full btn-primary" style="background: #dc2626;">
+						<i class="fas fa-times-circle mr-2"></i> Excluir Prmt.
 					</button>` : '';
 
 				container.innerHTML += `
-					<div class="dark-card p-5 rounded-lg shadow-lg border-l-4 border-gray-600">
-						<p class="font-bold text-lg text-white">${contract.clientName}</p>
-						<p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
-						<div class="border-t border-gray-700 pt-3 mt-3 flex gap-2">
-							<button onclick="window.App.restoreContract('${contract.id}')" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2">
-								<i class="fas fa-undo"></i> Restaurar
+					<div class="dark-card p-5 border-l-4 border-gray-400">
+						<p class="font-bold text-lg text-gray-800">${contract.clientName}</p>
+						<p class="text-sm text-gray-600 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
+						<div class="border-t border-gray-200 pt-3 mt-3 flex gap-2">
+							<button onclick="window.App.restoreContract('${contract.id}')" class="w-full btn-primary" style="background-color: #16a34a;">
+								<i class="fas fa-undo mr-2"></i> Restaurar
 							</button>
 							${deleteButton}
 						</div>
@@ -1340,7 +1656,7 @@
 			});
 		}
 
-		// Popula os filtros de Advogado
+		// Popula os filtros de Advogado (sem alteração)
 		function renderAdvogadoFilters() {
 			const advogados = [...new Set(database.contracts.map(c => c.advogadoResponsavel))].sort();
 			const filterSelects = [document.getElementById('advogadoFilter'), document.getElementById('servicosAdvogadoFilter')];
@@ -1363,7 +1679,7 @@
 			});
 		}
 
-		// Popula o select de advogado no modal de contrato
+		// Popula o select de advogado no modal de contrato (sem alteração)
 		function populateAdvogadoSelectModal() {
 			const select = document.getElementById('advogadoResponsavel');
 			if (!select) return;
@@ -1399,7 +1715,6 @@
 				const button = document.createElement('button');
 				button.textContent = sort.label;
 				button.className = `sort-button ${currentContractSort === sort.key ? 'active' : ''}`;
-				// [MODIFICADO] Chama a função que reseta a página para 0
 				button.onclick = () => { currentContractSort = sort.key; resetAndRenderContractList(); renderSortButtons(); };
 				contractSortContainer.appendChild(button);
 			});
@@ -1428,7 +1743,7 @@
 
 		// --- Ações (CRUD) ---
 
-		// Atualiza o status de um serviço (Pendente -> Em Andamento -> 50% -> Concluído)
+		// Atualiza o status de um serviço (lógica inalterada)
 		const updateServiceStatus = async function (contractId, serviceIndex, newStatus) {
 			const contract = database.contracts.find(c => c.id === contractId);
 			if (contract && (contract.serviceTypes || [])[serviceIndex]) {
@@ -1440,7 +1755,7 @@
 		};
 		window.App.updateServiceStatus = updateServiceStatus;
 
-		// Move um contrato para a lixeira (soft delete)
+		// Move um contrato para a lixeira (lógica inalterada)
 		const moveToLixeira = async function (contractId) {
 			const contract = database.contracts.find(c => c.id === contractId);
 			if (!contract) return;
@@ -1451,7 +1766,7 @@
 		};
 		window.App.moveToLixeira = moveToLixeira;
 
-		// Restaura um contrato da lixeira
+		// Restaura um contrato da lixeira (lógica inalterada)
 		const restoreContract = async function (contractId) {
 			const ok = await Utils.confirm(`Tem certeza que deseja restaurar este contrato?`);
 			if (!ok) return;
@@ -1460,7 +1775,7 @@
 		};
 		window.App.restoreContract = restoreContract;
 
-		// (Admin) Exclui permanentemente um contrato da lixeira
+		// (Admin) Exclui permanentemente um contrato (lógica inalterada)
 		const deleteContractPermanently = async function (contractId) {
 			if (!isUserAdmin) return;
 			const ok = await Utils.confirm(`EXCLUSÃO PERMANENTE: Tem certeza? Esta ação não pode ser desfeita.`);
@@ -1485,7 +1800,7 @@
 			const modal = document.getElementById(modalId);
 			if (modal) modal.style.display = 'block';
 			if (backdrop) backdrop.style.display = 'block';
-			document.body.style.overflow = 'hidden'; 
+			document.body.style.overflow = 'hidden'; 
 		}
 
 		function closeModal(modalId) {
@@ -1493,7 +1808,7 @@
 			if (el) el.style.display = 'none';
 			const anyOpen = Array.from(document.querySelectorAll('.modal')).some(m => m.style.display === 'block');
 			if (backdrop && !anyOpen) backdrop.style.display = 'none';
-			if (!anyOpen) document.body.style.overflow = ''; 
+			if (!anyOpen) document.body.style.overflow = ''; 
 			if (modalId === 'modalRelatorio') {
 				if (actualIncomeChartInstance) { actualIncomeChartInstance.destroy(); actualIncomeChartInstance = null; }
 				if (projectedIncomeChartInstance) { projectedIncomeChartInstance.destroy(); projectedIncomeChartInstance = null; }
@@ -1503,7 +1818,7 @@
 		window.App.openModal = openModal;
 		window.App.closeModal = closeModal;
 
-		// Abre o modal de Contrato (para criar ou editar)
+		// Abre o modal de Contrato (lógica inalterada)
 		const openContractModal = function (contractId = null) {
 			try {
 				const form = document.getElementById('formContrato'); form.reset();
@@ -1546,7 +1861,7 @@
 					jaQuitadoCheckbox.checked = false;
 					jaQuitadoCheckbox.disabled = false;
 				}
-				setupUIAccess(isUserAdmin); 
+				setupUIAccess(isUserAdmin); 
 				openModal('modalContrato');
 			} catch (e) {
 				console.error('Erro em openContractModal:', e);
@@ -1555,7 +1870,7 @@
 		};
 		window.App.openContractModal = openContractModal;
 
-		// Abre o modal para registrar pagamento de parcela
+		// Abre o modal para registrar pagamento de parcela (lógica inalterada)
 		const openPaymentModal = async function (contractId, parcelIndex) {
 			const contract = database.contracts.find(c => c.id === contractId);
 			if (!contract || !contract.parcels || !contract.parcels[parcelIndex]) return;
@@ -1565,7 +1880,7 @@
 			let infoCorrecao = '';
 			if (new Date(parcel.dueDate) < new Date()) {
 				valorCorrigido = await calcularValorCorrigido(parcel.value, parcel.dueDate);
-				if (isUserAdmin) infoCorrecao = `<p class="text-red-400"><strong>Valor Corrigido:</strong> ${valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>`;
+				if (isUserAdmin) infoCorrecao = `<p class="text-red-600"><strong>Valor Corrigido:</strong> ${valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>`;
 			}
 
 			document.getElementById('pagamentoContractId').value = contractId;
@@ -1579,14 +1894,14 @@
 
 			const valorInput = document.getElementById('pagamentoValor');
 			valorInput.value = (isUserAdmin ? valorCorrigido : parcel.value).toFixed(2);
-			valorInput.disabled = !isUserAdmin; 
+			valorInput.disabled = !isUserAdmin; 
 
 			document.getElementById('pagamentoData').value = new Date().toISOString().split('T')[0];
 			openModal('modalPagamento');
 		};
 		window.App.openPaymentModal = openPaymentModal;
 
-		// Abre o modal de Histórico do Cliente
+		// [REFEITO] Abre o modal de Histórico do Cliente (com tema claro)
 		const openClientHistoryModal = function (clientName) {
 			const clientContracts = (isUserAdmin ? database.contracts : getFilteredContracts(true))
 				.filter(c => c.clientName === clientName);
@@ -1599,19 +1914,19 @@
 				const contractValue = contract.totalValue || 0;
 				if (isUserAdmin) totalContratado += contractValue;
 
-				let contractHtml = `<div class="bg-gray-700 p-4 rounded-lg ${contract.isDeleted ? 'opacity-60 border-l-4 border-gray-500' : ''}">`;
+				let contractHtml = `<div class="bg-gray-100 p-4 rounded-lg ${contract.isDeleted ? 'opacity-60 border-l-4 border-gray-400' : ''}">`;
 				contractHtml += `<div class="flex justify-between items-start">
-					<h3 class="font-bold text-lg text-white">${(contract.serviceTypes || []).map(s => s.name).join(', ')} <span class="text-base font-normal text-gray-400">- ${contract.paymentType || ''}</span></h3>
-					${contract.isDeleted ? '<span class="text-xs bg-red-900/50 text-red-300 px-2 py-1 rounded-full font-semibold">Excluído</span>' : ''}
+					<h3 class="font-bold text-lg text-gray-800">${(contract.serviceTypes || []).map(s => s.name).join(', ')} <span class="text-base font-normal text-gray-500">- ${contract.paymentType || ''}</span></h3>
+					${contract.isDeleted ? '<span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-semibold">Excluído</span>' : ''}
 				</div>`;
-				contractHtml += `<p class="text-sm text-gray-400 mb-2">Adv: ${contract.advogadoResponsavel}</p>`;
+				contractHtml += `<p class="text-sm text-gray-500 mb-2">Adv: ${contract.advogadoResponsavel}</p>`;
 
-				if (contract.observations) contractHtml += `<blockquote class="text-sm mt-2 p-2 bg-gray-600/50 rounded-md text-gray-300 border-l-4 border-indigo-500 pl-4"><strong>Obs:</strong> ${contract.observations}</blockquote>`;
+				if (contract.observations) contractHtml += `<blockquote class="text-sm mt-2 p-2 bg-gray-200 rounded-md text-gray-700 border-l-4 border-indigo-500 pl-4"><strong>Obs:</strong> ${contract.observations}</blockquote>`;
 
 				if ((contract.parcels || []).length > 0) {
 					contractHtml += `<ul class="mt-2 text-sm space-y-1">`;
 					contract.parcels.forEach(p => {
-						const statusClass = p.status === 'Paga' ? 'text-green-400' : 'text-red-400';
+						const statusClass = p.status === 'Paga' ? 'text-green-600' : 'text-red-600';
 						let valorPagoDisplay = '';
 						if (p.status === 'Paga') {
 							if (isUserAdmin) totalPago += p.valuePaid || 0;
@@ -1625,7 +1940,7 @@
 				if (contract.successFeePaymentDate) {
 					const exitoRecebidoDisplay = isUserAdmin ? (contract.successFeeValueReceived || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Recebido]';
 					if (isUserAdmin) totalPago += contract.successFeeValueReceived || 0;
-					contractHtml += `<p class="mt-2 text-sm text-green-400">Êxito Recebido: ${exitoRecebidoDisplay}</p>`;
+					contractHtml += `<p class="mt-2 text-sm text-green-600">Êxito Recebido: ${exitoRecebidoDisplay}</p>`;
 				}
 				contractHtml += `</div>`;
 				html += contractHtml;
@@ -1633,43 +1948,43 @@
 
 			const summaryHtml = isUserAdmin ? `
 				<div class="grid grid-cols-3 gap-4 text-center">
-					<div><p class="text-sm text-gray-400">Total Contratado</p><p class="font-bold text-lg text-white">${totalContratado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
-					<div><p class="text-sm text-gray-400">Total Pago</p><p class="font-bold text-lg text-green-400">${totalPago.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
-					<div><p class="text-sm text-gray-400">Saldo Devedor</p><p class="font-bold text-lg text-red-400">${(totalContratado - totalPago).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
-				</div><hr class="my-4 border-gray-700">` : '';
+					<div><p class="text-sm text-gray-500">Total Contratado</p><p class="font-bold text-lg text-gray-800">${totalContratado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+					<div><p class="text-sm text-gray-500">Total Pago</p><p class="font-bold text-lg text-green-600">${totalPago.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+					<div><p class="text-sm text-gray-500">Saldo Devedor</p><p class="font-bold text-lg text-red-600">${(totalContratado - totalPago).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+				</div><hr class="my-4 border-gray-200">` : '';
 
 			content.innerHTML = summaryHtml + html;
 			openModal('modalCliente');
 		};
 		window.App.openClientHistoryModal = openClientHistoryModal;
 
-		// Abre o modal de Relatório (admin)
+		// Abre o modal de Relatório (lógica inalterada)
 		const openReportModal = function () {
 			if (!isUserAdmin) { Utils.showToast('Apenas admins podem abrir o relatório.', 'error'); return; }
-			openModal('modalRelatorio'); 
+			openModal('modalRelatorio'); 
 			try {
 				populateDateSelectors();
-				generateAndShowReport(); 
-			} catch(e) { 
+				generateAndShowReport(); 
+			} catch(e) { 
 				console.error("Erro ao gerar relatório:", e);
 				Utils.showToast('Não foi possível gerar o relatório.', 'error');
 			}
 		};
 		window.App.openReportModal = openReportModal;
 
-		// Popula os seletores de Mês/Ano do relatório
+		// Popula os seletores de Mês/Ano (lógica inalterada)
 		function populateDateSelectors() {
 			const monthSelect = document.getElementById('reportMonth');
 			const yearSelect = document.getElementById('reportYear');
 			const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 			const anoAtual = new Date().getFullYear();
-			if (monthSelect.options.length > 0) return; 
+			if (monthSelect.options.length > 0) return; 
 			meses.forEach((mes, index) => { monthSelect.add(new Option(mes, index)); });
 			for (let i = anoAtual; i >= anoAtual - 5; i--) { yearSelect.add(new Option(i, i)); }
 			monthSelect.value = new Date().getMonth(); yearSelect.value = anoAtual;
 		}
 
-		// Calcula a renda total (real) de um mês/ano (admin)
+		// Calcula a renda mensal (lógica inalterada)
 		function calculateMonthlyIncome(year, month, contractsToRender) {
 			if (!isUserAdmin) return { totalParcelas: 0, totalExito: 0, totalGeral: 0, detailedPayments: [] };
 
@@ -1692,7 +2007,7 @@
 					}
 				}
 			});
-			detailedPayments.sort((a, b) => { 
+			detailedPayments.sort((a, b) => { 
 				const da = new Date(a.date.split('/').reverse().join('-'));
 				const db = new Date(b.date.split('/').reverse().join('-'));
 				return da - db;
@@ -1700,7 +2015,7 @@
 			return { totalParcelas, totalExito, totalGeral: totalParcelas + totalExito, detailedPayments };
 		}
 
-		// Gera e mostra o relatório em texto
+		// [REFEITO] Gera e mostra o relatório (com tema claro)
 		const generateAndShowReport = function () {
 			if (!isUserAdmin) return;
 			document.getElementById('reportChartsContainer').classList.add('hidden');
@@ -1711,23 +2026,23 @@
 			const year = parseInt(document.getElementById('reportYear').value);
 			const income = calculateMonthlyIncome(year, month, getFilteredContracts(true));
 
-			let detailsHtml = '<h4 class="text-lg font-semibold mt-6 border-t border-gray-700 pt-4 text-white">Detalhes dos Recebimentos</h4>';
+			let detailsHtml = '<h4 class="text-lg font-semibold mt-6 border-t border-gray-200 pt-4 text-gray-800">Detalhes dos Recebimentos</h4>';
 			if (income.detailedPayments.length > 0) {
 				detailsHtml += '<ul class="space-y-2 mt-2 text-sm">';
 				income.detailedPayments.forEach(p => {
-					detailsHtml += `<li class="flex justify-between items-center bg-gray-700/50 p-3 rounded-md"><div><p class="font-semibold text-white">${p.clientName}</p><p class="text-xs text-gray-400">${p.type} - ${p.date}</p></div><span class="font-semibold text-green-400 text-lg">${p.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></li>`;
+					detailsHtml += `<li class="flex justify-between items-center bg-gray-100 p-3 rounded-md"><div><p class="font-semibold text-gray-800">${p.clientName}</p><p class="text-xs text-gray-500">${p.type} - ${p.date}</p></div><span class="font-semibold text-green-600 text-lg">${p.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></li>`;
 				});
 				detailsHtml += '</ul>';
 			} else {
-				detailsHtml += '<p class="text-sm text-gray-400 mt-2">Nenhum recebimento neste período.</p>';
+				detailsHtml += '<p class="text-sm text-gray-500 mt-2">Nenhum recebimento neste período.</p>';
 			}
 
 			resultDiv.innerHTML = `
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<div class="dark-card p-4 rounded-lg text-center"><p class="text-sm text-gray-400">Total (Parcelas)</p><p class="text-2xl font-bold text-white">${income.totalParcelas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
-					<div class="dark-card p-4 rounded-lg text-center"><p class="text-sm text-gray-400">Total (Êxito)</p><p class="text-2xl font-bold text-indigo-400">${income.totalExito.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+					<div class="dark-card p-4 rounded-lg text-center"><p class="text-sm text-gray-500">Total (Parcelas)</p><p class="text-2xl font-bold text-gray-800">${income.totalParcelas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+					<div class="dark-card p-4 rounded-lg text-center"><p class="text-sm text-gray-500">Total (Êxito)</p><p class="text-2xl font-bold text-indigo-600">${income.totalExito.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
 				</div>
-				<div class="bg-gray-900 p-4 rounded-lg border border-gray-700 text-center"><p class="text-white font-bold">TOTAL GERAL RECEBIDO</p><p class="text-3xl font-extrabold text-green-400">${income.totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
+				<div class="bg-gray-100 p-4 rounded-lg border border-gray-200 text-center"><p class="text-gray-700 font-bold">TOTAL GERAL RECEBIDO</p><p class="text-3xl font-extrabold text-green-600">${income.totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
 			` + detailsHtml;
 		};
 		window.App.generateAndShowReport = generateAndShowReport;
@@ -1741,14 +2056,14 @@
 		};
 		window.App.showAnalyticsInModal = showAnalyticsInModal;
 
-		// Abre o modal de registro de Êxito
+		// Abre o modal de registro de Êxito (lógica inalterada)
 		const openExitoModal = function (contractId) {
 			const contract = database.contracts.find(c => c.id === contractId); if (!contract) return;
 			document.getElementById('exitoContractId').value = contractId;
 			const exitoInfoEl = document.getElementById('exitoInfo');
 			const valorRecebidoInput = document.getElementById('exitoValorRecebido');
 
-			exitoInfoEl.innerHTML = `<p><strong>Cliente:</strong> ${contract.clientName}</p><p><strong>Serviço:</strong> ${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>${isUserAdmin ? `<p><strong>Bonificação Prevista:</strong> <span class="font-bold text-indigo-400">${contract.successFee}</span></p>` : ''}`;
+			exitoInfoEl.innerHTML = `<p><strong>Cliente:</strong> ${contract.clientName}</p><p><strong>Serviço:</strong> ${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>${isUserAdmin ? `<p><strong>Bonificação Prevista:</strong> <span class="font-bold text-indigo-600">${contract.successFee}</span></p>` : ''}`;
 
 			valorRecebidoInput.value = '';
 			valorRecebidoInput.closest('.admin-only').style.display = isUserAdmin ? 'block' : 'none';
@@ -1758,7 +2073,7 @@
 		};
 		window.App.openExitoModal = openExitoModal;
 
-		// Cria a tag visual de um serviço no modal de contrato
+		// Cria a tag visual de um serviço no modal de contrato (lógica inalterada)
 		const createServiceTag = function (serviceName, deadline, status = 'Pendente') {
 			const container = document.getElementById('servicosContainer');
 			const tag = document.createElement('div');
@@ -1769,8 +2084,8 @@
 
 			let deadlineHtml = '';
 			if (deadline) {
-				const prazo = new Date(deadline + "T12:00:00Z"); 
-				deadlineHtml = `<span class="text-xs text-gray-400 ml-2">(${prazo.toLocaleDateString('pt-BR', { timeZone: 'UTC' })})</span>`;
+				const prazo = new Date(deadline + "T12:00:00Z"); 
+				deadlineHtml = `<span class="text-xs text-gray-500 ml-2">(${prazo.toLocaleDateString('pt-BR', { timeZone: 'UTC' })})</span>`;
 			}
 			tag.innerHTML = `<span>${serviceName}${deadlineHtml}</span><span class="remove-tag" onclick="this.parentElement.remove()">&times;</span>`;
 			container.appendChild(tag);
@@ -1793,9 +2108,9 @@
 		}
 
 		async function fetchIPCAAccumulatedFactor(vencDate, refDate = new Date()) {
-			const start = startOfMonthUTC(vencDate); 
+			const start = startOfMonthUTC(vencDate); 
 			const refMonth = startOfMonthUTC(refDate);
-			const endPrevMonth = endOfMonthUTC(toUTCDate(refMonth.getUTCFullYear(), refMonth.getUTCMonth(), 1 - 1)); 
+			const endPrevMonth = endOfMonthUTC(toUTCDate(refMonth.getUTCFullYear(), refMonth.getUTCMonth(), 1 - 1)); 
 			
 			if (start.getTime() > endPrevMonth.getTime()) return 1;
 
@@ -1811,13 +2126,13 @@
 
 			const base = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados';
 			const url = `${base}?formato=json&dataInicial=${toApiDate(start)}&dataFinal=${toApiDate(endPrevMonth)}`;
-			const proxy = 'https://api.allorigins.win/get?url='; 
+			const proxy = 'https://api.allorigins.win/get?url='; 
 
 			try {
 				const resp = await fetch(`${proxy}${encodeURIComponent(url)}`);
 				if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 				let data = await resp.json();
-				data = JSON.parse(data.contents); 
+				data = JSON.parse(data.contents); 
 				
 				const factor = (data || []).reduce((acc, item) => {
 					const v = parseFloat(item?.valor);
@@ -1825,20 +2140,20 @@
 				}, 1);
 				
 				const finalFactor = factor || 1;
-				ipcaWindowCache.set(cacheKey, finalFactor); 
+				ipcaWindowCache.set(cacheKey, finalFactor); 
 				return finalFactor;
 			} catch (e) {
 				console.error('Falha ao buscar IPCA:', e);
-				return 1; 
+				return 1; 
 			}
 		}
 		
 		async function calcularValorCorrigido(valorOriginal, dataVencimento, dataReferencia = new Date()) {
 			const ref = toUTCDate(dataReferencia.getUTCFullYear(), dataReferencia.getUTCMonth(), dataReferencia.getUTCDate());
-			const vRaw = new Date(dataVencimento); 
+			const vRaw = new Date(dataVencimento); 
 			const venc = toUTCDate(vRaw.getUTCFullYear(), vRaw.getUTCMonth(), vRaw.getUTCDate());
 			
-			if (ref <= venc) return valorOriginal; 
+			if (ref <= venc) return valorOriginal; 
 
 			// 1. Correção (IPCA)
 			const ipcaFactor = await fetchIPCAAccumulatedFactor(venc, ref);
@@ -1919,6 +2234,40 @@
 			
 			initializeAndAuth();
 
+			// [REFEITO] Sidebar Toggle
+			const sidebar = document.getElementById('sidebar');
+			const mainContent = document.getElementById('main-content');
+			const sidebarToggle = document.getElementById('sidebar-toggle');
+			const sidebarToggleIcon = document.getElementById('sidebar-toggle-icon');
+			const sidebarLogoText = document.getElementById('sidebar-logo-text');
+			
+			sidebarToggle.addEventListener('click', () => {
+				const isOpening = sidebar.classList.contains('w-20');
+				if (isOpening) {
+					// Abrir
+					sidebar.classList.remove('w-20');
+					sidebar.classList.add('w-64');
+					mainContent.classList.remove('ml-20');
+					mainContent.classList.add('ml-64');
+					sidebarToggleIcon.classList.remove('fa-bars');
+					sidebarToggleIcon.classList.add('fa-times');
+					sidebarLogoText.style.opacity = '1';
+					sidebar.querySelectorAll('span').forEach(span => span.style.display = 'inline');
+				} else {
+					// Fechar
+					sidebar.classList.add('w-20');
+					sidebar.classList.remove('w-64');
+					mainContent.classList.add('ml-20');
+					mainContent.classList.remove('ml-64');
+					sidebarToggleIcon.classList.add('fa-bars');
+					sidebarToggleIcon.classList.remove('fa-times');
+					sidebarLogoText.style.opacity = '0';
+					sidebar.querySelectorAll('span').forEach(span => span.style.display = 'none');
+				}
+			});
+
+
+			// [REFEITO] Formulário de Login (com novo seletor de erro)
 			const loginForm = document.getElementById('login-form');
 			const authError = document.getElementById('auth-error');
 			const showAuthError = (m) => { authError.textContent = m; authError.classList.remove('hidden'); };
@@ -1946,7 +2295,7 @@
 						document.body.classList.toggle('is-admin', isUserAdmin);
 						document.getElementById('user-display-name').textContent = name;
 						closeModal('modalDisplayName');
-						document.getElementById('app-container').style.display = 'block';
+						document.getElementById('app-container').style.display = 'flex';
 						setupUIAccess(isUserAdmin);
 						contractsCollection = collection(db, `contracts`);
 						setupSnapshotListener();
@@ -1971,7 +2320,7 @@
 					serviceTypes,
 					paymentType: Utils.sanitizeText(document.getElementById('contratoTipoPagamento').value),
 					observations: Utils.sanitizeText(document.getElementById('contratoObservacoes').value),
-					...(isUserAdmin && { 
+					...(isUserAdmin && { 
 						totalValue: Utils.parseNumber(document.getElementById('valorTotal').value),
 						successFee: Utils.sanitizeText(document.getElementById('taxaExito').value) || null,
 					})
@@ -1990,7 +2339,7 @@
 						const firstDueDate = document.getElementById('vencimentoPrimeiraParcela').value;
 
 						if (numParcels > 0 && totalValue > 0) {
-							if (!firstDueDate && !jaQuitado) { 
+							if (!firstDueDate && !jaQuitado) { 
 								Utils.showToast('Informe data da 1ª parcela.', 'error');
 								return; 
 							}
@@ -2085,7 +2434,7 @@
 				const nameInput = document.getElementById('contratoServicoInput');
 				const deadlineInput = document.getElementById('contratoPrazoInput');
 				const serviceName = Utils.sanitizeText(nameInput.value);
-				const deadline = deadlineInput.value || null; 
+				const deadline = deadlineInput.value || null; 
 
 				if (serviceName) {
 					window.App.createServiceTag(serviceName, deadline, 'Pendente');
@@ -2105,8 +2454,6 @@
 			const debouncedServicos = Utils.debounce(() => window.App.renderServicosPage(getFilteredContracts(false)), 300);
 			const servicosSearchInput = document.getElementById('servicosSearchInput');
 			if (servicosSearchInput) servicosSearchInput.addEventListener('input', debouncedServicos);
-			
-			// O listener do 'loadMoreButton' e o IntersectionObserver foram removidos.
 		});
 	</script>
 </body>
