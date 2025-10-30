@@ -10,6 +10,7 @@
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 	<style>
+		/* [SEÇÃO 1: Estilos Gerais - Copiados do seu primeiro arquivo] */
 		/* [SEÇÃO 1: Estilos Gerais] */
 		body {
 			font-family: 'Inter', sans-serif;
@@ -62,6 +63,7 @@
 		body.is-admin .admin-only { display: block; }
 		body.is-admin .flex.admin-only { display: flex; }
 		body:not(.is-admin) .non-admin-hidden { display: none; }
+		/* Melhorias no login (do Arquivo 1) */
 		.login-modal { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); animation: fadeIn 0.3s ease; }
 		.login-modal h2 { color: #ffffff; font-weight: 700; }
 		.login-modal input { background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: #ffffff; transition: border-color 0.2s; }
@@ -69,12 +71,17 @@
 		.login-modal button { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); transition: transform 0.2s, box-shadow 0.2s; }
 		.login-modal button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4); }
 		@keyframes fadeIn { from { opacity: 0; transform: translate(-50%, -60%); } to { opacity: 1; transform: translate(-50%, -50%); } }
+		/* Notificações (do Arquivo 1) */
 		.notification { position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 12px 16px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 11000; animation: slideIn 0.3s ease; }
 		@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+		/* Tema claro (do Arquivo 1) */
 		body.light-theme { background-color: #f8fafc; color: #1e293b; }
 		body.light-theme .dark-card { background-color: #ffffff; border-color: #e2e8f0; }
 		body.light-theme .login-modal { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); }
+		/* Responsividade móvel (do Arquivo 1) */
 		@media (max-width: 768px) { .kanban-column { min-width: 100%; } .header-user-block { margin-right: 0; } }
+
+		/* === INÍCIO: NOVOS ESTILOS DE PAGINAÇÃO === */
 		.pagination-button {
 			background-color: #374151;
 			border: 1px solid #4b5563;
@@ -105,34 +112,7 @@
 			font-size: 14px;
 			color: #6b7280;
 		}
-		/* === INÍCIO: NOVOS ESTILOS PARA FILTROS DE STATUS === */
-		.status-filter-group {
-			display: flex;
-			background-color: #1f2937;
-			border-radius: 8px;
-			padding: 4px;
-			border: 1px solid #374151;
-		}
-		.status-filter-button {
-			font-size: 13px;
-			font-weight: 500;
-			color: #9ca3af;
-			padding: 6px 12px;
-			border-radius: 6px;
-			cursor: pointer;
-			transition: all 0.2s;
-			border: none;
-			background-color: transparent;
-		}
-		.status-filter-button:hover {
-			color: #e5e7eb;
-		}
-		.status-filter-button.active {
-			color: #ffffff;
-			background-color: #4f46e5;
-			box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-		}
-		/* === FIM: NOVOS ESTILOS === */
+		/* === FIM: NOVOS ESTILOS DE PAGINAÇÃO === */
 	</style>
 </head>
 <body class="text-gray-300">
@@ -168,6 +148,7 @@
 				<h1 class="text-3xl font-bold text-white">Painel de Gestão</h1>
 				<p class="text-gray-400">Controle Financeiro e de Produção do Escritório</p>
 			</div>
+
 			<div class="flex items-center header-user-block">
 				<span id="user-display-name" class="text-sm text-gray-300 font-medium mr-4"></span>
 				<button id="logout-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded-lg shadow-md text-sm flex items-center gap-2">
@@ -190,6 +171,7 @@
 						<i class="fas fa-tasks mr-2"></i>Serviços
 					</a>
 				</div>
+
 				<div>
 					<a onclick="window.App.showPage('page-lixeira')" id="tab-lixeira" class="nav-tab-icon" title="Lixeira">
 						<i class="fas fa-trash-alt"></i>
@@ -264,21 +246,18 @@
 						</div>
 					</div>
 				</div>
-
-				<div class="flex justify-between items-center mb-4">
-					<div class="flex items-center gap-4">
-						<span class="text-sm font-medium text-gray-400">Filtrar por Status:</span>
-						<div id="contractStatusFilterButtons" class="status-filter-group">
-							</div>
-					</div>
-					<div class="w-1/3">
-						<input type="text" id="searchInput" placeholder="🔎 Pesquisar por cliente ou tipo de serviço..." class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white">
-					</div>
+				<div class="mb-4">
+					<input type="text" id="searchInput" placeholder="🔎 Pesquisar por cliente ou tipo de serviço..." class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white">
 				</div>
 				<div id="contractListContainer"></div>
+				<div id="loadMoreContainer" class="text-center mt-8">
+					<button id="loadMoreButton" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all flex items-center gap-2 mx-auto">
+						<i class="fas fa-plus"></i> Carregar Mais
+					</button>
 				
 				<div id="paginationContainer" class="flex justify-center items-center gap-2 mt-8">
 					</div>
+				</div>
 			</div>
 		</div>
 
@@ -342,10 +321,8 @@
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
 					<div>
 						<label for="clienteNome" class="block text-sm font-medium text-gray-400">Nome do Cliente</label>
-						<input type="text" id="clienteNome" list="client-list" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" required>
-						<datalist id="client-list">
-							</datalist>
-						</div>
+						<input type="text" id="clienteNome" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" required>
+					</div>
 					<div>
 						<label for="advogadoResponsavel" class="block text-sm font-medium text-gray-400">Advogado Responsável</label>
 						<select id="advogadoResponsavel" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" required></select>
@@ -375,10 +352,10 @@
 					<label for="contratoObservacoes" class="block text-sm font-medium text-gray-400">Observações</label>
 					<textarea id="contratoObservacoes" rows="3" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" placeholder="Detalhes da negociação, informações do caso, etc..."></textarea>
 				</div>
-				
+
 				<div class="admin-only">
 					<h3 class="text-lg font-semibold mb-2 border-t border-gray-700 pt-4 text-white">Detalhes Financeiros</h3>
-					
+
 					<div class="mb-4 p-3 bg-gray-900/50 rounded-lg border border-gray-700">
 						<label for="contratoJaQuitado" class="flex items-center">
 							<input type="checkbox" id="contratoJaQuitado" class="h-4 w-4 bg-gray-700 border-gray-600 rounded text-indigo-600 focus:ring-indigo-500">
@@ -386,7 +363,6 @@
 						</label>
 						<p class="text-xs text-gray-500 ml-6 mt-1">Isso criará 1 parcela única já "Paga" com o Valor Total. Deixe o N° de Parcelas como 1.</p>
 					</div>
-
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div class="mb-4">
 							<label for="valorTotal" class="block text-sm font-medium text-gray-400">Valor Fixo Total (R$)</label>
@@ -528,35 +504,34 @@
 		// Objeto global da aplicação
 		window.App = window.App || {};
 
-		// === INÍCIO: NOVOS IMPORTS DO FIRESTORE ===
+		// Imports do Firebase
 		import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 		import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-		import { 
-			getFirestore, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc, setLogLevel,
-			setDoc, getDocs, query, where, writeBatch, documentId 
-		} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-		// === FIM: NOVOS IMPORTS DO FIRESTORE ===
+		import { getFirestore, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 		// Variáveis globais do App
-		let db, auth;
-		let contractsCollection, clientsCollection, indicesCollection; // Novas coleções
+		let db, auth, contractsCollection;
 		let database = { contracts: [] };
 		let currentContractSort = 'name-asc';
 		let currentInadimplentesSort = 'days-desc';
 		let currentServicosSort = 'name-asc';
-		let currentContractStatusFilter = 'Todos'; // NOVO FILTRO DE STATUS
 		let actualIncomeChartInstance = null;
 		let projectedIncomeChartInstance = null;
 		let backdrop;
-		let contractListPage = 0; 
-		const CONTRACTS_PER_PAGE = 12; 
+		let contractListPage = 0;
+		
+		// === INÍCIO DA MUDANÇA JS: VARIÁVEIS DE PAGINAÇÃO ===
+		let contractListPage = 0; // Página atual (base 0)
+		const CONTRACTS_PER_PAGE = 12; // Itens por página
+		// === FIM DA MUDANÇA JS ===
 
 		// Constantes
-		const ADMIN_USERS = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "D'Arc"]; // Mantido por simplicidade
+		const CONTRACTS_PER_PAGE = 12; // Modificado para 12 por página
+		const ADMIN_USERS = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "D'Arc"];
 		let currentUserDisplayName = null;
 		let isUserAdmin = false;
 
-		// Objeto de Utilitários (Inalterado)
+		// Objeto de Utilitários
 		const Utils = {
 			toastContainer: null,
 			initToast() {
@@ -616,6 +591,7 @@
 		async function initializeAndAuth() {
 			try {
 				const firebaseConfig = {
+					// As chaves da API foram omitidas por segurança, mas estão no seu código original
 					apiKey: "AIzaSyA0TWb7DgZAHNl3TuoK3xQD-ANvCcQIDK4",
 					authDomain: "fabrisgurjao.firebaseapp.com",
 					projectId: "fabrisgurjao",
@@ -628,7 +604,8 @@
 				const app = initializeApp(firebaseConfig);
 				db = getFirestore(app);
 				auth = getAuth(app);
-				setLogLevel('error'); // Reduz o log do console
+				setLogLevel('debug'); // Habilita logs detalhados do Firestore no console
+				setLogLevel('debug'); 
 
 				onAuthStateChanged(auth, (user) => {
 					const loadingOverlay = document.getElementById('loading-overlay');
@@ -641,26 +618,26 @@
 						document.body.classList.toggle('is-admin', isUserAdmin);
 
 						if (!user.displayName) {
+							// Primeiro login, pede o nome
+							loadingOverlay.style.display = 'none'; // <-- CORREÇÃO: Esconde o loading
 							loadingOverlay.style.display = 'none'; 
 							authOverlay.style.display = 'none';
 							appContainer.style.display = 'none';
 							openModal('modalDisplayName');
 						} else {
+							// Login bem-sucedido
 							document.getElementById('user-display-name').textContent = user.displayName;
+							loadingOverlay.style.display = 'none'; // <-- CORREÇÃO: Esconde o loading PRIMEIRO
 							loadingOverlay.style.display = 'none'; 
 							authOverlay.style.display = 'none';
 							appContainer.style.display = 'block';
 							setupUIAccess(isUserAdmin);
-							
-							// === INÍCIO: NOVAS COLEÇÕES ===
 							contractsCollection = collection(db, `contracts`);
-							clientsCollection = collection(db, `clients`);
-							indicesCollection = collection(db, `indices`);
-							// === FIM: NOVAS COLEÇÕES ===
-							
-							setupSnapshotListeners(); // Modificado para plural
+							setupSnapshotListener();
+							// loadingOverlay.style.display = 'none'; // <-- Movido para cima
 						}
 					} else {
+						// Deslogado
 						currentUserDisplayName = null;
 						isUserAdmin = false;
 						document.body.classList.remove('is-admin');
@@ -699,39 +676,16 @@
 			populateAdvogadoSelectModal();
 		}
 
-		// === INÍCIO: MUDANÇA PARA MÚLTIPLOS LISTENERS ===
-		// Configura os listeners em tempo real do Firestore
-		function setupSnapshotListeners() {
-			// Listener 1: Contratos
+		// Configura o listener em tempo real do Firestore
+		function setupSnapshotListener() {
 			onSnapshot(contractsCollection, (snapshot) => {
 				database.contracts = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-				contractListPage = 0; // Reseta a paginação
-				render(); 
+				contractListPage = 0; // Reseta a paginação a cada nova atualização
+				render(); // Renderiza a aplicação com os novos dados
 			}, (error) => {
-				console.error("Erro ao buscar contratos:", error);
-			});
-
-			// Listener 2: Clientes (para o autocomplete)
-			onSnapshot(clientsCollection, (snapshot) => {
-				const clientNames = snapshot.docs.map(docSnap => docSnap.data().name);
-				populateClientDatalist(clientNames);
-			}, (error) => {
-				console.error("Erro ao buscar clientes:", error);
+				console.error("Erro ao buscar dados:", error);
 			});
 		}
-		
-		// NOVO: Popula o datalist de clientes
-		function populateClientDatalist(clientNames) {
-			const datalist = document.getElementById('client-list');
-			if (!datalist) return;
-			datalist.innerHTML = '';
-			clientNames.forEach(name => {
-				const option = document.createElement('option');
-				option.value = name;
-				datalist.appendChild(option);
-			});
-		}
-		// === FIM: MUDANÇA PARA MÚLTIPLOS LISTENERS ===
 
 		// Filtra contratos com base no usuário (Admin vê tudo, usuário normal vê só os seus)
 		const getFilteredContracts = (includeDeleted = false) => {
@@ -766,10 +720,12 @@
 			// Renderiza o conteúdo da página ativada
 			const filteredData = getFilteredContracts(false);
 			const allFilteredData = getFilteredContracts(true); // Inclui lixeira
+			const allFilteredData = getFilteredContracts(true); 
 
 			if (pageId === 'page-dashboard') {
 				renderKanban(filteredData);
-				renderContractList(); 
+				renderContractList(true); // Reseta a lista ao mudar para a aba
+				renderContractList(); // [MODIFICADO] Não precisa mais do 'true'
 			} else if (pageId === 'page-inadimplentes') {
 				renderInadimplentesPage(filteredData);
 			} else if (pageId === 'page-servicos') {
@@ -795,7 +751,8 @@
 			// Renderiza apenas a página ativa
 			if (pageId === 'page-dashboard') {
 				await renderKanban(filteredData);
-				renderContractList(); 
+				renderContractList(true); // [MODIFICADO] Reseta a lista ao atualizar dados
+				renderContractList(); // [MODIFICADO]
 			} else if (pageId === 'page-inadimplentes') {
 				await renderInadimplentesPage(filteredData);
 			} else if (pageId === 'page-servicos') {
@@ -806,7 +763,6 @@
 
 			// Atualiza elementos comuns
 			renderSortButtons();
-			renderStatusFilterButtons(); // NOVO
 			renderAdvogadoFilters();
 		}
 
@@ -829,6 +785,7 @@
 			let totalAVencer30dias = 0;
 			let totalVencido = 0;
 			const vencidasPromises = []; // Para aguardar cálculo de juros
+			const vencidasPromises = []; 
 
 			for (const contract of contractsToRender) {
 				if (!contract.parcels) contract.parcels = [];
@@ -960,7 +917,9 @@
 			document.getElementById('dash-contratos').textContent = totalContratos;
 		}
 
-		// === INÍCIO: LÓGICA DE PAGINAÇÃO E FILTROS DE LISTA ===
+		// Reseta a paginação e renderiza a lista de contratos
+		const resetAndRenderContractList = function () { contractListPage = 0; renderContractList(true); };
+		// === INÍCIO DA MUDANÇA JS: LÓGICA DE PAGINAÇÃO ===
 
 		// Função chamada ao clicar em um filtro ou na busca (reseta para pág 1)
 		const resetAndRenderContractList = function () { 
@@ -969,6 +928,9 @@
 		};
 		window.App.resetAndRenderContractList = resetAndRenderContractList;
 
+		// ===================================================================================
+		// ======================= INÍCIO DA MODIFICAÇÃO DE PAGINAÇÃO ======================
+		// ===================================================================================
 		// Nova função para trocar de página
 		const changeContractPage = function(pageIndex) {
 			contractListPage = pageIndex;
@@ -978,6 +940,12 @@
 		}
 		window.App.changeContractPage = changeContractPage;
 
+		// Renderiza a lista principal de contratos com paginação
+		const renderContractList = function (resetList = false) {
+			const listContainer = document.getElementById('contractListContainer');
+			const searchTerm = (document.getElementById('searchInput').value || '').toLowerCase();
+			const advogadoFilterEl = document.getElementById('advogadoFilter');
+			const loadMoreContainer = document.getElementById('loadMoreContainer');
 		// Nova função para desenhar os botões de paginação
 		function renderPaginationControls(totalItems, totalPages) {
 			const container = document.getElementById('paginationContainer');
@@ -986,6 +954,9 @@
 
 			const currentPage = contractListPage; // 0-indexed
 
+			// [MODIFICADO] Se for reset, reseta a paginação
+			if (resetList) {
+				contractListPage = 0;
 			let paginationHtml = '';
 
 			// Botão "Anterior"
@@ -1033,7 +1004,7 @@
 			container.innerHTML = paginationHtml;
 		}
 
-		// Função principal da lista de contratos (Modificada para FILTROS DE STATUS)
+		// Função principal da lista de contratos (Modificada)
 		const renderContractList = function () {
 			const listContainer = document.getElementById('contractListContainer');
 			const searchTerm = (document.getElementById('searchInput').value || '').toLowerCase();
@@ -1041,20 +1012,16 @@
 			
 			let advogadoFilter = advogadoFilterEl ? advogadoFilterEl.value : 'Todos';
 			if (!isUserAdmin) advogadoFilter = currentUserDisplayName;
-			
+
+			// Filtra os contratos
 			// 1. Filtra os contratos (todos)
 			let filteredContracts = getFilteredContracts(false).filter(c => {
 				const matchesAdvogado = (isUserAdmin && advogadoFilter === 'Todos') || c.advogadoResponsavel === advogadoFilter;
 				const matchesSearch = c.clientName.toLowerCase().includes(searchTerm) || (c.serviceTypes || []).some(s => s.name.toLowerCase().includes(searchTerm));
-				
-				// === NOVO FILTRO DE STATUS ===
-				const statusInfo = getContractStatus(c);
-				const matchesStatus = (currentContractStatusFilter === 'Todos') || (statusInfo.statusText === currentContractStatusFilter);
-				// === FIM NOVO FILTRO ===
-
-				return matchesAdvogado && matchesSearch && matchesStatus; // Adicionado matchesStatus
+				return matchesAdvogado && matchesSearch;
 			});
 
+			// Ordena os contratos
 			// 2. Ordena os contratos (todos)
 			if (currentContractSort === 'name-asc') {
 				filteredContracts.sort((a, b) => a.clientName.localeCompare(b.clientName));
@@ -1062,13 +1029,23 @@
 				filteredContracts.sort((a, b) => (b.totalValue || 0) - (a.totalValue || 0));
 			}
 
+			// [MODIFICADO] Aplica paginação por slice (startIndex, endIndex)
+			const startIndex = contractListPage * CONTRACTS_PER_PAGE;
+			const endIndex = (contractListPage + 1) * CONTRACTS_PER_PAGE;
+			const paginatedContracts = filteredContracts.slice(startIndex, endIndex);
+
+			// [MODIFICADO] Controla visibilidade do botão "Carregar Mais"
+			loadMoreContainer.style.display = filteredContracts.length > endIndex ? 'block' : 'none';
 			// 3. Calcula o total de itens e páginas
 			const totalItems = filteredContracts.length;
 			const totalPages = Math.ceil(totalItems / CONTRACTS_PER_PAGE);
 
+			// [MODIFICADO] Limpa o container *apenas* se for a primeira página (reset)
+			if (resetList || contractListPage === 0) {
+				listContainer.innerHTML = '';
 			// 4. Garante que a página atual seja válida
 			if (contractListPage >= totalPages && totalPages > 0) {
-				contractListPage = totalPages - 1; 
+				contractListPage = totalPages - 1; // Ajusta se a página atual não existir mais
 			}
 			if (contractListPage < 0) contractListPage = 0;
 
@@ -1077,18 +1054,28 @@
 			const paginatedContracts = filteredContracts.slice(startIndex, startIndex + CONTRACTS_PER_PAGE);
 
 			// 6. Limpa o container e renderiza
-			listContainer.innerHTML = ''; 
+			listContainer.innerHTML = ''; // Limpa sempre
 
+			// [MODIFICADO] Se for a *primeira página* E *vazia*, mostra a mensagem.
+			if ((resetList || contractListPage === 0) && paginatedContracts.length === 0) {
 			if (totalItems === 0) {
-				listContainer.innerHTML = '<div class="dark-card p-4 rounded-lg shadow-md text-center text-gray-400 py-4">Nenhum contrato encontrado para estes filtros.</div>';
-				renderPaginationControls(0, 0); 
+				listContainer.innerHTML = '<div class="dark-card p-4 rounded-lg shadow-md text-center text-gray-400 py-4">Nenhum contrato encontrado.</div>';
+			 return;
+				renderPaginationControls(0, 0); // Limpa os controles de paginação
 				return;
 			}
 
+			// [MODIFICADO] Procura o grid. Se não existir, cria.
+			let gridContainer = listContainer.querySelector('.grid');
+			if (!gridContainer) {
+				listContainer.innerHTML = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>';
+				gridContainer = listContainer.querySelector('.grid');
+			}
 			// Cria o grid
 			listContainer.innerHTML = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>';
 			const gridContainer = listContainer.querySelector('.grid');
-			
+
+			// [MODIFICADO] Gera o HTML *apenas* dos *novos* cards
 			// 7. Gera o HTML dos cards
 			let newCardsHtml = ``;
 			paginatedContracts.forEach(contract => {
@@ -1127,8 +1114,10 @@
 						</div>
 					</div>`;
 			});
-			
-			// 8. Insere o HTML dos cards
+
+			// [MODIFICADO] Adiciona o HTML dos novos cards ao grid existente
+			gridContainer.innerHTML += newCardsHtml;
+			// 8. Insere o HTML dos cards (sem '+=')
 			gridContainer.innerHTML = newCardsHtml;
 
 			// 9. Renderiza os controles de paginação
@@ -1136,9 +1125,16 @@
 		};
 		window.App.renderContractList = renderContractList;
 
-		// === FIM: LÓGICA DE PAGINAÇÃO E FILTROS DE LISTA ===
+		// ===================================================================================
+		// ======================== FIM DA MODIFICAÇÃO DE PAGINAÇÃO ========================
+		// ===================================================================================
+		// === FIM DA MUDANÇA JS ===
 
-		// Retorna o status de um contrato (Inalterado)
+		// Função chamada pelo "Carregar Mais"
+		const loadMoreContracts = function () { contractListPage++; renderContractList(false); };
+		window.App.loadMoreContracts = loadMoreContracts;
+
+		// Retorna o status de um contrato
 		function getContractStatus(contract) {
 			const hasPendingParcels = (contract.parcels || []).some(p => p.status === 'Pendente');
 			if (hasPendingParcels) return { statusText: 'Ativo', statusColor: 'bg-yellow-900/50 text-yellow-300', borderColor: 'border-yellow-500' };
@@ -1377,6 +1373,7 @@
 					if (parcel.status === 'Pendente') {
 						const dueDate = new Date(parcel.dueDate);
 						if (dueDate < inicioMesAtual) continue; // Ignora vencidas
+						if (dueDate < inicioMesAtual) continue; 
 						const diffMonth = (dueDate.getFullYear() - inicioMesAtual.getFullYear()) * 12 + (dueDate.getMonth() - inicioMesAtual.getMonth());
 						if (diffMonth >= 0 && diffMonth < 12) data[diffMonth] += parcel.value;
 					}
@@ -1492,70 +1489,45 @@
 		// Renderiza os botões de Ordenação
 		function renderSortButtons() {
 			const contractSortContainer = document.getElementById('contractSortButtons');
-			if (contractSortContainer) {
-				contractSortContainer.innerHTML = '';
-				const contractSorts = [{ key: 'name-asc', label: 'Nome (A-Z)' }];
-				if (isUserAdmin) contractSorts.push({ key: 'value-desc', label: 'Valor (Maior)' });
-				
-				contractSorts.forEach(sort => {
-					const button = document.createElement('button');
-					button.textContent = sort.label;
-					button.className = `sort-button ${currentContractSort === sort.key ? 'active' : ''}`;
-					button.onclick = () => { currentContractSort = sort.key; resetAndRenderContractList(); renderSortButtons(); };
-					contractSortContainer.appendChild(button);
-				});
-			}
-			
 			const inadimplentesSortContainer = document.getElementById('inadimplentesSortButtons');
-			if(inadimplentesSortContainer) {
-				inadimplentesSortContainer.innerHTML = '';
-				const inadimplentesSorts = [{ key: 'days-desc', label: 'Mais Antigas' }, { key: 'name-asc', label: 'Nome (A-Z)' }];
-				if (isUserAdmin) inadimplentesSorts.push({ key: 'value-desc', label: 'Maior Valor' });
-				inadimplentesSorts.forEach(sort => {
-					const button = document.createElement('button');
-					button.textContent = sort.label;
-					button.className = `sort-button ${currentInadimplentesSort === sort.key ? 'active' : ''}`;
-					button.onclick = () => { currentInadimplentesSort = sort.key; renderInadimplentesPage(getFilteredContracts(false)); renderSortButtons(); };
-					inadimplentesSortContainer.appendChild(button);
-				});
-			}
-			
 			const servicosSortContainer = document.getElementById('servicosSortButtons');
-			if(servicosSortContainer) {
-				servicosSortContainer.innerHTML = '';
-				const servicosSorts = [{ key: 'name-asc', label: 'Cliente (A-Z)' }, { key: 'adv-asc', label: 'Advogado (A-Z)' }];
-				servicosSorts.forEach(sort => {
-					const button = document.createElement('button');
-					button.textContent = sort.label;
-					button.className = `sort-button ${currentServicosSort === sort.key ? 'active' : ''}`;
-					button.onclick = () => { currentServicosSort = sort.key; renderServicosPage(getFilteredContracts(false)); renderSortButtons(); };
-					servicosSortContainer.appendChild(button);
-				});
-			}
-		}
+			if (!contractSortContainer || !inadimplentesSortContainer || !servicosSortContainer) return;
+			contractSortContainer.innerHTML = ''; inadimplentesSortContainer.innerHTML = ''; servicosSortContainer.innerHTML = '';
 
-		// === INÍCIO: NOVAS FUNÇÕES DE FILTRO DE STATUS ===
-		// NOVO: Renderiza os botões de filtro de status
-		function renderStatusFilterButtons() {
-			const container = document.getElementById('contractStatusFilterButtons');
-			if (!container) return;
-			container.innerHTML = '';
-			
-			const statuses = ['Todos', 'Ativo', 'Aguardando Êxito', 'Concluído'];
-			
-			statuses.forEach(status => {
+			// Botões da lista de Contratos
+			const contractSorts = [{ key: 'name-asc', label: 'Nome (A-Z)' }];
+			if (isUserAdmin) contractSorts.push({ key: 'value-desc', label: 'Valor (Maior)' });
+			contractSorts.forEach(sort => {
 				const button = document.createElement('button');
-				button.textContent = status;
-				button.className = `status-filter-button ${currentContractStatusFilter === status ? 'active' : ''}`;
-				button.onclick = () => {
-					currentContractStatusFilter = status;
-					resetAndRenderContractList(); // Reseta para pág 1
-					renderStatusFilterButtons(); // Re-renderiza os botões para marcar o ativo
-				};
-				container.appendChild(button);
+				button.textContent = sort.label;
+				button.className = `sort-button ${currentContractSort === sort.key ? 'active' : ''}`;
+				button.onclick = () => { currentContractSort = sort.key; contractListPage = 0; renderContractList(true); renderSortButtons(); };
+				// [MODIFICADO] Chama a função que reseta a página para 0
+				button.onclick = () => { currentContractSort = sort.key; resetAndRenderContractList(); renderSortButtons(); };
+				contractSortContainer.appendChild(button);
+			});
+
+			// Botões de Inadimplentes
+			const inadimplentesSorts = [{ key: 'days-desc', label: 'Mais Antigas' }, { key: 'name-asc', label: 'Nome (A-Z)' }];
+			if (isUserAdmin) inadimplentesSorts.push({ key: 'value-desc', label: 'Maior Valor' });
+			inadimplentesSorts.forEach(sort => {
+				const button = document.createElement('button');
+				button.textContent = sort.label;
+				button.className = `sort-button ${currentInadimplentesSort === sort.key ? 'active' : ''}`;
+				button.onclick = () => { currentInadimplentesSort = sort.key; renderInadimplentesPage(getFilteredContracts(false)); renderSortButtons(); };
+				inadimplentesSortContainer.appendChild(button);
+			});
+
+			// Botões de Serviços
+			const servicosSorts = [{ key: 'name-asc', label: 'Cliente (A-Z)' }, { key: 'adv-asc', label: 'Advogado (A-Z)' }];
+			servicosSorts.forEach(sort => {
+				const button = document.createElement('button');
+				button.textContent = sort.label;
+				button.className = `sort-button ${currentServicosSort === sort.key ? 'active' : ''}`;
+				button.onclick = () => { currentServicosSort = sort.key; renderServicosPage(getFilteredContracts(false)); renderSortButtons(); };
+				servicosSortContainer.appendChild(button);
 			});
 		}
-		// === FIM: NOVAS FUNÇÕES DE FILTRO DE STATUS ===
 
 		// --- Ações (CRUD) ---
 
@@ -1620,6 +1592,7 @@
 			if (modal) modal.style.display = 'block';
 			if (backdrop) backdrop.style.display = 'block';
 			document.body.style.overflow = 'hidden'; // Trava o scroll do body
+			document.body.style.overflow = 'hidden'; 
 		}
 
 		function closeModal(modalId) {
@@ -1630,12 +1603,14 @@
 			if (backdrop && !anyOpen) backdrop.style.display = 'none';
 			if (!anyOpen) document.body.style.overflow = ''; // Libera o scroll
 			// Limpa gráficos ao fechar modal de relatório
+			if (!anyOpen) document.body.style.overflow = ''; 
 			if (modalId === 'modalRelatorio') {
 				if (actualIncomeChartInstance) { actualIncomeChartInstance.destroy(); actualIncomeChartInstance = null; }
 				if (projectedIncomeChartInstance) { projectedIncomeChartInstance.destroy(); projectedIncomeChartInstance = null; }
 			}
 		}
 
+		// Exporta funções de modal para o objeto global
 		window.App.openModal = openModal;
 		window.App.closeModal = closeModal;
 
@@ -1647,7 +1622,9 @@
 				const servicosContainer = document.getElementById('servicosContainer'); servicosContainer.innerHTML = '';
 				populateAdvogadoSelectModal();
 				const advogadoSelect = document.getElementById('advogadoResponsavel');
-				
+
+				// === NOVA FUNÇÃO ===
+				// Pega o checkbox de "Já Quitado"
 				const jaQuitadoCheckbox = document.getElementById('contratoJaQuitado');
 
 				if (contractId) {
@@ -1662,6 +1639,7 @@
 					document.getElementById('contratoTipoPagamento').value = contract.paymentType || 'Parcelado';
 					document.getElementById('contratoObservacoes').value = contract.observations || '';
 
+					// Desabilita a opção de "Já Quitado" ao editar
 					jaQuitadoCheckbox.checked = false;
 					jaQuitadoCheckbox.disabled = true;
 
@@ -1678,10 +1656,12 @@
 					title.textContent = "Cadastrar Novo Contrato";
 					document.getElementById('contractId').value = '';
 					advogadoSelect.value = isUserAdmin ? 'Não Informado' : currentUserDisplayName;
-					
+
+					// Habilita e reseta a opção "Já Quitado"
 					jaQuitadoCheckbox.checked = false;
 					jaQuitadoCheckbox.disabled = false;
 				}
+				setupUIAccess(isUserAdmin); // Garante que os campos de admin estejam corretos
 				setupUIAccess(isUserAdmin); 
 				openModal('modalContrato');
 			} catch (e) {
@@ -1717,6 +1697,7 @@
 			const valorInput = document.getElementById('pagamentoValor');
 			valorInput.value = (isUserAdmin ? valorCorrigido : parcel.value).toFixed(2);
 			valorInput.disabled = !isUserAdmin; // Só admin pode alterar o valor
+			valorInput.disabled = !isUserAdmin; 
 
 			document.getElementById('pagamentoData').value = new Date().toISOString().split('T')[0];
 			openModal('modalPagamento');
@@ -1784,10 +1765,13 @@
 		// Abre o modal de Relatório (admin)
 		const openReportModal = function () {
 			if (!isUserAdmin) { Utils.showToast('Apenas admins podem abrir o relatório.', 'error'); return; }
+			openModal('modalRelatorio'); // <-- CORREÇÃO: Movido para cima
 			openModal('modalRelatorio'); 
 			try {
 				populateDateSelectors();
 				generateAndShowReport(); // Gera o relatório de texto por padrão
+			} catch(e) { // Adicionado 'e' para logar o erro
+				generateAndShowReport(); 
 			} catch(e) { 
 				console.error("Erro ao gerar relatório:", e);
 				Utils.showToast('Não foi possível gerar o relatório.', 'error');
@@ -1802,6 +1786,7 @@
 			const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 			const anoAtual = new Date().getFullYear();
 			if (monthSelect.options.length > 0) return; // Já populado
+			if (monthSelect.options.length > 0) return; 
 			meses.forEach((mes, index) => { monthSelect.add(new Option(mes, index)); });
 			for (let i = anoAtual; i >= anoAtual - 5; i--) { yearSelect.add(new Option(i, i)); }
 			monthSelect.value = new Date().getMonth(); yearSelect.value = anoAtual;
@@ -1833,6 +1818,7 @@
 				}
 			});
 			detailedPayments.sort((a, b) => { // Ordena por data
+			detailedPayments.sort((a, b) => { 
 				const da = new Date(a.date.split('/').reverse().join('-'));
 				const db = new Date(b.date.split('/').reverse().join('-'));
 				return da - db;
@@ -1910,6 +1896,7 @@
 			let deadlineHtml = '';
 			if (deadline) {
 				const prazo = new Date(deadline + "T12:00:00Z"); // Trata como UTC
+				const prazo = new Date(deadline + "T12:00:00Z"); 
 				deadlineHtml = `<span class="text-xs text-gray-400 ml-2">(${prazo.toLocaleDateString('pt-BR', { timeZone: 'UTC' })})</span>`;
 			}
 			tag.innerHTML = `<span>${serviceName}${deadlineHtml}</span><span class="remove-tag" onclick="this.parentElement.remove()">&times;</span>`;
@@ -1917,140 +1904,94 @@
 		};
 		window.App.createServiceTag = createServiceTag;
 
-		// === INÍCIO: MUDANÇA DRÁSTICA NO CÁLCULO DE JUROS (CACHE AUTOMÁTICO) ===
+		// --- Cálculo de Juros (IPCA + 1% a.m.) ---
 
-		const ipcaCache = new Map(); // Cache em memória para a sessão atual
-		
-		// NOVO: Busca o IPCA do cache (Firestore ou API)
-		async function fetchIPCAIndices(start, end) {
-			let current = new Date(start.getTime());
-			const monthsNeeded = []; // Formato 'YYYY-MM'
-			const indices = new Map();
+		// Cache para requisições da API do BCB
+		const ipcaWindowCache = new Map();
 
-			while (current.getTime() <= end.getTime()) {
-				const monthKey = `${current.getUTCFullYear()}-${String(current.getUTCMonth() + 1).padStart(2, '0')}`;
-				if (ipcaCache.has(monthKey)) {
-					indices.set(monthKey, ipcaCache.get(monthKey));
-				} else {
-					monthsNeeded.push(monthKey);
-				}
-				current.setUTCMonth(current.getUTCMonth() + 1);
-			}
+		// Funções utilitárias de data (operando em UTC para evitar problemas de fuso)
+		function toUTCDate(y, m, d) { const dt = new Date(Date.UTC(y, m, d)); dt.setUTCHours(0,0,0,0); return dt; }
+		function startOfMonthUTC(d) { return toUTCDate(d.getUTCFullYear(), d.getUTCMonth(), 1); }
+		function endOfMonthUTC(d) { return toUTCDate(d.getUTCFullYear(), d.getUTCMonth() + 1, 0); }
+		// Calcula diferença de meses (método 30/360)
+		function diffMonths_30_360(fromDate, toDate) {
+			let y1 = fromDate.getUTCFullYear(), m1 = fromDate.getUTCMonth() + 1, d1 = fromDate.getUTCDate();
+			let y2 = toDate.getUTCFullYear(),   m2 = toDate.getUTCMonth() + 1,   d2 = toDate.getUTCDate();
+			if (d1 === 31) d1 = 30;
+			if (d2 === 31 && d1 === 30) d2 = 30;
+			return Math.max(0, (y2 - y1) * 12 + (m2 - m1) + (d2 - d1) / 30);
+		}
 
-			if (monthsNeeded.length === 0) return indices;
+		// Busca o fator acumulado do IPCA da API do Banco Central
+		async function fetchIPCAAccumulatedFactor(vencDate, refDate = new Date()) {
+			const start = startOfMonthUTC(vencDate); // Mês do vencimento
+			const start = startOfMonthUTC(vencDate); 
+			const refMonth = startOfMonthUTC(refDate);
+			const endPrevMonth = endOfMonthUTC(toUTCDate(refMonth.getUTCFullYear(), refMonth.getUTCMonth(), 1 - 1)); // Último dia do mês anterior ao de referência
+			const endPrevMonth = endOfMonthUTC(toUTCDate(refMonth.getUTCFullYear(), refMonth.getUTCMonth(), 1 - 1)); 
 
-			// 1. Tenta buscar os meses faltantes do Firestore
-			const monthsFromFirestore = new Map();
-			if (monthsNeeded.length > 0) {
-				try {
-					// Firestore limita 'in' a 30 itens. Se precisar de mais, quebramos em chunks.
-					const CHUNK_SIZE = 30;
-					for (let i = 0; i < monthsNeeded.length; i += CHUNK_SIZE) {
-						const chunk = monthsNeeded.slice(i, i + CHUNK_SIZE);
-						const q = query(indicesCollection, where(documentId(), 'in', chunk));
-						const querySnapshot = await getDocs(q);
-						querySnapshot.forEach(doc => {
-							monthsFromFirestore.set(doc.id, doc.data().valor);
-							ipcaCache.set(doc.id, doc.data().valor); // Salva no cache da sessão
-							indices.set(doc.id, doc.data().valor);
-						});
-					}
-				} catch (e) {
-					console.error("Erro ao ler cache do Firestore:", e);
-				}
-			}
-			
-			// 2. Verifica quais meses *ainda* faltam (não estavam no Firestore)
-			const monthsToFetchFromAPI = monthsNeeded.filter(monthKey => !monthsFromFirestore.has(monthKey));
-			if (monthsToFetchFromAPI.length === 0) return indices;
-			
-			console.warn(`Cache do IPCA não encontrado para: ${monthsToFetchFromAPI.join(', ')}. Buscando na API do BCB...`);
+			// Se o vencimento for no futuro ou no mês corrente, não há correção
+			if (start.getTime() > endPrevMonth.getTime()) return 1;
 
-			// 3. Busca os meses restantes na API externa
-			const firstMonth = monthsToFetchFromAPI[0];
-			const lastMonth = monthsToFetchFromAPI[monthsToFetchFromAPI.length - 1];
-			const [y1, m1] = firstMonth.split('-');
-			const [y2, m2] = lastMonth.split('-');
-			const startDateAPI = `01/${m1}/${y1}`;
-			// A API do BCB pega pelo *mês* da data final, então usamos o primeiro dia do último mês.
-			const endDateAPI = `01/${m2}/${y2}`; 
+			const toApiDate = (d) => {
+				const dd = String(d.getUTCDate()).padStart(2,'0');
+				const mm = String(d.getUTCMonth()+1).padStart(2,'0');
+				const yyyy = d.getUTCFullYear();
+				return `${dd}/${mm}/${yyyy}`;
+			};
+
+			// Usa cache para evitar requisições repetidas
+			const cacheKey = `${start.getUTCFullYear()}-${String(start.getUTCMonth()+1).padStart(2,'0')}..${endPrevMonth.getUTCFullYear()}-${String(endPrevMonth.getUTCMonth()+1).padStart(2,'0')}`;
+			if (ipcaWindowCache.has(cacheKey)) return ipcaWindowCache.get(cacheKey);
 
 			const base = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados';
-			const url = `${base}?formato=json&dataInicial=${startDateAPI}&dataFinal=${endDateAPI}`;
+			const url = `${base}?formato=json&dataInicial=${toApiDate(start)}&dataFinal=${toApiDate(endPrevMonth)}`;
+			const proxy = 'https://api.allorigins.win/get?url='; // Proxy CORS
 			const proxy = 'https://api.allorigins.win/get?url='; 
 
 			try {
 				const resp = await fetch(`${proxy}${encodeURIComponent(url)}`);
 				if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 				let data = await resp.json();
-				data = JSON.parse(data.contents);
-				
-				const batch = writeBatch(db); // Prepara para salvar no Firestore
-				
-				(data || []).forEach(item => {
+				data = JSON.parse(data.contents); // allorigins aninha o JSON
+				data = JSON.parse(data.contents); 
+
+				// Calcula o fator multiplicador
+				const factor = (data || []).reduce((acc, item) => {
 					const v = parseFloat(item?.valor);
-					if (Number.isFinite(v)) {
-						const [d, m, y] = item.data.split('/');
-						const monthKey = `${y}-${m}`;
-						
-						// Apenas processa meses que realmente pedimos (API pode retornar a mais)
-						if (monthsToFetchFromAPI.includes(monthKey)) {
-							indices.set(monthKey, v); // Adiciona ao resultado
-							ipcaCache.set(monthKey, v); // Salva no cache da sessão
-							
-							// Adiciona ao batch para salvar no Firestore
-							const docRef = doc(indicesCollection, monthKey);
-							batch.set(docRef, { valor: v });
-						}
-					}
-				});
+					return Number.isFinite(v) ? acc * (1 + v/100) : acc;
+				}, 1);
 
-				await batch.commit(); // Salva os novos índices no Firestore
-				console.log(`Cache do IPCA atualizado para ${monthsToFetchFromAPI.length} meses.`);
-
+				const finalFactor = factor || 1;
+				ipcaWindowCache.set(cacheKey, finalFactor); // Salva no cache
+				ipcaWindowCache.set(cacheKey, finalFactor); 
+				return finalFactor;
 			} catch (e) {
-				console.error('Falha CRÍTICA ao buscar IPCA na API:', e);
-				Utils.showToast('Erro ao buscar índice IPCA. Usando 0.', 'error');
+				console.error('Falha ao buscar IPCA:', e);
+				return 1; // Retorna 1 (sem correção) em caso de falha
+				return 1; 
 			}
-			
-			return indices;
 		}
-		
-		// NOVO: Função principal de cálculo de juros (usa o cache)
+
+		// Função principal de cálculo de juros
 		async function calcularValorCorrigido(valorOriginal, dataVencimento, dataReferencia = new Date()) {
 			const ref = toUTCDate(dataReferencia.getUTCFullYear(), dataReferencia.getUTCMonth(), dataReferencia.getUTCDate());
+			const vRaw = new Date(dataVencimento); // Data pode vir como string
 			const vRaw = new Date(dataVencimento); 
 			const venc = toUTCDate(vRaw.getUTCFullYear(), vRaw.getUTCMonth(), vRaw.getUTCDate());
-			
+
 			if (ref <= venc) return valorOriginal; // Não vencido
+			if (ref <= venc) return valorOriginal; 
 
 			// 1. Correção (IPCA)
-			const start = startOfMonthUTC(venc); // Mês do vencimento
-			const refMonth = startOfMonthUTC(ref);
-			// Correção é até o *último dia do mês anterior* ao de referência
-			const endPrevMonth = endOfMonthUTC(toUTCDate(refMonth.getUTCFullYear(), refMonth.getUTCMonth(), 1 - 1)); 
-			
-			let ipcaFactor = 1;
-			if (start.getTime() <= endPrevMonth.getTime()) {
-				const indices = await fetchIPCAIndices(start, endPrevMonth);
-				
-				let current = new Date(start.getTime());
-				while (current.getTime() <= endPrevMonth.getTime()) {
-					const monthKey = `${current.getUTCFullYear()}-${String(current.getUTCMonth() + 1).padStart(2, '0')}`;
-					const v = indices.get(monthKey) || 0; // Pega o valor (ou 0 se falhou)
-					ipcaFactor *= (1 + v / 100);
-					current.setUTCMonth(current.getUTCMonth() + 1);
-				}
-			}
-			
+			const ipcaFactor = await fetchIPCAAccumulatedFactor(venc, ref);
+
 			// 2. Juros (1% a.m. simples)
 			const meses = diffMonths_30_360(venc, ref);
 			const jurosSimplesFactor = 1 + 0.01 * meses;
-			
+
 			return valorOriginal * ipcaFactor * jurosSimplesFactor;
 		}
-
-		// === FIM: MUDANÇA DRÁSTICA NO CÁLCULO DE JUROS ===
 
 		// --- Funções de Exportação (CSV) ---
 
@@ -2099,13 +2040,13 @@
 				const updatedParcels = await Promise.all(contract.parcels.map(async (p) => {
 					if (p.status === 'Pendente') {
 						const updated = await calcularValorCorrigido(p.value, p.dueDate, referenceDate);
-						return { ...p, correctedValue: updated }; // Apenas para visualização, não salva
+						return { ...p, correctedValue: updated };
 					}
 					return p;
 				}));
-				console.log(`Contrato ${contract.clientName}:`, updatedParcels.filter(p => p.status === 'Pendente'));
+				await updateDoc(doc(contractsCollection, contract.id), { parcels: updatedParcels });
 			}
-			Utils.showToast('Recalculo exibido no console.', 'success');
+			Utils.showToast('Recalculo concluído.', 'success');
 		}
 		window.App.recalculateAllDebts = recalculateAllDebts;
 
@@ -2121,7 +2062,7 @@
 					}
 				});
 			}
-			
+
 			// Inicia a autenticação
 			initializeAndAuth();
 
@@ -2131,20 +2072,12 @@
 			const showAuthError = (m) => { authError.textContent = m; authError.classList.remove('hidden'); };
 			loginForm.addEventListener('submit', async (e) => {
 				e.preventDefault();
-				authError.classList.add('hidden'); // Esconde erro anterior
 				const email = document.getElementById('login-email').value;
 				const password = document.getElementById('login-password').value;
-				try { 
-					await signInWithEmailAndPassword(auth, email, password); 
-					// Sucesso: onAuthStateChanged vai cuidar do resto
-				}
+				try { await signInWithEmailAndPassword(auth, email, password); }
 				catch (error) {
-					console.error("Erro de login:", error.code);
-					if (['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found', 'auth/invalid-email'].includes(error.code)) {
-						showAuthError('Email ou senha inválidos.');
-					} else {
-						showAuthError('Erro ao tentar fazer login.');
-					}
+					if (['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found'].includes(error.code)) showAuthError('Email ou senha inválidos.');
+					else showAuthError('Erro ao tentar fazer login.');
 				}
 			});
 
@@ -2160,10 +2093,11 @@
 					try {
 						await updateProfile(auth.currentUser, { displayName: name });
 						currentUserDisplayName = name; isUserAdmin = ADMIN_USERS.includes(name);
-document.body.classList.toggle('is-admin', isUserAdmin);
+						document.body.classList.toggle('is-admin', isUserAdmin);
 						document.getElementById('user-display-name').textContent = name;
 						closeModal('modalDisplayName');
 						document.getElementById('app-container').style.display = 'block';
+						// Re-configura a UI e o listener de dados após salvar o nome
 						setupUIAccess(isUserAdmin);
 						contractsCollection = collection(db, `contracts`);
 						setupSnapshotListener();
@@ -2171,6 +2105,7 @@ document.body.classList.toggle('is-admin', isUserAdmin);
 				}
 			});
 
+			// Listener do formulário de Contrato (Salvar)
 			document.getElementById('formContrato').addEventListener('submit', async (e) => {
 				e.preventDefault();
 				const contractId = document.getElementById('contractId').value;
@@ -2188,6 +2123,7 @@ document.body.classList.toggle('is-admin', isUserAdmin);
 					serviceTypes,
 					paymentType: Utils.sanitizeText(document.getElementById('contratoTipoPagamento').value),
 					observations: Utils.sanitizeText(document.getElementById('contratoObservacoes').value),
+					...(isUserAdmin && { // Dados que só o Admin pode editar/criar
 					...(isUserAdmin && { 
 						totalValue: Utils.parseNumber(document.getElementById('valorTotal').value),
 						successFee: Utils.sanitizeText(document.getElementById('taxaExito').value) || null,
@@ -2195,29 +2131,37 @@ document.body.classList.toggle('is-admin', isUserAdmin);
 				};
 
 				if (!contractId) {
+					// --- Criando Novo Contrato ---
 					contractData.parcels = [];
 					contractData.successFeeValueReceived = 0;
 					contractData.successFeePaymentDate = null;
 					contractData.isDeleted = false;
 
 					if (isUserAdmin) {
+						// Pega o valor do novo checkbox
 						const jaQuitado = document.getElementById('contratoJaQuitado').checked;
+						
+						// Gera as parcelas
 						const totalValue = contractData.totalValue;
 						const numParcels = parseInt(document.getElementById('numParcelas').value) || 1;
 						const firstDueDate = document.getElementById('vencimentoPrimeiraParcela').value;
 
 						if (numParcels > 0 && totalValue > 0) {
+							if (!firstDueDate && !jaQuitado) { // Se não estiver quitado, a data é obrigatória
 							if (!firstDueDate && !jaQuitado) { 
 								Utils.showToast('Informe data da 1ª parcela.', 'error');
 								return; 
 							}
-							
+
 							const parcelValue = totalValue / numParcels;
+							// Se já quitado, usa a data de hoje. Senão, a data informada.
 							let currentDueDate = new Date((firstDueDate || new Date().toISOString().split('T')[0]) + 'T12:00:00Z'); 
 
 							for (let i = 0; i < numParcels; i++) {
+								// === LÓGICA DA NOVA FUNÇÃO ===
+								// Marca como pago apenas se for parcela única e o checkbox estiver marcado
 								const isPaid = jaQuitado && numParcels === 1;
-								
+
 								contractData.parcels.push({
 									number: i + 1, 
 									value: parcelValue,
@@ -2226,21 +2170,28 @@ document.body.classList.toggle('is-admin', isUserAdmin);
 									valuePaid: isPaid ? parcelValue : 0, 
 									paymentDate: isPaid ? new Date().toISOString() : null 
 								});
-								
+								// === FIM DA LÓGICA ===
+
 								currentDueDate.setMonth(currentDueDate.getMonth() + 1);
 							}
 						}
 					}
 					await addDoc(contractsCollection, contractData);
 				} else {
+					// --- Atualizando Contrato Existente ---
 					const existingContract = database.contracts.find(c => c.id === contractId);
 					if (!isUserAdmin && existingContract) {
+						// Se não for admin, preserva os dados financeiros existentes
 						contractData.totalValue = existingContract.totalValue;
 						contractData.successFee = existingContract.successFee;
 						contractData.parcels = existingContract.parcels;
 						contractData.successFeeValueReceived = existingContract.successFeeValueReceived;
 						contractData.successFeePaymentDate = existingContract.successFeePaymentDate;
 					} else if (isUserAdmin && existingContract) {
+						// Se for admin, preserva dados de pagamento (parcelas são editadas em outro lugar)
+						// NOTA: A lógica de recriar parcelas ao editar foi removida, o que é CORRETO.
+						// Para editar parcelas, deve-se usar a tela de pagamento.
+						// Apenas preservamos o que já existe.
 						contractData.parcels = existingContract.parcels; 
 						contractData.successFeeValueReceived = existingContract.successFeeValueReceived;
 						contractData.successFeePaymentDate = existingContract.successFeePaymentDate;
@@ -2253,11 +2204,13 @@ document.body.classList.toggle('is-admin', isUserAdmin);
 				Utils.showToast('Contrato salvo.', 'success');
 			});
 
+			// Listener do formulário de Pagamento (Confirmar)
 			document.getElementById('formPagamento').addEventListener('submit', async (e) => {
 				e.preventDefault();
 				const contractId = document.getElementById('pagamentoContractId').value;
 				const parcelIndex = parseInt(document.getElementById('pagamentoParcelIndex').value);
 				const contract = database.contracts.find(c => c.id === contractId);
+				// Se não for admin, o valor pago é o valor total da parcela
 				const valuePaid = isUserAdmin
 					? Utils.parseNumber(document.getElementById('pagamentoValor').value)
 					: (contract?.parcels[parcelIndex]?.value || 0);
@@ -2278,9 +2231,11 @@ document.body.classList.toggle('is-admin', isUserAdmin);
 				}
 			});
 
+			// Listener do formulário de Êxito (Salvar)
 			document.getElementById('formExito').addEventListener('submit', async (e) => {
 				e.preventDefault();
 				const contractId = document.getElementById('exitoContractId').value;
+				// Se não for admin, o valor recebido é 0 (apenas confirma)
 				const valueReceived = isUserAdmin ? Utils.parseNumber(document.getElementById('exitoValorRecebido').value) : 0;
 
 				const contract = database.contracts.find(c => c.id === contractId);
@@ -2297,15 +2252,19 @@ document.body.classList.toggle('is-admin', isUserAdmin);
 					Utils.showToast('Êxito registrado.', 'success');
 				}
 			});
-			
+
+			// [FIX 1] Listener do botão "Adicionar" Serviço no modal de contrato
 			document.getElementById('addServiceButton').addEventListener('click', () => {
 				const nameInput = document.getElementById('contratoServicoInput');
 				const deadlineInput = document.getElementById('contratoPrazoInput');
 				const serviceName = Utils.sanitizeText(nameInput.value);
+				const deadline = deadlineInput.value || null; // Pega a data ou null
 				const deadline = deadlineInput.value || null; 
 
 				if (serviceName) {
+					// Cria a tag visual
 					window.App.createServiceTag(serviceName, deadline, 'Pendente');
+					// Limpa os inputs
 					nameInput.value = '';
 					deadlineInput.value = '';
 					nameInput.focus();
@@ -2322,6 +2281,23 @@ document.body.classList.toggle('is-admin', isUserAdmin);
 			const debouncedServicos = Utils.debounce(() => window.App.renderServicosPage(getFilteredContracts(false)), 300);
 			const servicosSearchInput = document.getElementById('servicosSearchInput');
 			if (servicosSearchInput) servicosSearchInput.addEventListener('input', debouncedServicos);
+
+			// [FIX 2] Listener do botão "Carregar Mais"
+			const loadMoreBtn = document.getElementById('loadMoreButton');
+			if (loadMoreBtn) {
+				// Adicionado listener de clique manual como fallback
+				loadMoreBtn.addEventListener('click', window.App.loadMoreContracts);
+				
+				// Manter o IntersectionObserver para auto-load ao rolar
+				if ('IntersectionObserver' in window) {
+					const io = new IntersectionObserver((entries) => {
+						entries.forEach(e => { 
+							if (e.isIntersecting) { window.App.loadMoreContracts(); } 
+						});
+					}, { rootMargin: '200px' });
+					io.observe(loadMoreBtn);
+				}
+			}
 			
 			// O listener do 'loadMoreButton' e o IntersectionObserver foram removidos.
 		});
