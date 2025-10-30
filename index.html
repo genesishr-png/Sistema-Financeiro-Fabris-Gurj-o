@@ -8,7 +8,9 @@
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 	<style>
+		/* [SEÇÃO 1: Estilos Gerais - Copiados do seu primeiro arquivo] */
 		body {
 			font-family: 'Inter', sans-serif;
 			position: relative;
@@ -26,7 +28,6 @@
 			background-position: center center;
 			opacity: 0.12;
 		}
-		/* z-index robusto para garantir clique nos inputs do modal */
 		.modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 9000; }
 		.modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9001; max-height: 90vh; overflow-y: auto; }
 		.kanban-column { min-width: 320px; }
@@ -61,39 +62,53 @@
 		body.is-admin .admin-only { display: block; }
 		body.is-admin .flex.admin-only { display: flex; }
 		body:not(.is-admin) .non-admin-hidden { display: none; }
+		/* Melhorias no login (do Arquivo 1) */
+		.login-modal { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); animation: fadeIn 0.3s ease; }
+		.login-modal h2 { color: #ffffff; font-weight: 700; }
+		.login-modal input { background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: #ffffff; transition: border-color 0.2s; }
+		.login-modal input:focus { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5); }
+		.login-modal button { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); transition: transform 0.2s, box-shadow 0.2s; }
+		.login-modal button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4); }
+		@keyframes fadeIn { from { opacity: 0; transform: translate(-50%, -60%); } to { opacity: 1; transform: translate(-50%, -50%); } }
+		/* Notificações (do Arquivo 1) */
+		.notification { position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 12px 16px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 11000; animation: slideIn 0.3s ease; }
+		@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+		/* Tema claro (do Arquivo 1) */
+		body.light-theme { background-color: #f8fafc; color: #1e293b; }
+		body.light-theme .dark-card { background-color: #ffffff; border-color: #e2e8f0; }
+		body.light-theme .login-modal { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); }
+		/* Responsividade móvel (do Arquivo 1) */
+		@media (max-width: 768px) { .kanban-column { min-width: 100%; } .header-user-block { margin-right: 0; } }
 	</style>
 </head>
 <body class="text-gray-300">
-	<!-- Overlay de Carregamento -->
+	<div id="notifications"></div>
+
 	<div id="loading-overlay">
 		<i class="fas fa-spinner fa-spin mr-3"></i> Conectando...
 	</div>
 
-	<!-- Overlay de Autenticação -->
 	<div id="auth-overlay">
-		<div class="w-full max-w-sm p-8 space-y-6 bg-[#1a173a] rounded-lg shadow-xl border border-indigo-800">
+		<div class="w-full max-w-sm p-8 space-y-6 bg-transparent rounded-lg shadow-xl border border-indigo-800 login-modal">
 			<img src="https://www.fabrisegurjao.adv.br/netpage/data/uploads/2019/12/logo-fabris-e-gurjao-491x325px.png" alt="Logo" class="w-48 mx-auto">
-			<h2 class="text-2xl font-bold text-center text-white">Login</h2>
-
+			<h2 class="text-2xl font-bold text-center">Bem-vindo ao Sistema</h2>
 			<div id="auth-error" class="hidden p-3 text-sm text-red-300 bg-red-800/50 border border-red-700 rounded-lg"></div>
-
 			<form id="login-form" class="space-y-4">
 				<div>
-					<label for="login-email" class="block text-sm font-medium text-gray-400">Email</label>
-					<input type="email" id="login-email" required class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white">
+					<label for="login-email" class="block text-sm font-medium text-gray-200">Email</label>
+					<input type="email" id="login-email" required class="mt-1 block w-full px-3 py-2 bg-transparent border border-gray-400 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white placeholder-gray-400">
 				</div>
 				<div>
-					<label for="login-password" class="block text-sm font-medium text-gray-400">Senha</label>
-					<input type="password" id="login-password" required class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white">
+					<label for="login-password" class="block text-sm font-medium text-gray-200">Senha</label>
+					<input type="password" id="login-password" required class="mt-1 block w-full px-3 py-2 bg-transparent border border-gray-400 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white placeholder-gray-400">
 				</div>
 				<button type="submit" class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mt-8">Entrar</button>
 			</form>
+			<button id="theme-toggle" class="absolute top-4 right-4 text-white"><i class="fas fa-sun"></i></button>
 		</div>
 	</div>
 
-	<!-- Container Principal da Aplicação -->
 	<div id="app-container" class="container mx-auto p-4 md:p-8">
-		<!-- Cabeçalho -->
 		<header class="mb-6 header-with-logo">
 			<div>
 				<h1 class="text-3xl font-bold text-white">Painel de Gestão</h1>
@@ -109,7 +124,6 @@
 			<img src="https://www.fabrisegurjao.adv.br/netpage/data/uploads/2019/12/logo-fabris-e-gurjao-491x325px.png" alt="Fabris e Gurjão Logo" class="header-logo">
 		</header>
 
-		<!-- Navegação por Abas -->
 		<div class="border-b border-gray-700 mb-8">
 			<nav class="flex justify-between items-center -mb-px">
 				<div class="flex">
@@ -132,9 +146,7 @@
 			</nav>
 		</div>
 
-		<!-- Página: Dashboard -->
 		<div id="page-dashboard">
-			<!-- Botões de Ação -->
 			<div class="flex flex-wrap gap-4 mb-8">
 				<button onclick="window.App.openContractModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
 					<i class="fas fa-plus-circle"></i> Novo Contrato
@@ -144,7 +156,6 @@
 				</button>
 			</div>
 
-			<!-- Métricas do Dashboard (Visão Admin) -->
 			<div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 				<div class="dark-card p-6 rounded-lg shadow-lg admin-only">
 					<h3 class="text-lg font-semibold text-gray-400">A Receber (Próx. 30 dias)</h3>
@@ -158,14 +169,12 @@
 					<h3 class="text-lg font-semibold text-gray-400">Recebido (Este Mês)</h3>
 					<p id="dash-recebido" class="text-3xl font-bold text-indigo-400"></p>
 				</div>
-				<!-- Métrica Visível para Todos -->
 				<div class="dark-card p-6 rounded-lg shadow-lg">
 					<h3 class="text-lg font-semibold text-gray-400">Meus Contratos Ativos</h3>
 					<p id="dash-contratos" class="text-3xl font-bold text-white"></p>
 				</div>
 			</div>
 
-			<!-- Kanban -->
 			<div class="mb-4 border-b border-gray-700">
 				<h2 class="text-2xl font-semibold mb-4 text-white">Situação das Parcelas (Meus Contratos)</h2>
 			</div>
@@ -189,7 +198,6 @@
 				</div>
 			</div>
 
-			<!-- Lista de Contratos -->
 			<div class="mt-12">
 				<div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-4">
 					<h2 class="text-2xl font-semibold text-white">Meus Contratos</h2>
@@ -216,7 +224,6 @@
 			</div>
 		</div>
 
-		<!-- Página: Inadimplentes -->
 		<div id="page-inadimplentes" class="hidden">
 			<div class="flex justify-between items-center mb-4">
 				<h2 class="text-2xl font-semibold text-white">Controle de Inadimplentes (Meus Contratos)</h2>
@@ -228,7 +235,6 @@
 			<div id="inadimplentesListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 		</div>
 
-		<!-- Página: Serviços -->
 		<div id="page-servicos" class="hidden">
 			<div class="flex justify-between items-center mb-4">
 				<h2 class="text-2xl font-semibold text-white">Controle de Produção de Serviços (Meus Contratos)</h2>
@@ -244,7 +250,6 @@
 			<div id="servicosListContainer" class="space-y-6"></div>
 		</div>
 
-		<!-- Página: Lixeira -->
 		<div id="page-lixeira" class="hidden">
 			<div class="flex justify-between items-center mb-4">
 				<h2 class="text-2xl font-semibold text-white">Lixeira de Contratos</h2>
@@ -254,7 +259,6 @@
 		</div>
 	</div>
 
-	<!-- Modal: Pedir Nome de Exibição -->
 	<div id="modalDisplayName" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
 		<div class="p-6">
 			<h2 class="text-2xl font-bold text-white mb-4">Bem-vindo(a)!</h2>
@@ -269,7 +273,6 @@
 		</div>
 	</div>
 
-	<!-- Modal: Adicionar/Editar Contrato -->
 	<div id="modalContrato" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/2 lg:w-2/5">
 		<div class="p-6">
 			<div class="flex justify-between items-center mb-4">
@@ -278,7 +281,6 @@
 			</div>
 			<form id="formContrato">
 				<input type="hidden" id="contractId">
-				<!-- Informações Básicas -->
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
 					<div>
 						<label for="clienteNome" class="block text-sm font-medium text-gray-400">Nome do Cliente</label>
@@ -289,13 +291,11 @@
 						<select id="advogadoResponsavel" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" required></select>
 					</div>
 				</div>
-				<!-- Adicionar Serviços -->
 				<div class="mb-4">
 					<label class="block text-sm font-medium text-gray-400">Adicionar Serviços</label>
 					<div id="servicosContainerWrapper" class="mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm">
 						<div id="servicosContainer" class="flex flex-wrap items-center gap-1 w-full mb-2">
-							<!-- Tags de serviço são injetadas aqui -->
-						</div>
+							</div>
 						<div class="flex gap-2">
 							<input type="text" id="contratoServicoInput" class="flex-grow outline-none bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white" placeholder="Nome do Serviço...">
 							<input type="date" id="contratoPrazoInput" class="bg-gray-800 border border-gray-600 rounded-md shadow-sm text-gray-400 px-3 py-2" style="color-scheme: dark;">
@@ -303,7 +303,6 @@
 						</div>
 					</div>
 				</div>
-				<!-- Detalhes do Contrato -->
 				<div class="mb-4">
 					<label for="contratoTipoPagamento" class="block text-sm font-medium text-gray-400">Modalidade de Pagamento</label>
 					<select id="contratoTipoPagamento" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white">
@@ -317,11 +316,9 @@
 					<textarea id="contratoObservacoes" rows="3" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" placeholder="Detalhes da negociação, informações do caso, etc..."></textarea>
 				</div>
 				
-				<!-- Seção Admin: Financeiro -->
 				<div class="admin-only">
 					<h3 class="text-lg font-semibold mb-2 border-t border-gray-700 pt-4 text-white">Detalhes Financeiros</h3>
 					
-					<!-- === NOVA FUNÇÃO === -->
 					<div class="mb-4 p-3 bg-gray-900/50 rounded-lg border border-gray-700">
 						<label for="contratoJaQuitado" class="flex items-center">
 							<input type="checkbox" id="contratoJaQuitado" class="h-4 w-4 bg-gray-700 border-gray-600 rounded text-indigo-600 focus:ring-indigo-500">
@@ -329,8 +326,6 @@
 						</label>
 						<p class="text-xs text-gray-500 ml-6 mt-1">Isso criará 1 parcela única já "Paga" com o Valor Total. Deixe o N° de Parcelas como 1.</p>
 					</div>
-					<!-- === FIM DA NOVA FUNÇÃO === -->
-
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div class="mb-4">
 							<label for="valorTotal" class="block text-sm font-medium text-gray-400">Valor Fixo Total (R$)</label>
@@ -351,7 +346,6 @@
 					</div>
 				</div>
 
-				<!-- Botões do Modal -->
 				<div class="flex justify-end mt-6">
 					<button type="button" onclick="window.App.closeModal('modalContrato')" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg mr-2">Cancelar</button>
 					<button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Salvar</button>
@@ -360,7 +354,6 @@
 		</div>
 	</div>
 
-	<!-- Modal: Registrar Pagamento -->
 	<div id="modalPagamento" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
 		<div class="p-6">
 			<div class="flex justify-between items-center mb-4">
@@ -387,7 +380,6 @@
 		</div>
 	</div>
 
-	<!-- Modal: Histórico do Cliente -->
 	<div id="modalCliente" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-3/4 lg:w-2/3">
 		<div class="p-6">
 			<div class="flex justify-between items-center mb-4">
@@ -398,14 +390,12 @@
 		</div>
 	</div>
 
-	<!-- Modal: Relatórios (Admin) -->
 	<div id="modalRelatorio" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-3/4 lg:w-2/3 admin-only">
 		<div class="p-6">
 			<div class="flex justify-between items-center mb-6">
 				<h2 class="text-2xl font-bold text-white">Relatório e Análise</h2>
 				<button onclick="window.App.closeModal('modalRelatorio')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
 			</div>
-			<!-- Seletores de Data -->
 			<div class="flex gap-4 mb-4">
 				<div class="flex-1">
 					<label for="reportMonth" class="block text-sm font-medium text-gray-400">Mês</label>
@@ -416,7 +406,6 @@
 					<select id="reportYear" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white"></select>
 				</div>
 			</div>
-			<!-- Botões de Ação do Relatório -->
 			<div class="flex gap-4 mb-6">
 				<button onclick="window.App.generateAndShowReport()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg">
 					<i class="fas fa-file-invoice-dollar mr-2"></i> Relatório
@@ -429,12 +418,9 @@
 				</button>
 			</div>
 
-			<!-- Conteúdo do Relatório -->
 			<div id="reportResult" class="space-y-4">
-				<!-- Relatório em texto/tabela é injetado aqui -->
-			</div>
+				</div>
 
-			<!-- Gráficos do Relatório -->
 			<div id="reportChartsContainer" class="hidden space-y-8">
 				<div class="dark-card p-6 rounded-lg shadow-lg">
 					<h3 class="text-lg font-semibold text-gray-300 mb-4">Faturamento Real (Últimos 12 Meses)</h3>
@@ -453,7 +439,6 @@
 		</div>
 	</div>
 
-	<!-- Modal: Registrar Êxito -->
 	<div id="modalExito" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
 		<div class="p-6">
 			<div class="flex justify-between items-center mb-4">
@@ -476,12 +461,8 @@
 		</div>
 	</div>
 
-	<!-- Fundo escuro para Modais -->
 	<div id="modal-backdrop" class="modal-backdrop"></div>
 
-	<!-- =================================================================================== -->
-	<!-- ============================== SCRIPT DA APLICAÇÃO ============================== -->
-	<!-- =================================================================================== -->
 	<script type="module">
 		// Objeto global da aplicação
 		window.App = window.App || {};
@@ -2146,4 +2127,3 @@
 	</script>
 </body>
 </html>
-
