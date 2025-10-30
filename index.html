@@ -8,7 +8,6 @@
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-	
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 	<style>
 		/* [SEÇÃO 1: Estilos Gerais - Copiados do seu primeiro arquivo] */
@@ -16,7 +15,17 @@
 		body {
 			font-family: 'Inter', sans-serif;
 			position: relative;
-@@ -28,7 +28,6 @@
+			background-color: #0f172a;
+			color: #d1d5db;
+		}
+		body::after {
+			content: '';
+			position: fixed;
+			z-index: -1;
+			top: 0; left: 0; right: 0; bottom: 0;
+			background-image: url('https://i.postimg.cc/x81V8QJg/Imagem-do-Whats-App-de-2025-10-27-a-s-09-49-28-f966cd35.jpg');
+			background-repeat: no-repeat;
+			background-size: cover;
 			background-position: center center;
 			opacity: 0.12;
 		}
@@ -24,7 +33,34 @@
 		.modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 9000; }
 		.modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9001; max-height: 90vh; overflow-y: auto; }
 		.kanban-column { min-width: 320px; }
-@@ -63,53 +62,97 @@
+		.kanban-content { max-height: 60vh; overflow-y: auto; padding-right: 8px; }
+		::-webkit-scrollbar { width: 8px; }
+		::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; }
+		::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+		.service-tag { display: inline-flex; justify-content: space-between; align-items: center; background-color: #374151; color: #d1d5db; padding: 4px 10px; border-radius: 12px; font-size: 14px; margin-right: 4px; margin-bottom: 4px; width: 100%; }
+		.service-tag-small { display: inline-block; background-color: #374151; color: #9ca3af; padding: 2px 8px; border-radius: 9999px; font-size: 12px; margin-right: 4px; margin-bottom: 4px; }
+		.service-tag .remove-tag { margin-left: 8px; cursor: pointer; font-weight: bold; }
+		.nav-tab { cursor: pointer; padding: 10px 20px; border-bottom: 3px solid transparent; color: #9ca3af; transition: all 0.2s; }
+		.nav-tab:hover { color: #e5e7eb; }
+		.nav-tab.active { border-bottom-color: #6366f1; color: #e5e7eb; }
+		.nav-tab-icon { cursor: pointer; padding: 10px 15px; color: #9ca3af; transition: all 0.2s; }
+		.nav-tab-icon:hover { color: #e5e7eb; }
+		.nav-tab-icon.active { color: #6366f1; }
+		.progress-bar-bg { background-color: #374151; border-radius: 9999px; overflow: hidden; }
+		.progress-bar { height: 100%; border-radius: 9999px; transition: width 0.5s ease-in-out; }
+		.dark-card { background-color: #1f2937; border: 1px solid #374151; }
+		.header-with-logo { position: relative; display: flex; justify-content: space-between; align-items: center; }
+		.header-user-block { margin-right: 160px; }
+		.header-logo { position: absolute; right: 0; top: 50%; transform: translateY(-50%); max-height: 60px; opacity: 0.8; }
+		.sort-button, .filter-button { background-color: #374151; border: 1px solid #4b5563; color: #9ca3af; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+		.sort-button:hover, .filter-button:hover { background-color: #4b5563; color: white; }
+		.sort-button.active, .filter-button.active { background-color: #4f46e5; border-color: #4f46e5; color: white; }
+		.filter-select { background-color: #374151; border: 1px solid #4b5563; color: #9ca3af; padding: 8px 12px; border-radius: 6px; font-size: 14px; }
+		.filter-select:disabled { background-color: #4b5563; opacity: 0.7; cursor: not-allowed; }
+		#loading-overlay, #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(17, 24, 39, 0.9); display: flex; justify-content: center; align-items: center; z-index: 10000; color: white; font-size: 1.2rem; transition: opacity 0.3s; }
+		#auth-overlay { z-index: 9999; }
+		#app-container { display: none; }
+		.admin-only { display: none; }
 		body.is-admin .admin-only { display: block; }
 		body.is-admin .flex.admin-only { display: flex; }
 		body:not(.is-admin) .non-admin-hidden { display: none; }
@@ -45,6 +81,8 @@
 		body.light-theme .login-modal { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); }
 		/* Responsividade móvel (do Arquivo 1) */
 		@media (max-width: 768px) { .kanban-column { min-width: 100%; } .header-user-block { margin-right: 0; } }
+
+		/* === INÍCIO: NOVOS ESTILOS DE PAGINAÇÃO === */
 		.pagination-button {
 			background-color: #374151;
 			border: 1px solid #4b5563;
@@ -75,34 +113,7 @@
 			font-size: 14px;
 			color: #6b7280;
 		}
-		/* === INÍCIO: NOVOS ESTILOS PARA FILTROS DE STATUS === */
-		.status-filter-group {
-			display: flex;
-			background-color: #1f2937;
-			border-radius: 8px;
-			padding: 4px;
-			border: 1px solid #374151;
-		}
-		.status-filter-button {
-			font-size: 13px;
-			font-weight: 500;
-			color: #9ca3af;
-			padding: 6px 12px;
-			border-radius: 6px;
-			cursor: pointer;
-			transition: all 0.2s;
-			border: none;
-			background-color: transparent;
-		}
-		.status-filter-button:hover {
-			color: #e5e7eb;
-		}
-		.status-filter-button.active {
-			color: #ffffff;
-			background-color: #4f46e5;
-			box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-		}
-		/* === FIM: NOVOS ESTILOS === */
+		/* === FIM: NOVOS ESTILOS DE PAGINAÇÃO === */
 	</style>
 </head>
 <body class="text-gray-300">
@@ -136,7 +147,9 @@
 					<label for="login-password" class="block text-sm font-medium text-gray-200">Senha</label>
 					<input type="password" id="login-password" required class="mt-1 block w-full px-3 py-2 bg-transparent border border-gray-400 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white placeholder-gray-400">
 				</div>
-@@ -119,15 +162,12 @@ <h2 class="text-2xl font-bold text-center">Bem-vindo ao Sistema</h2>
+				<button type="submit" class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mt-8">Entrar</button>
+			</form>
+			<button id="theme-toggle" class="absolute top-4 right-4 text-white"><i class="fas fa-sun"></i></button>
 		</div>
 	</div>
 
@@ -152,7 +165,9 @@
 			<div class="flex items-center header-user-block">
 				<span id="user-display-name" class="text-sm text-gray-300 font-medium mr-4"></span>
 				<button id="logout-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded-lg shadow-md text-sm flex items-center gap-2">
-@@ -137,7 +177,6 @@ <h1 class="text-3xl font-bold text-white">Painel de Gestão</h1>
+					<i class="fas fa-sign-out-alt"></i> Sair
+				</button>
+			</div>
 			<img src="https://www.fabrisegurjao.adv.br/netpage/data/uploads/2019/12/logo-fabris-e-gurjao-491x325px.png" alt="Fabris e Gurjão Logo" class="header-logo">
 		</header>
 
@@ -160,7 +175,13 @@
 		<div class="border-b border-gray-700 mb-8">
 			<nav class="flex justify-between items-center -mb-px">
 				<div class="flex">
-@@ -151,7 +190,6 @@ <h1 class="text-3xl font-bold text-white">Painel de Gestão</h1>
+					<a onclick="window.App.showPage('page-dashboard')" id="tab-dashboard" class="nav-tab active">
+						<i class="fas fa-tachometer-alt mr-2"></i>Painel Principal
+					</a>
+					<a onclick="window.App.showPage('page-inadimplentes')" id="tab-inadimplentes" class="nav-tab">
+						<i class="fas fa-exclamation-triangle mr-2"></i>Inadimplentes
+					</a>
+					<a onclick="window.App.showPage('page-servicos')" id="tab-servicos" class="nav-tab">
 						<i class="fas fa-tasks mr-2"></i>Serviços
 					</a>
 				</div>
@@ -168,7 +189,8 @@
 				<div>
 					<a onclick="window.App.showPage('page-lixeira')" id="tab-lixeira" class="nav-tab-icon" title="Lixeira">
 						<i class="fas fa-trash-alt"></i>
-@@ -160,9 +198,7 @@ <h1 class="text-3xl font-bold text-white">Painel de Gestão</h1>
+					</a>
+				</div>
 			</nav>
 		</div>
 
@@ -178,7 +200,9 @@
 			<div class="flex flex-wrap gap-4 mb-8">
 				<button onclick="window.App.openContractModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
 					<i class="fas fa-plus-circle"></i> Novo Contrato
-@@ -172,7 +208,6 @@ <h1 class="text-3xl font-bold text-white">Painel de Gestão</h1>
+				</button>
+				<button onclick="window.App.openReportModal()" class="admin-only bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
+					<i class="fas fa-chart-line"></i> Relatório Mensal
 				</button>
 			</div>
 
@@ -186,7 +210,13 @@
 			<div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 				<div class="dark-card p-6 rounded-lg shadow-lg admin-only">
 					<h3 class="text-lg font-semibold text-gray-400">A Receber (Próx. 30 dias)</h3>
-@@ -186,14 +221,12 @@ <h3 class="text-lg font-semibold text-gray-400">Vencido (Corrigido)</h3>
+					<p id="dash-a-receber" class="text-3xl font-bold text-green-400"></p>
+				</div>
+				<div class="dark-card p-6 rounded-lg shadow-lg admin-only">
+					<h3 class="text-lg font-semibold text-gray-400">Vencido (Corrigido)</h3>
+					<p id="dash-vencido" class="text-3xl font-bold text-red-400"></p>
+				</div>
+				<div class="dark-card p-6 rounded-lg shadow-lg admin-only">
 					<h3 class="text-lg font-semibold text-gray-400">Recebido (Este Mês)</h3>
 					<p id="dash-recebido" class="text-3xl font-bold text-indigo-400"></p>
 				</div>
@@ -201,7 +231,23 @@
 			<div class="mb-4 border-b border-gray-700">
 				<h2 class="text-2xl font-semibold mb-4 text-white">Situação das Parcelas (Meus Contratos)</h2>
 			</div>
-@@ -217,7 +250,6 @@ <h3 class="font-bold text-lg mb-4 text-indigo-400 flex items-center gap-2"><i cl
+
+			<div id="kanban-board" class="flex overflow-x-auto space-x-4 pb-4">
+				<div class="kanban-column bg-gray-900/70 rounded-lg p-4 flex-1">
+					<h3 class="font-bold text-lg mb-4 text-red-400 flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i>Vencidas</h3>
+					<div id="kanban-vencidas" class="kanban-content space-y-3"></div>
+				</div>
+				<div class="kanban-column bg-gray-900/70 rounded-lg p-4 flex-1">
+					<h3 class="font-bold text-lg mb-4 text-yellow-400 flex items-center gap-2"><i class="far fa-clock"></i>A Vencer (Próx. 30 dias)</h3>
+					<div id="kanban-a-vencer" class="kanban-content space-y-3"></div>
+				</div>
+				<div class="kanban-column bg-gray-900/70 rounded-lg p-4 flex-1">
+					<h3 class="font-bold text-lg mb-4 text-gray-400 flex items-center gap-2"><i class="fas fa-check-circle"></i>Pagas (Este Mês)</h3>
+					<div id="kanban-pagas" class="kanban-content space-y-3"></div>
+				</div>
+				<div class="kanban-column bg-gray-900/70 rounded-lg p-4 flex-1">
+					<h3 class="font-bold text-lg mb-4 text-indigo-400 flex items-center gap-2"><i class="fas fa-gavel"></i>Aguardando Êxito</h3>
+					<div id="kanban-exito" class="kanban-content space-y-3"></div>
 				</div>
 			</div>
 
@@ -209,32 +255,29 @@
 			<div class="mt-12">
 				<div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-4">
 					<h2 class="text-2xl font-semibold text-white">Meus Contratos</h2>
-@@ -232,19 +264,24 @@ <h2 class="text-2xl font-semibold text-white">Meus Contratos</h2>
+					<div class="flex items-center gap-4">
+						<button onclick="window.App.exportContractsCSV()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2 text-sm">
+							<i class="fas fa-file-csv"></i> Exportar (CSV)
+						</button>
+						<select id="advogadoFilter" onchange="window.App.resetAndRenderContractList()" class="filter-select admin-only"></select>
+						<div class="flex items-center gap-2">
+							<span class="text-sm text-gray-400">Ordenar por:</span>
+							<div id="contractSortButtons" class="flex gap-1"></div>
 						</div>
 					</div>
 				</div>
 				<div class="mb-4">
 					<input type="text" id="searchInput" placeholder="🔎 Pesquisar por cliente ou tipo de serviço..." class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white">
-
-				<div class="flex justify-between items-center mb-4">
-					<div class="flex items-center gap-4">
-						<span class="text-sm font-medium text-gray-400">Filtrar por Status:</span>
-						<div id="contractStatusFilterButtons" class="status-filter-group">
-							</div>
-					</div>
-					<div class="w-1/3">
-						<input type="text" id="searchInput" placeholder="🔎 Pesquisar por cliente ou tipo de serviço..." class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white">
-					</div>
 				</div>
 				<div id="contractListContainer"></div>
 				<div id="loadMoreContainer" class="text-center mt-8">
 					<button id="loadMoreButton" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all flex items-center gap-2 mx-auto">
 						<i class="fas fa-plus"></i> Carregar Mais
 					</button>
-				</div>
 				
 				<div id="paginationContainer" class="flex justify-center items-center gap-2 mt-8">
 					</div>
+				</div>
 			</div>
 		</div>
 
@@ -242,7 +285,11 @@
 		<div id="page-inadimplentes" class="hidden">
 			<div class="flex justify-between items-center mb-4">
 				<h2 class="text-2xl font-semibold text-white">Controle de Inadimplentes (Meus Contratos)</h2>
-@@ -256,7 +293,6 @@ <h2 class="text-2xl font-semibold text-white">Controle de Inadimplentes (Meus Co
+				<div class="flex items-center gap-2">
+					<span class="text-sm text-gray-400">Ordenar por:</span>
+					<div id="inadimplentesSortButtons" class="flex gap-1"></div>
+				</div>
+			</div>
 			<div id="inadimplentesListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 		</div>
 
@@ -250,7 +297,15 @@
 		<div id="page-servicos" class="hidden">
 			<div class="flex justify-between items-center mb-4">
 				<h2 class="text-2xl font-semibold text-white">Controle de Produção de Serviços (Meus Contratos)</h2>
-@@ -272,7 +308,6 @@ <h2 class="text-2xl font-semibold text-white">Controle de Produção de Serviço
+				<div class="flex items-center gap-4">
+					<select id="servicosAdvogadoFilter" onchange="window.App.renderServicosPage()" class="filter-select admin-only"></select>
+					<div class="flex items-center gap-2">
+						<span class="text-sm text-gray-400">Ordenar por:</span>
+						<div id="servicosSortButtons" class="flex gap-1"></div>
+					</div>
+					<input type="text" id="servicosSearchInput" placeholder="🔎 Pesquisar..." class="w-full md:w-auto p-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white">
+				</div>
+			</div>
 			<div id="servicosListContainer" class="space-y-6"></div>
 		</div>
 
@@ -258,7 +313,9 @@
 		<div id="page-lixeira" class="hidden">
 			<div class="flex justify-between items-center mb-4">
 				<h2 class="text-2xl font-semibold text-white">Lixeira de Contratos</h2>
-@@ -282,7 +317,6 @@ <h2 class="text-2xl font-semibold text-white">Lixeira de Contratos</h2>
+			</div>
+			<p class="text-gray-400 mb-6">Contratos excluídos são mantidos aqui. Você pode restaurá-los ou excluí-los permanentemente (apenas admins).</p>
+			<div id="lixeiraListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 		</div>
 	</div>
 
@@ -266,7 +323,14 @@
 	<div id="modalDisplayName" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
 		<div class="p-6">
 			<h2 class="text-2xl font-bold text-white mb-4">Bem-vindo(a)!</h2>
-@@ -297,7 +331,6 @@ <h2 class="text-2xl font-bold text-white mb-4">Bem-vindo(a)!</h2>
+			<p class="text-gray-400 mb-4">Percebemos que é seu primeiro acesso. Como você gostaria de ser chamado(a)?</p>
+			<form id="formDisplayName">
+				<div class="mb-4">
+					<label for="inputDisplayName" class="block text-sm font-medium text-gray-400">Seu Nome de Exibição</label>
+					<input type="text" id="inputDisplayName" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" required>
+				</div>
+				<button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Salvar e Entrar</button>
+			</form>
 		</div>
 	</div>
 
@@ -274,7 +338,8 @@
 	<div id="modalContrato" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/2 lg:w-2/5">
 		<div class="p-6">
 			<div class="flex justify-between items-center mb-4">
-@@ -306,24 +339,22 @@ <h2 id="modalContratoTitle" class="text-2xl font-bold text-white">Cadastrar Novo
+				<h2 id="modalContratoTitle" class="text-2xl font-bold text-white">Cadastrar Novo Contrato</h2>
+				<button onclick="window.App.closeModal('modalContrato')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
 			</div>
 			<form id="formContrato">
 				<input type="hidden" id="contractId">
@@ -284,10 +349,6 @@
 						<label for="clienteNome" class="block text-sm font-medium text-gray-400">Nome do Cliente</label>
 						<input type="text" id="clienteNome" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" required>
 					</div>
-						<input type="text" id="clienteNome" list="client-list" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" required>
-						<datalist id="client-list">
-							</datalist>
-						</div>
 					<div>
 						<label for="advogadoResponsavel" class="block text-sm font-medium text-gray-400">Advogado Responsável</label>
 						<select id="advogadoResponsavel" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" required></select>
@@ -303,7 +364,8 @@
 							</div>
 						<div class="flex gap-2">
 							<input type="text" id="contratoServicoInput" class="flex-grow outline-none bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white" placeholder="Nome do Serviço...">
-@@ -332,7 +363,6 @@ <h2 id="modalContratoTitle" class="text-2xl font-bold text-white">Cadastrar Novo
+							<input type="date" id="contratoPrazoInput" class="bg-gray-800 border border-gray-600 rounded-md shadow-sm text-gray-400 px-3 py-2" style="color-scheme: dark;">
+							<button type="button" id="addServiceButton" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 px-3 rounded-lg">Adicionar</button>
 						</div>
 					</div>
 				</div>
@@ -311,18 +373,21 @@
 				<div class="mb-4">
 					<label for="contratoTipoPagamento" class="block text-sm font-medium text-gray-400">Modalidade de Pagamento</label>
 					<select id="contratoTipoPagamento" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white">
-@@ -345,20 +375,17 @@ <h2 id="modalContratoTitle" class="text-2xl font-bold text-white">Cadastrar Novo
+						<option>Parcelado</option>
+						<option>Pró-Abono</option>
+						<option>Entrada única</option>
+					</select>
+				</div>
+				<div class="mb-4">
 					<label for="contratoObservacoes" class="block text-sm font-medium text-gray-400">Observações</label>
 					<textarea id="contratoObservacoes" rows="3" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white" placeholder="Detalhes da negociação, informações do caso, etc..."></textarea>
 				</div>
 
 				<!-- Seção Admin: Financeiro -->
-				
 				<div class="admin-only">
 					<h3 class="text-lg font-semibold mb-2 border-t border-gray-700 pt-4 text-white">Detalhes Financeiros</h3>
 
 					<!-- === NOVA FUNÇÃO === -->
-					
 					<div class="mb-4 p-3 bg-gray-900/50 rounded-lg border border-gray-700">
 						<label for="contratoJaQuitado" class="flex items-center">
 							<input type="checkbox" id="contratoJaQuitado" class="h-4 w-4 bg-gray-700 border-gray-600 rounded text-indigo-600 focus:ring-indigo-500">
@@ -334,7 +399,21 @@
 
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div class="mb-4">
-@@ -380,7 +407,6 @@ <h3 class="text-lg font-semibold mb-2 border-t border-gray-700 pt-4 text-white">
+							<label for="valorTotal" class="block text-sm font-medium text-gray-400">Valor Fixo Total (R$)</label>
+							<input type="number" step="0.01" id="valorTotal" placeholder="0 se for só êxito" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white">
+						</div>
+						<div class="mb-4">
+							<label for="numParcelas" class="block text-sm font-medium text-gray-400">N° de Parcelas</label>
+							<input type="number" id="numParcelas" placeholder="1 para 'À Vista'" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white" value="1">
+						</div>
+					</div>
+					<div class="mb-4">
+						<label for="vencimentoPrimeiraParcela" class="block text-sm font-medium text-gray-400">Vencimento da 1ª Parcela</label>
+						<input type="date" id="vencimentoPrimeiraParcela" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white" style="color-scheme: dark;">
+					</div>
+					<div class="mb-4">
+						<label for="taxaExito" class="block text-sm font-medium text-gray-400">Taxa de Êxito (Bonificação)</label>
+						<input type="text" id="taxaExito" placeholder="Ex: 20%, 10000, 5 SALARIOS" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white">
 					</div>
 				</div>
 
@@ -342,7 +421,8 @@
 				<div class="flex justify-end mt-6">
 					<button type="button" onclick="window.App.closeModal('modalContrato')" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg mr-2">Cancelar</button>
 					<button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Salvar</button>
-@@ -389,7 +415,6 @@ <h3 class="text-lg font-semibold mb-2 border-t border-gray-700 pt-4 text-white">
+				</div>
+			</form>
 		</div>
 	</div>
 
@@ -350,7 +430,26 @@
 	<div id="modalPagamento" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
 		<div class="p-6">
 			<div class="flex justify-between items-center mb-4">
-@@ -416,7 +441,6 @@ <h2 class="text-2xl font-bold text-white">Registrar Pagamento</h2>
+				<h2 class="text-2xl font-bold text-white">Registrar Pagamento</h2>
+				<button onclick="window.App.closeModal('modalPagamento')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+			</div>
+			<form id="formPagamento">
+				<div id="pagamentoInfo" class="mb-4 bg-gray-700 p-3 rounded-md text-white"></div>
+				<div class="mb-4">
+					<label for="pagamentoValor" class="block text-sm font-medium text-gray-400">Valor Pago (R$)</label>
+					<input type="number" step="0.01" id="pagamentoValor" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white" required>
+				</div>
+				<div class="mb-4">
+					<label for="pagamentoData" class="block text-sm font-medium text-gray-400">Data do Pagamento</label>
+					<input type="date" id="pagamentoData" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white" required style="color-scheme: dark;">
+				</div>
+				<input type="hidden" id="pagamentoContractId">
+				<input type="hidden" id="pagamentoParcelIndex">
+				<div class="flex justify-end mt-6">
+					<button type="button" onclick="window.App.closeModal('modalPagamento')" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg mr-2">Cancelar</button>
+					<button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Confirmar Pagamento</button>
+				</div>
+			</form>
 		</div>
 	</div>
 
@@ -358,7 +457,10 @@
 	<div id="modalCliente" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-3/4 lg:w-2/3">
 		<div class="p-6">
 			<div class="flex justify-between items-center mb-4">
-@@ -427,14 +451,12 @@ <h2 id="clienteModalTitle" class="text-2xl font-bold text-white"></h2>
+				<h2 id="clienteModalTitle" class="text-2xl font-bold text-white"></h2>
+				<button onclick="window.App.closeModal('modalCliente')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+			</div>
+			<div id="clienteModalContent" class="space-y-6"></div>
 		</div>
 	</div>
 
@@ -373,7 +475,10 @@
 			<div class="flex gap-4 mb-4">
 				<div class="flex-1">
 					<label for="reportMonth" class="block text-sm font-medium text-gray-400">Mês</label>
-@@ -445,7 +467,6 @@ <h2 class="text-2xl font-bold text-white">Relatório e Análise</h2>
+					<select id="reportMonth" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white"></select>
+				</div>
+				<div class="flex-1">
+					<label for="reportYear" class="block text-sm font-medium text-gray-400">Ano</label>
 					<select id="reportYear" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white"></select>
 				</div>
 			</div>
@@ -381,7 +486,12 @@
 			<div class="flex gap-4 mb-6">
 				<button onclick="window.App.generateAndShowReport()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg">
 					<i class="fas fa-file-invoice-dollar mr-2"></i> Relatório
-@@ -458,13 +479,9 @@ <h2 class="text-2xl font-bold text-white">Relatório e Análise</h2>
+				</button>
+				<button onclick="window.App.showAnalyticsInModal()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg">
+					<i class="fas fa-chart-bar mr-2"></i> Gráficos
+				</button>
+				<button onclick="window.App.exportReportCSV()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">
+					<i class="fas fa-file-csv mr-2"></i> Exportar (CSV)
 				</button>
 			</div>
 
@@ -395,7 +505,18 @@
 			<div id="reportChartsContainer" class="hidden space-y-8">
 				<div class="dark-card p-6 rounded-lg shadow-lg">
 					<h3 class="text-lg font-semibold text-gray-300 mb-4">Faturamento Real (Últimos 12 Meses)</h3>
-@@ -483,7 +500,6 @@ <h3 class="text-lg font-semibold text-gray-300 mb-4">Projeção de Ganhos (Próx
+					<div class="relative" style="height: 350px;">
+						<canvas id="actualIncomeChartModal"></canvas>
+					</div>
+				</div>
+				<div class="dark-card p-6 rounded-lg shadow-lg">
+					<h3 class="text-lg font-semibold text-gray-300 mb-4">Projeção de Ganhos (Próximos 12 Meses)</h3>
+					<p class="text-sm text-gray-400 mb-4 -mt-3">(Baseado em parcelas pendentes)</p>
+					<div class="relative" style="height: 350px;">
+						<canvas id="projectedIncomeChartModal"></canvas>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
 
@@ -403,7 +524,22 @@
 	<div id="modalExito" class="modal bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-11/12 md:w-1/3">
 		<div class="p-6">
 			<div class="flex justify-between items-center mb-4">
-@@ -506,39 +522,41 @@ <h2 class="text-2xl font-bold text-white">Registrar Recebimento de Êxito</h2>
+				<h2 class="text-2xl font-bold text-white">Registrar Recebimento de Êxito</h2>
+				<button onclick="window.App.closeModal('modalExito')" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+			</div>
+			<form id="formExito">
+				<div id="exitoInfo" class="mb-4 bg-gray-700 p-3 rounded-md"></div>
+				<div class="mb-4 admin-only">
+					<label for="exitoValorRecebido" class="block text-sm font-medium text-gray-400">Valor Líquido Recebido (R$)</label>
+					<input type="number" step="0.01" id="exitoValorRecebido" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white" placeholder="Ex: 9500.00" required>
+				</div>
+				<p class="mb-4 text-gray-400 non-admin-hidden">Confirme o recebimento do valor de êxito.</p>
+				<input type="hidden" id="exitoContractId">
+				<div class="flex justify-end mt-6">
+					<button type="button" onclick="window.App.closeModal('modalExito')" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg mr-2">Cancelar</button>
+					<button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Salvar Recebimento</button>
+				</div>
+			</form>
 		</div>
 	</div>
 
@@ -418,45 +554,89 @@
 		window.App = window.App || {};
 
 		// Imports do Firebase
-		// === INÍCIO: NOVOS IMPORTS DO FIRESTORE ===
 		import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 		import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 		import { getFirestore, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-		import { 
-			getFirestore, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc, setLogLevel,
-			setDoc, getDocs, query, where, writeBatch, documentId 
-		} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-		// === FIM: NOVOS IMPORTS DO FIRESTORE ===
 
 		// Variáveis globais do App
 		let db, auth, contractsCollection;
-		let db, auth;
-		let contractsCollection, clientsCollection, indicesCollection; // Novas coleções
 		let database = { contracts: [] };
 		let currentContractSort = 'name-asc';
 		let currentInadimplentesSort = 'days-desc';
 		let currentServicosSort = 'name-asc';
-		let currentContractStatusFilter = 'Todos'; // NOVO FILTRO DE STATUS
 		let actualIncomeChartInstance = null;
 		let projectedIncomeChartInstance = null;
 		let backdrop;
 		let contractListPage = 0;
-		let contractListPage = 0; 
-		const CONTRACTS_PER_PAGE = 12; 
+		
+		// === INÍCIO DA MUDANÇA JS: VARIÁVEIS DE PAGINAÇÃO ===
+		let contractListPage = 0; // Página atual (base 0)
+		const CONTRACTS_PER_PAGE = 12; // Itens por página
+		// === FIM DA MUDANÇA JS ===
 
 		// Constantes
 		const CONTRACTS_PER_PAGE = 12; // Modificado para 12 por página
 		const ADMIN_USERS = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "D'Arc"];
-		const ADMIN_USERS = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "D'Arc"]; // Mantido por simplicidade
 		let currentUserDisplayName = null;
 		let isUserAdmin = false;
 
 		// Objeto de Utilitários
-		// Objeto de Utilitários (Inalterado)
 		const Utils = {
 			toastContainer: null,
 			initToast() {
-@@ -598,7 +616,6 @@ <h2 class="text-2xl font-bold text-white">Registrar Recebimento de Êxito</h2>
+				if (this.toastContainer) return;
+				const el = document.createElement('div');
+				el.style.position = 'fixed';
+				el.style.bottom = '20px';
+				el.style.right = '20px';
+				el.style.zIndex = '11000';
+				el.style.display = 'flex';
+				el.style.flexDirection = 'column';
+				el.style.gap = '8px';
+				document.body.appendChild(el);
+				this.toastContainer = el;
+			},
+			showToast(message, type = 'info') {
+				this.initToast();
+				const n = document.createElement('div');
+				n.className = 'px-4 py-3 rounded-lg shadow-lg text-sm';
+				n.style.background = type === 'error' ? '#7f1d1d' : (type === 'success' ? '#065f46' : '#374151');
+				n.style.color = '#fff';
+				n.textContent = message;
+				this.toastContainer.appendChild(n);
+				setTimeout(() => n.remove(), 2500);
+			},
+			debounce(fn, ms = 300) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; },
+			sanitizeText(s) { if (!s) return ''; return String(s).replace(/[<>]/g, '').trim(); },
+			parseNumber(n) { const v = Number(n); return Number.isFinite(v) ? v : 0; },
+			confirm(message) {
+				return new Promise((resolve) => {
+					let modal = document.getElementById('confirmModal');
+					if (!modal) {
+						modal = document.createElement('div');
+						modal.id = 'confirmModal';
+						modal.innerHTML = `
+<div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:12000">
+	<div class="dark-card" style="width:100%;max-width:420px;border-radius:12px;border:1px solid #374151;padding:16px;background:#111827">
+		<p id="confirmMessage" class="text-gray-200 mb-4"></p>
+		<div class="flex justify-end gap-2">
+			<button id="confirmCancel" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Cancelar</button>
+			<button id="confirmOk" class="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg">Confirmar</button>
+		</div>
+	</div>
+</div>`;
+						document.body.appendChild(modal);
+					}
+					modal.querySelector('#confirmMessage').textContent = message;
+					modal.style.display = 'block';
+					const onClose = (val) => { modal.style.display = 'none'; resolve(val); };
+					modal.querySelector('#confirmCancel').onclick = () => onClose(false);
+					modal.querySelector('#confirmOk').onclick = () => onClose(true);
+				});
+			},
+		};
+
+		// Inicialização do Firebase e Autenticação
 		async function initializeAndAuth() {
 			try {
 				const firebaseConfig = {
@@ -464,16 +644,26 @@
 					apiKey: "AIzaSyA0TWb7DgZAHNl3TuoK3xQD-ANvCcQIDK4",
 					authDomain: "fabrisgurjao.firebaseapp.com",
 					projectId: "fabrisgurjao",
-@@ -611,7 +628,7 @@ <h2 class="text-2xl font-bold text-white">Registrar Recebimento de Êxito</h2>
+					storageBucket: "fabrisgurjao.firebasestorage.app",
+					messagingSenderId: "466702265991",
+					appId: "1:466702265991:web:78c4d98b47cab537921222",
+					measurementId: "G-E99R5TFMQK"
+				};
+
 				const app = initializeApp(firebaseConfig);
 				db = getFirestore(app);
 				auth = getAuth(app);
 				setLogLevel('debug'); // Habilita logs detalhados do Firestore no console
-				setLogLevel('error'); // Reduz o log do console
+				setLogLevel('debug'); 
 
 				onAuthStateChanged(auth, (user) => {
 					const loadingOverlay = document.getElementById('loading-overlay');
-@@ -624,24 +641,26 @@ <h2 class="text-2xl font-bold text-white">Registrar Recebimento de Êxito</h2>
+					const authOverlay = document.getElementById('auth-overlay');
+					const appContainer = document.getElementById('app-container');
+
+					if (user) {
+						currentUserDisplayName = user.displayName;
+						isUserAdmin = ADMIN_USERS.includes(currentUserDisplayName);
 						document.body.classList.toggle('is-admin', isUserAdmin);
 
 						if (!user.displayName) {
@@ -491,34 +681,36 @@
 							authOverlay.style.display = 'none';
 							appContainer.style.display = 'block';
 							setupUIAccess(isUserAdmin);
-							
-							// === INÍCIO: NOVAS COLEÇÕES ===
 							contractsCollection = collection(db, `contracts`);
 							setupSnapshotListener();
 							// loadingOverlay.style.display = 'none'; // <-- Movido para cima
-							clientsCollection = collection(db, `clients`);
-							indicesCollection = collection(db, `indices`);
-							// === FIM: NOVAS COLEÇÕES ===
-							
-							setupSnapshotListeners(); // Modificado para plural
 						}
 					} else {
 						// Deslogado
 						currentUserDisplayName = null;
 						isUserAdmin = false;
 						document.body.classList.remove('is-admin');
-@@ -656,9 +675,8 @@ <h2 class="text-2xl font-bold text-white">Registrar Recebimento de Êxito</h2>
+						authOverlay.style.display = 'flex';
+						appContainer.style.display = 'none';
+						loadingOverlay.style.display = 'none';
+					}
+				});
+			} catch (error) {
+				console.error("Erro na inicialização:", error);
+				document.getElementById('loading-overlay').textContent = "Erro ao conectar.";
 			}
 		}
 
 		// Configura o acesso da UI com base no nível do usuário (Admin vs. Normal)
-		// Configura o acesso da UI (Inalterado)
 		function setupUIAccess(isAdmin) {
 			// Controla filtros de advogado
 			const advogadoFilters = [
 				document.getElementById('advogadoFilter'),
 				document.getElementById('servicosAdvogadoFilter')
-@@ -669,65 +687,79 @@ <h2 class="text-2xl font-bold text-white">Registrar Recebimento de Êxito</h2>
+			];
+			advogadoFilters.forEach(select => {
+				if (select) {
+					select.disabled = !isAdmin;
 					select.value = isAdmin ? 'Todos' : currentUserDisplayName;
 				}
 			});
@@ -535,45 +727,16 @@
 
 		// Configura o listener em tempo real do Firestore
 		function setupSnapshotListener() {
-		// === INÍCIO: MUDANÇA PARA MÚLTIPLOS LISTENERS ===
-		// Configura os listeners em tempo real do Firestore
-		function setupSnapshotListeners() {
-			// Listener 1: Contratos
 			onSnapshot(contractsCollection, (snapshot) => {
 				database.contracts = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
 				contractListPage = 0; // Reseta a paginação a cada nova atualização
 				render(); // Renderiza a aplicação com os novos dados
-				contractListPage = 0; // Reseta a paginação
-				render(); 
-			}, (error) => {
-				console.error("Erro ao buscar contratos:", error);
-			});
-
-			// Listener 2: Clientes (para o autocomplete)
-			onSnapshot(clientsCollection, (snapshot) => {
-				const clientNames = snapshot.docs.map(docSnap => docSnap.data().name);
-				populateClientDatalist(clientNames);
 			}, (error) => {
 				console.error("Erro ao buscar dados:", error);
-				console.error("Erro ao buscar clientes:", error);
 			});
 		}
-		
-		// NOVO: Popula o datalist de clientes
-		function populateClientDatalist(clientNames) {
-			const datalist = document.getElementById('client-list');
-			if (!datalist) return;
-			datalist.innerHTML = '';
-			clientNames.forEach(name => {
-				const option = document.createElement('option');
-				option.value = name;
-				datalist.appendChild(option);
-			});
-		}
-		// === FIM: MUDANÇA PARA MÚLTIPLOS LISTENERS ===
 
 		// Filtra contratos com base no usuário (Admin vê tudo, usuário normal vê só os seus)
-		// Filtra contratos (Inalterado)
 		const getFilteredContracts = (includeDeleted = false) => {
 			const allContracts = database.contracts;
 			if (isUserAdmin) return includeDeleted ? allContracts : allContracts.filter(c => !c.isDeleted);
@@ -611,11 +774,23 @@
 			if (pageId === 'page-dashboard') {
 				renderKanban(filteredData);
 				renderContractList(true); // Reseta a lista ao mudar para a aba
-				renderContractList(); 
+				renderContractList(); // [MODIFICADO] Não precisa mais do 'true'
 			} else if (pageId === 'page-inadimplentes') {
 				renderInadimplentesPage(filteredData);
 			} else if (pageId === 'page-servicos') {
-@@ -747,13 +779,11 @@ <h2 class="text-2xl font-bold text-white">Registrar Recebimento de Êxito</h2>
+				renderServicosPage(filteredData);
+			} else if (pageId === 'page-lixeira') {
+				renderLixeiraPage(allFilteredData);
+			}
+		};
+		window.App.showPage = showPage;
+
+		// Função principal de renderização (chamada quando os dados mudam)
+		async function render() {
+			if (document.getElementById('app-container').style.display !== 'block') return;
+
+			const filteredData = getFilteredContracts(false);
+			const allFilteredData = getFilteredContracts(true);
 			const currentPage = document.querySelector('div[id^="page-"]:not(.hidden)');
 
 			if (!currentPage) { showPage('page-dashboard'); return; }
@@ -626,27 +801,59 @@
 			if (pageId === 'page-dashboard') {
 				await renderKanban(filteredData);
 				renderContractList(true); // [MODIFICADO] Reseta a lista ao atualizar dados
-				renderContractList(); 
+				renderContractList(); // [MODIFICADO]
 			} else if (pageId === 'page-inadimplentes') {
 				await renderInadimplentesPage(filteredData);
 			} else if (pageId === 'page-servicos') {
-@@ -762,12 +792,13 @@ <h2 class="text-2xl font-bold text-white">Registrar Recebimento de Êxito</h2>
+				renderServicosPage(filteredData);
+			} else if (pageId === 'page-lixeira') {
 				renderLixeiraPage(allFilteredData);
 			}
 
 			// Atualiza elementos comuns
-			// Renderiza botões de filtro e ordenação
 			renderSortButtons();
-			renderStatusFilterButtons(); // NOVO
 			renderAdvogadoFilters();
 		}
 
 		// Renderiza o quadro Kanban
-// Renderiza o quadro Kanban
 		async function renderKanban(contractsToRender) {
 			const kanbanVencidas = document.getElementById('kanban-vencidas');
 			const kanbanAVencer = document.getElementById('kanban-a-vencer');
-@@ -808,25 +839,7 @@ <h2 class="text-2xl font-bold text-white">Registrar Recebimento de Êxito</h2>
+			const kanbanPagas = document.getElementById('kanban-pagas');
+			const kanbanExito = document.getElementById('kanban-exito');
+
+			kanbanVencidas.innerHTML = '';
+			kanbanAVencer.innerHTML = '';
+			kanbanPagas.innerHTML = '';
+			kanbanExito.innerHTML = '';
+
+			const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+			const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+			const trintaDiasFrente = new Date(); trintaDiasFrente.setDate(hoje.getDate() + 30);
+
+			let totalAVencer30dias = 0;
+			let totalVencido = 0;
+			const vencidasPromises = []; // Para aguardar cálculo de juros
+			const vencidasPromises = []; 
+
+			for (const contract of contractsToRender) {
+				if (!contract.parcels) contract.parcels = [];
+				// Calcula o valor restante (apenas para admin)
+				let remainingValue = isUserAdmin
+					? contract.parcels.reduce((sum, p) => p.status === 'Pendente' ? sum + p.value : sum, 0)
+					: 0;
+
+				for (let i = 0; i < contract.parcels.length; i++) {
+					const parcel = contract.parcels[i];
+					const vencimento = new Date(parcel.dueDate);
+
+					if (parcel.status === 'Paga') {
+						const dataPagamento = new Date(parcel.paymentDate);
+						// Mostra apenas pagas *este mês*
+						if (dataPagamento >= primeiroDiaMes && dataPagamento <= hoje) {
+							kanbanPagas.innerHTML += createParcelCard(contract, parcel, i, 'paga', remainingValue);
+						}
+					} else { // Pendente
 						if (vencimento < hoje) { // Vencida
 							vencidasPromises.push(
 								calcularValorCorrigido(parcel.value, parcel.dueDate).then(valorCorrigido => {
@@ -669,17 +876,99 @@
 
 			// Aguarda todos os cálculos de juros e insere no HTML
 			const vencidasHtml = await Promise.all(vencidasPromises);
-									if (isUserAdmin) totalVencido += valorCorrigVencidas;
 			kanbanVencidas.innerHTML = vencidasHtml.join('');
 
 			// Atualiza os cards de métricas do dashboard
-@@ -917,70 +930,134 @@ <h2 class="text-2xl font-bold text-white">Registrar Recebimento de Êxito</h2>
+			const totalPagoMes = isUserAdmin ? calculateMonthlyIncome(hoje.getFullYear(), hoje.getMonth(), contractsToRender).totalGeral : 0;
+			renderDashboard(totalAVencer30dias, totalVencido, totalPagoMes, contractsToRender.length);
+		}
+
+		// Cria o HTML para um card de parcela no Kanban
+		function createParcelCard(contract, parcel, index, type, remainingValue, valorCorrigido = null) {
+			const vencimento = new Date(parcel.dueDate);
+			const formattedDate = vencimento.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+			const formattedValue = isUserAdmin ? parcel.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
+			const formattedRemaining = isUserAdmin ? remainingValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
+			const formattedCorrigido = isUserAdmin && valorCorrigido ? valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
+
+			let actionButton = '';
+			let statusClass = '';
+			let valorHtml = '';
+
+			if (type === 'vencida') {
+				statusClass = 'border-red-400';
+				valorHtml = isUserAdmin
+					? `<div class="flex items-center text-gray-400 text-xs"><strong>Original:</strong><span class="ml-auto font-medium line-through">${formattedValue}</span></div>
+					  <div class="flex items-center text-red-400"><strong>Corrigido:</strong><span class="ml-auto font-semibold text-lg">${formattedCorrigido}</span></div>`
+					: `<div class="text-red-400 font-semibold">Vencida</div>`;
+			} else if (type === 'a-vencer') {
+				statusClass = 'border-yellow-400';
+				valorHtml = isUserAdmin
+					? `<div class="flex items-center text-gray-300"><i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-500"></i><strong>Valor:</strong><span class="ml-auto font-semibold text-lg text-white">${formattedValue}</span></div>`
+					: `<div class="text-yellow-400 font-semibold">A vencer</div>`;
+			} else { // Paga
+				statusClass = 'border-gray-600';
+				const formattedPaidValue = isUserAdmin ? (parcel.valuePaid || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
+				const paymentDate = new Date(parcel.paymentDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+				valorHtml = isUserAdmin
+					? `<div class="flex items-center text-gray-300"><i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-500"></i><strong>Valor:</strong><span class="ml-auto font-semibold text-lg text-white">${formattedValue}</span></div>`
+					: '';
+				actionButton = `<div class="mt-4 text-center text-sm bg-green-900/50 text-green-300 p-2 rounded-md font-medium">Pago ${isUserAdmin ? formattedPaidValue : ''} em ${paymentDate}</div>`;
+			}
+
+			// Adiciona botão de pagar se não estiver paga
+			if (type !== 'paga') {
+				actionButton = `<button onclick="window.App.openPaymentModal('${contract.id}', ${index})" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2"><i class="fas fa-check"></i> Registrar Pagamento</button>`;
+			}
+
+			// Mostra valor total e restante (apenas admin)
+			let extraInfoHtml = isUserAdmin
+				? `<div class="text-xs text-gray-400 border-t border-gray-700 pt-2 mt-3 flex justify-between"><span>Contrato: <strong>${(contract.totalValue || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></span> <span>Restante: <strong>${formattedRemaining}</strong></span></div>`
+				: '';
+
+			return `
+				<div class="dark-card p-4 rounded-lg shadow-md border-l-4 ${statusClass}">
+					<p class="font-bold text-white">${contract.clientName}</p>
+					<p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')} - Parcela ${parcel.number}/${contract.parcels.length || 1}</p>
+					<div class="space-y-2 text-sm">
+						${valorHtml}
+						<div class="flex items-center text-gray-300">
+							<i class="fas fa-calendar-alt w-5 text-center mr-2 text-gray-500"></i>
+							<strong>Vencimento:</strong>
+							<span class="ml-auto font-medium">${formattedDate}</span>
+						</div>
+					</div>
+					${extraInfoHtml}
+					${actionButton}
+				</div>`;
+		}
+
+		// Cria o HTML para um card de êxito no Kanban
+		function createExitoCard(contract) {
+			const taxaExitoDisplay = isUserAdmin ? contract.successFee : '[Restrito]';
+			return `
+				<div class="dark-card p-4 rounded-lg shadow-md border-l-4 border-indigo-400">
+					<p class="font-bold text-white">${contract.clientName}</p>
+					<p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
+					<div class="my-4 text-center">
+						<p class="text-sm text-gray-400">Bonificação Pendente</p>
+						<p class="text-2xl font-semibold text-indigo-400">${taxaExitoDisplay}</p>
+					</div>
+					<button onclick="window.App.openExitoModal('${contract.id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2"><i class="fas fa-gavel"></i> Registrar Recebimento</button>
+				</div>`;
+		}
+
+		// Atualiza os números do Dashboard
+		function renderDashboard(aVencer, vencido, pago, totalContratos) {
+			document.getElementById('dash-a-receber').textContent = aVencer.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+			document.getElementById('dash-vencido').textContent = vencido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+			document.getElementById('dash-recebido').textContent = pago.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 			document.getElementById('dash-contratos').textContent = totalContratos;
 		}
 
 		// Reseta a paginação e renderiza a lista de contratos
 		const resetAndRenderContractList = function () { contractListPage = 0; renderContractList(true); };
-		// === INÍCIO: LÓGICA DE PAGINAÇÃO E FILTROS DE LISTA ===
+		// === INÍCIO DA MUDANÇA JS: LÓGICA DE PAGINAÇÃO ===
 
 		// Função chamada ao clicar em um filtro ou na busca (reseta para pág 1)
 		const resetAndRenderContractList = function () { 
@@ -695,6 +984,7 @@
 		const changeContractPage = function(pageIndex) {
 			contractListPage = pageIndex;
 			renderContractList();
+			// Rola suavemente de volta para o topo da lista de contratos
 			document.getElementById('contractListContainer').scrollIntoView({ behavior: 'smooth' });
 		}
 		window.App.changeContractPage = changeContractPage;
@@ -713,11 +1003,11 @@
 
 			const currentPage = contractListPage; // 0-indexed
 
-			let paginationHtml = '';
-
 			// [MODIFICADO] Se for reset, reseta a paginação
 			if (resetList) {
 				contractListPage = 0;
+			let paginationHtml = '';
+
 			// Botão "Anterior"
 			const prevDisabled = (currentPage === 0) ? 'disabled' : '';
 			const prevOnClick = (currentPage === 0) ? '' : `onclick="window.App.changeContractPage(${currentPage - 1})"`;
@@ -763,7 +1053,7 @@
 			container.innerHTML = paginationHtml;
 		}
 
-		// Função principal da lista de contratos (Modificada para FILTROS DE STATUS)
+		// Função principal da lista de contratos (Modificada)
 		const renderContractList = function () {
 			const listContainer = document.getElementById('contractListContainer');
 			const searchTerm = (document.getElementById('searchInput').value || '').toLowerCase();
@@ -773,19 +1063,11 @@
 			if (!isUserAdmin) advogadoFilter = currentUserDisplayName;
 
 			// Filtra os contratos
-			
 			// 1. Filtra os contratos (todos)
 			let filteredContracts = getFilteredContracts(false).filter(c => {
 				const matchesAdvogado = (isUserAdmin && advogadoFilter === 'Todos') || c.advogadoResponsavel === advogadoFilter;
 				const matchesSearch = c.clientName.toLowerCase().includes(searchTerm) || (c.serviceTypes || []).some(s => s.name.toLowerCase().includes(searchTerm));
 				return matchesAdvogado && matchesSearch;
-				
-				// === NOVO FILTRO DE STATUS ===
-				const statusInfo = getContractStatus(c);
-				const matchesStatus = (currentContractStatusFilter === 'Todos') || (statusInfo.statusText === currentContractStatusFilter);
-				// === FIM NOVO FILTRO ===
-
-				return matchesAdvogado && matchesSearch && matchesStatus; // Adicionado matchesStatus
 			});
 
 			// Ordena os contratos
@@ -800,62 +1082,93 @@
 			const startIndex = contractListPage * CONTRACTS_PER_PAGE;
 			const endIndex = (contractListPage + 1) * CONTRACTS_PER_PAGE;
 			const paginatedContracts = filteredContracts.slice(startIndex, endIndex);
-			// 3. Calcula o total de itens e páginas
-			const totalItems = filteredContracts.length;
-			const totalPages = Math.ceil(totalItems / CONTRACTS_PER_PAGE);
 
 			// [MODIFICADO] Controla visibilidade do botão "Carregar Mais"
 			loadMoreContainer.style.display = filteredContracts.length > endIndex ? 'block' : 'none';
+			// 3. Calcula o total de itens e páginas
+			const totalItems = filteredContracts.length;
+			const totalPages = Math.ceil(totalItems / CONTRACTS_PER_PAGE);
 
 			// [MODIFICADO] Limpa o container *apenas* se for a primeira página (reset)
 			if (resetList || contractListPage === 0) {
 				listContainer.innerHTML = '';
 			// 4. Garante que a página atual seja válida
 			if (contractListPage >= totalPages && totalPages > 0) {
-				contractListPage = totalPages - 1; 
+				contractListPage = totalPages - 1; // Ajusta se a página atual não existir mais
 			}
 			if (contractListPage < 0) contractListPage = 0;
 
-			// [MODIFICADO] Se for a *primeira página* E *vazia*, mostra a mensagem.
-			if ((resetList || contractListPage === 0) && paginatedContracts.length === 0) {
-				listContainer.innerHTML = '<div class="dark-card p-4 rounded-lg shadow-md text-center text-gray-400 py-4">Nenhum contrato encontrado.</div>';
-			 return;
-			}
 			// 5. Pega apenas os itens da página atual
 			const startIndex = contractListPage * CONTRACTS_PER_PAGE;
 			const paginatedContracts = filteredContracts.slice(startIndex, startIndex + CONTRACTS_PER_PAGE);
+
+			// 6. Limpa o container e renderiza
+			listContainer.innerHTML = ''; // Limpa sempre
+
+			// [MODIFICADO] Se for a *primeira página* E *vazia*, mostra a mensagem.
+			if ((resetList || contractListPage === 0) && paginatedContracts.length === 0) {
+			if (totalItems === 0) {
+				listContainer.innerHTML = '<div class="dark-card p-4 rounded-lg shadow-md text-center text-gray-400 py-4">Nenhum contrato encontrado.</div>';
+			 return;
+				renderPaginationControls(0, 0); // Limpa os controles de paginação
+				return;
+			}
 
 			// [MODIFICADO] Procura o grid. Se não existir, cria.
 			let gridContainer = listContainer.querySelector('.grid');
 			if (!gridContainer) {
 				listContainer.innerHTML = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>';
 				gridContainer = listContainer.querySelector('.grid');
-			// 6. Limpa o container e renderiza
-			listContainer.innerHTML = ''; 
-
-			if (totalItems === 0) {
-				listContainer.innerHTML = '<div class="dark-card p-4 rounded-lg shadow-md text-center text-gray-400 py-4">Nenhum contrato encontrado para estes filtros.</div>';
-				renderPaginationControls(0, 0); 
-				return;
 			}
-
-			// [MODIFICADO] Gera o HTML *apenas* dos *novos* cards
+			// Cria o grid
 			listContainer.innerHTML = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>';
 			const gridContainer = listContainer.querySelector('.grid');
-			
-			// 7. Gera o HTML dos cards (Inalterado, pois já usava statusColor e statusText)
+
+			// [MODIFICADO] Gera o HTML *apenas* dos *novos* cards
+			// 7. Gera o HTML dos cards
 			let newCardsHtml = ``;
 			paginatedContracts.forEach(contract => {
 				const { statusText, statusColor, borderColor } = getContractStatus(contract);
-@@ -1018,21 +1095,18 @@ <h3 class="font-bold text-xl text-white">${contract.clientName}</h3>
+				let servicesHtml = (contract.serviceTypes || []).map(s => `<span class="service-tag-small">${s.name}</span>`).join('');
+				const valorFixoDisplay = isUserAdmin ? (contract.totalValue || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
+				const exitoDisplay = isUserAdmin && contract.successFee ? contract.successFee : (contract.successFee ? '[Restrito]' : '');
+
+				newCardsHtml += `
+					<div class="dark-card rounded-lg shadow-lg overflow-hidden border-l-4 ${borderColor} flex flex-col justify-between transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl">
+						<div class="p-5">
+							<div class="flex justify-between items-start mb-3">
+								<h3 class="font-bold text-xl text-white">${contract.clientName}</h3>
+								<span class="px-2 py-1 rounded-full text-xs font-semibold ${statusColor}">${statusText}</span>
+							</div>
+							<p class="text-xs text-indigo-300 mb-3"><i class="fas fa-user-tie mr-1"></i> ${contract.advogadoResponsavel}</p>
+							<div class="mb-4">${servicesHtml}</div>
+							<div class="border-t border-gray-700 pt-4 space-y-3 text-sm">
+								<div class="flex items-center text-gray-300">
+									<i class="fas fa-file-invoice-dollar w-5 text-center mr-2 text-gray-500"></i>
+									<strong>Valor Fixo:</strong>
+									<span class="ml-auto font-medium">${valorFixoDisplay}</span>
+								</div>
+								${contract.successFee ? `
+								<div class="flex items-center text-gray-300">
+									<i class="fas fa-star w-5 text-center mr-2 text-gray-500"></i>
+									<strong>Êxito:</strong>
+									<span class="ml-auto font-medium text-indigo-400">${exitoDisplay}</span>
+								</div>` : ''}
+							</div>
+						</div>
+						<div class="bg-gray-900/50 px-4 py-2 flex justify-end gap-2">
+							<button onclick="window.App.openClientHistoryModal('${contract.clientName}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-indigo-400 hover:bg-indigo-900/20 py-1 px-3 rounded-md transition-colors" title="Ver Histórico do Cliente"><i class="fas fa-eye"></i> Histórico</button>
+							<button onclick="window.App.openContractModal('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-green-400 hover:bg-green-900/20 py-1 px-3 rounded-md transition-colors" title="Editar Contrato"><i class="fas fa-pencil-alt"></i> Editar</button>
+							<button onclick="window.App.moveToLixeira('${contract.id}')" class="text-sm flex items-center gap-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 py-1 px-3 rounded-md transition-colors" title="Mover para Lixeira"><i class="fas fa-trash-alt"></i></button>
 						</div>
 					</div>`;
 			});
-			
-			gridContainer.innerHTML = newCardsHtml;
 
 			// [MODIFICADO] Adiciona o HTML dos novos cards ao grid existente
 			gridContainer.innerHTML += newCardsHtml;
+			// 8. Insere o HTML dos cards (sem '+=')
+			gridContainer.innerHTML = newCardsHtml;
+
 			// 9. Renderiza os controles de paginação
 			renderPaginationControls(totalItems, totalPages);
 		};
@@ -864,18 +1177,24 @@
 		// ===================================================================================
 		// ======================== FIM DA MODIFICAÇÃO DE PAGINAÇÃO ========================
 		// ===================================================================================
-		// === FIM: LÓGICA DE PAGINAÇÃO E FILTROS DE LISTA ===
+		// === FIM DA MUDANÇA JS ===
 
 		// Função chamada pelo "Carregar Mais"
 		const loadMoreContracts = function () { contractListPage++; renderContractList(false); };
 		window.App.loadMoreContracts = loadMoreContracts;
 
 		// Retorna o status de um contrato
-		// Retorna o status de um contrato (Inalterado)
 		function getContractStatus(contract) {
 			const hasPendingParcels = (contract.parcels || []).some(p => p.status === 'Pendente');
 			if (hasPendingParcels) return { statusText: 'Ativo', statusColor: 'bg-yellow-900/50 text-yellow-300', borderColor: 'border-yellow-500' };
-@@ -1047,7 +1121,6 @@ <h3 class="font-bold text-xl text-white">${contract.clientName}</h3>
+			if (contract.successFee && !contract.successFeePaymentDate) return { statusText: 'Aguardando Êxito', statusColor: 'bg-indigo-900/50 text-indigo-300', borderColor: 'border-indigo-500' };
+			return { statusText: 'Concluído', statusColor: 'bg-gray-700 text-gray-300', borderColor: 'border-gray-600' };
+		}
+
+		// Renderiza a página de Inadimplentes
+		async function renderInadimplentesPage(contractsToRender) {
+			const container = document.getElementById('inadimplentesListContainer');
+			container.innerHTML = `<div class="col-span-1 md:col-span-3 text-center py-10"><i class="fas fa-spinner fa-spin fa-2x text-indigo-400"></i><p class="mt-2 text-sm text-gray-400">Calculando...</p></div>`;
 			const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
 
 			let inadimplentesList = [];
@@ -883,7 +1202,17 @@
 			const results = await Promise.all(contractsToRender.map(async (contract) => {
 				if (!contract.parcels) return [];
 				const contractInadimplencias = [];
-@@ -1065,7 +1138,6 @@ <h3 class="font-bold text-xl text-white">${contract.clientName}</h3>
+				for (let i = 0; i < contract.parcels.length; i++) {
+					const parcel = contract.parcels[i];
+					const vencimento = new Date(parcel.dueDate);
+					if (parcel.status === 'Pendente' && vencimento < hoje) {
+						const diffDays = Math.ceil((hoje - vencimento) / 86400000);
+						const valorCorrigido = await calcularValorCorrigido(parcel.value, parcel.dueDate);
+						contractInadimplencias.push({ contract, parcel, index: i, diffDays, valorCorrigido });
+					}
+				}
+				return contractInadimplencias;
+			}));
 
 			inadimplentesList = results.flat();
 
@@ -891,7 +1220,13 @@
 			if (currentInadimplentesSort === 'days-desc') {
 				inadimplentesList.sort((a, b) => b.diffDays - a.diffDays);
 			} else if (currentInadimplentesSort === 'value-desc' && isUserAdmin) {
-@@ -1079,7 +1151,6 @@ <h3 class="font-bold text-xl text-white">${contract.clientName}</h3>
+				inadimplentesList.sort((a, b) => b.valorCorrigido - a.valorCorrigido);
+			} else if (currentInadimplentesSort === 'name-asc') {
+				inadimplentesList.sort((a, b) => a.contract.clientName.localeCompare(b.contract.clientName));
+			}
+
+			if (inadimplentesList.length === 0) {
+				container.innerHTML = `<div class="col-span-1 md:col-span-3 text-center py-10"><div class="inline-block bg-gray-800 border border-gray-700 text-green-400 p-6 rounded-lg shadow-md"><i class="fas fa-check-circle fa-3x mb-3"></i><p class="font-bold text-xl">Nenhuma pendência encontrada!</p><p class="text-sm text-gray-400">Todos os pagamentos estão em dia.</p></div></div>`;
 			 return;
 			}
 
@@ -899,16 +1234,46 @@
 			let inadimplentesHtml = '';
 			inadimplentesList.forEach(({ contract, parcel, index, diffDays, valorCorrigido }) => {
 				const vencimento = new Date(parcel.dueDate);
-@@ -1116,7 +1187,7 @@ <h3 class="font-bold text-xl text-white">${contract.clientName}</h3>
+				const valorOriginalDisplay = isUserAdmin ? parcel.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
+				const valorCorrigidoDisplay = isUserAdmin ? valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '[Restrito]';
+
+				inadimplentesHtml += `
+					<div class="dark-card p-5 rounded-lg shadow-lg border-l-4 border-red-500">
+						<p class="font-bold text-lg text-white">${contract.clientName}</p>
+						<p class="text-sm text-gray-400 mb-3">${(contract.serviceTypes || []).map(s => s.name).join(', ')}</p>
+						<div class="border-t border-gray-700 pt-3 mt-3 space-y-2">
+							<div class="flex justify-between items-center text-sm ${!isUserAdmin ? 'hidden' : ''}">
+								<span class="text-gray-400">Valor Original:</span>
+								<span class="font-medium text-gray-400 line-through">${valorOriginalDisplay}</span>
+							</div>
+							<div class="flex justify-between items-center ${!isUserAdmin ? 'hidden' : ''}">
+								<span class="text-sm text-white">Valor Corrigido:</span>
+								<span class="font-semibold text-lg text-red-400">${valorCorrigidoDisplay}</span>
+							</div>
+							<div class="flex justify-between items-center text-sm">
+								<span class="text-gray-400">Venceu em:</span>
+								<span class="font-medium text-gray-300">${vencimento.toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</span>
+							</div>
+							<div class="flex justify-between items-center text-red-400 font-bold text-sm bg-red-900/30 px-2 py-1 rounded">
+								<span>Atrasado há:</span>
+								<span>${diffDays} dia(s)</span>
+							</div>
+						</div>
+						<button onclick="window.App.openPaymentModal('${contract.id}', ${index})" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2">
+							<i class="fas fa-check"></i> Registrar Pagamento
+						</button>
+					</div>`;
+			});
 			container.innerHTML = inadimplentesHtml;
 		}
 
 		// Renderiza a página de Serviços/Produção
-		// Renderiza a página de Serviços/Produção (Inalterado)
 		const renderServicosPage = (contractsToRender) => {
 			const container = document.getElementById('servicosListContainer');
 			const searchTerm = (document.getElementById('servicosSearchInput').value || '').toLowerCase();
-@@ -1126,7 +1197,6 @@ <h3 class="font-bold text-xl text-white">${contract.clientName}</h3>
+			const advogadoFilterEl = document.getElementById('servicosAdvogadoFilter');
+			let advogadoFilter = advogadoFilterEl ? advogadoFilterEl.value : 'Todos';
+			if (!isUserAdmin) advogadoFilter = currentUserDisplayName;
 
 			container.innerHTML = '';
 
@@ -916,7 +1281,8 @@
 			let activeContracts = contractsToRender.filter(c => {
 				const isNotConcluded = getContractStatus(c).statusText !== 'Concluído';
 				if (!isNotConcluded) return false;
-@@ -1135,7 +1205,6 @@ <h3 class="font-bold text-xl text-white">${contract.clientName}</h3>
+				const matchesAdvogado = (isUserAdmin && advogadoFilter === 'Todos') || c.advogadoResponsavel === advogadoFilter;
+				const matchesSearch = c.clientName.toLowerCase().includes(searchTerm) || (c.serviceTypes || []).some(s => s.name.toLowerCase().includes(searchTerm)) || c.advogadoResponsavel.toLowerCase().includes(searchTerm);
 			 return matchesAdvogado && matchesSearch;
 			});
 
@@ -924,7 +1290,11 @@
 			if (currentServicosSort === 'name-asc') {
 				activeContracts.sort((a, b) => a.clientName.localeCompare(b.clientName));
 			} else if (currentServicosSort === 'adv-asc') {
-@@ -1147,9 +1216,7 @@ <h3 class="font-bold text-xl text-white">${contract.clientName}</h3>
+				activeContracts.sort((a, b) => a.advogadoResponsavel.localeCompare(b.advogadoResponsavel));
+			}
+
+			if (activeContracts.length === 0) {
+				container.innerHTML = `<div class="text-center py-10"><div class="inline-block dark-card text-indigo-400 p-6 rounded-lg shadow-md"><i class="fas fa-coffee fa-3x mb-3"></i><p class="font-bold text-xl">Nenhum contrato ativo encontrado.</p><p class="text-sm text-gray-400">Nenhum resultado para a busca ou todos os trabalhos estão concluídos.</p></div></div>`;
 				return;
 			}
 
@@ -934,7 +1304,9 @@
 				const totalServices = (contract.serviceTypes || []).length;
 				let progressValue = 0;
 				(contract.serviceTypes || []).forEach(service => {
-@@ -1159,7 +1226,6 @@ <h3 class="font-bold text-xl text-white">${contract.clientName}</h3>
+					if (service.status === 'Concluído') progressValue += 1;
+					else if (service.status === '50% Concluído') progressValue += 0.5;
+					else if (service.status === 'Em Andamento') progressValue += 0.25;
 				});
 				const serviceProgress = totalServices > 0 ? (progressValue / totalServices) * 100 : 0;
 
@@ -942,7 +1314,8 @@
 				const totalPaid = (contract.parcels || []).reduce((sum, p) => sum + (p.valuePaid || 0), 0) + (contract.successFeeValueReceived || 0);
 				const financialProgress = (contract.totalValue || 0) > 0 ? (totalPaid / contract.totalValue) * 100 : (totalPaid > 0 ? 100 : 0);
 				const financialProgressBar = isUserAdmin ? `
-@@ -1168,10 +1234,8 @@ <h3 class="font-bold text-xl text-white">${contract.clientName}</h3>
+					<div>
+						<div class="flex justify-between text-sm mb-1 text-gray-300"><label>Progresso Financeiro</label><span class="font-medium text-teal-300">${financialProgress.toFixed(0)}%</span></div>
 						<div class="progress-bar-bg h-3 w-full"><div class="progress-bar bg-teal-500" style="width: ${financialProgress}%"></div></div>
 					</div>` : '';
 
@@ -953,7 +1326,10 @@
 					if (service.deadline) {
 						const hoje = new Date(); hoje.setHours(0,0,0,0);
 						const prazo = new Date(service.deadline + "T12:00:00Z"); // Trata como UTC
-@@ -1182,7 +1246,6 @@ <h3 class="font-bold text-xl text-white">${contract.clientName}</h3>
+						const diffDays = Math.ceil((prazo - hoje) / 86400000);
+						const formattedPrazo = prazo.toLocaleDateString('pt-BR', {timeZone: 'UTC'});
+						if (diffDays < 0 && service.status !== 'Concluído') deadlineHtml = `<span class="text-xs font-medium text-red-400"><i class="fas fa-exclamation-triangle"></i> Vencido: ${formattedPrazo}</span>`;
+						else if (diffDays <= 7 && service.status !== 'Concluído') deadlineHtml = `<span class="text-xs font-medium text-yellow-400"><i class="fas fa-clock"></i> Vence: ${formattedPrazo}</span>`;
 						else if (service.status !== 'Concluído') deadlineHtml = `<span class="text-xs text-gray-500"><i class="far fa-calendar-alt"></i> ${formattedPrazo}</span>`;
 						else deadlineHtml = `<span class="text-xs text-gray-500"><i class="far fa-calendar-check"></i> ${formattedPrazo}</span>`;
 					}
@@ -961,7 +1337,32 @@
 					switch (service.status) {
 						case 'Concluído':
 							statusHtml = `<span class="text-xs font-bold text-teal-400">CONCLUÍDO</span>`;
-@@ -1215,7 +1278,6 @@ <h3 class="font-bold text-xl text-white">${contract.clientName}</h3>
+							break;
+						case '50% Concluído':
+							statusHtml = `<span class="text-xs font-bold text-purple-400">50%</span>`;
+							actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`;
+							break;
+						case 'Em Andamento':
+							statusHtml = `<span class="text-xs font-bold text-yellow-400">EM ANDAMENTO</span>`;
+							actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, '50% Concluído')" class="text-xs bg-purple-600 text-white hover:bg-purple-500 font-semibold py-1 px-2 rounded-md transition-colors">50%</button>
+										  <button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Concluído')" class="text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-semibold py-1 px-2 rounded-md transition-colors">Concluir</button>`;
+							break;
+						default: // Pendente
+							statusHtml = `<span class="text-xs font-bold text-gray-400">PENDENTE</span>`;
+							actionsHtml = `<button onclick="window.App.updateServiceStatus('${contract.id}', ${index}, 'Em Andamento')" class="text-xs bg-yellow-600 text-white hover:bg-yellow-500 font-semibold py-1 px-2 rounded-md transition-colors">Iniciar</button>`;
+							break;
+					}
+					const iconClass =
+						service.status === 'Concluído' ? 'fas fa-check-circle text-teal-500' :
+						service.status === '50% Concluído' ? 'fas fa-adjust text-purple-500' :
+						service.status === 'Em Andamento' ? 'fas fa-spinner fa-spin text-yellow-500' :
+						'far fa-circle text-gray-500';
+					const textClass = service.status === 'Concluído' ? 'text-gray-500 line-through' : 'text-gray-300';
+					const hoverClass = service.status !== 'Concluído' ? 'hover:bg-gray-700/50' : 'bg-gray-900/50';
+
+					return `<li class="flex items-center justify-between p-2 ${hoverClass} rounded-md">
+						<span class="${textClass}"><i class="${iconClass} mr-2"></i>${service.name}</span>
+						<div class="flex items-center gap-2">${deadlineHtml}${statusHtml}${actionsHtml}</div>
 					</li>`;
 				}).join('');
 
@@ -969,7 +1370,22 @@
 				container.innerHTML += `
 					<div class="dark-card p-5 rounded-lg shadow-lg">
 						<div class="flex justify-between items-start">
-@@ -1238,567 +1300,130 @@ <h4 class="font-semibold text-sm mb-2 text-gray-400">Serviços do Contrato:</h4>
+							<h3 class="font-bold text-xl text-indigo-300 mb-4">${contract.clientName}</h3>
+							<p class="text-sm text-gray-400"><i class="fas fa-user-tie mr-1"></i> ${contract.advogadoResponsavel}</p>
+						</div>
+						<div class="space-y-4 mb-4">
+							${financialProgressBar}
+							<div>
+								<div class="flex justify-between text-sm mb-1 text-gray-300"><label>Progresso dos Serviços</label><span class="font-medium text-indigo-300">${serviceProgress.toFixed(0)}%</span></div>
+								<div class="progress-bar-bg h-3 w-full"><div class="progress-bar bg-indigo-500" style="width: ${serviceProgress}%"></div></div>
+							</div>
+						</div>
+						<div class="border-t border-gray-700 pt-3">
+							<h4 class="font-semibold text-sm mb-2 text-gray-400">Serviços do Contrato:</h4>
+							<ul class="space-y-1">${servicesHtml}</ul>
+						</div>
+					</div>`;
+			});
 		};
 		window.App.renderServicosPage = renderServicosPage;
 
@@ -1006,6 +1422,7 @@
 					if (parcel.status === 'Pendente') {
 						const dueDate = new Date(parcel.dueDate);
 						if (dueDate < inicioMesAtual) continue; // Ignora vencidas
+						if (dueDate < inicioMesAtual) continue; 
 						const diffMonth = (dueDate.getFullYear() - inicioMesAtual.getFullYear()) * 12 + (dueDate.getMonth() - inicioMesAtual.getMonth());
 						if (diffMonth >= 0 && diffMonth < 12) data[diffMonth] += parcel.value;
 					}
@@ -1119,21 +1536,6 @@
 		}
 
 		// Renderiza os botões de Ordenação
-		// --- Funções de Gráfico (Admin) --- (Inalteradas)
-		function getActualIncomeData(contractsToRender) { /* ... (inalterado) ... */ }
-		function getProjectedIncomeData(contractsToRender) { /* ... (inalterado) ... */ }
-		function renderAnalyticsInModal(allContracts) { /* ... (inalterado) ... */ }
-
-		// Renderiza a página da Lixeira (Inalterado)
-		function renderLixeiraPage(contractsToRender) { /* ... (inalterado) ... */ }
-		
-		// Popula os filtros de Advogado (Inalterado)
-		function renderAdvogadoFilters() { /* ... (inalterado) ... */ }
-		
-		// Popula o select de advogado no modal de contrato (Inalterado)
-		function populateAdvogadoSelectModal() { /* ... (inalterado) ... */ }
-
-		// Renderiza os botões de Ordenação (Modificado para chamar reset)
 		function renderSortButtons() {
 			const contractSortContainer = document.getElementById('contractSortButtons');
 			const inadimplentesSortContainer = document.getElementById('inadimplentesSortButtons');
@@ -1142,48 +1544,17 @@
 			contractSortContainer.innerHTML = ''; inadimplentesSortContainer.innerHTML = ''; servicosSortContainer.innerHTML = '';
 
 			// Botões da lista de Contratos
-			if (!contractSortContainer) return;
-			contractSortContainer.innerHTML = '';
 			const contractSorts = [{ key: 'name-asc', label: 'Nome (A-Z)' }];
 			if (isUserAdmin) contractSorts.push({ key: 'value-desc', label: 'Valor (Maior)' });
-			
 			contractSorts.forEach(sort => {
 				const button = document.createElement('button');
 				button.textContent = sort.label;
 				button.className = `sort-button ${currentContractSort === sort.key ? 'active' : ''}`;
 				button.onclick = () => { currentContractSort = sort.key; contractListPage = 0; renderContractList(true); renderSortButtons(); };
+				// [MODIFICADO] Chama a função que reseta a página para 0
 				button.onclick = () => { currentContractSort = sort.key; resetAndRenderContractList(); renderSortButtons(); };
 				contractSortContainer.appendChild(button);
 			});
-			
-			// Botões de Inadimplentes e Serviços (sem alteração na lógica)
-			const inadimplentesSortContainer = document.getElementById('inadimplentesSortButtons');
-			if(inadimplentesSortContainer) {
-				inadimplentesSortContainer.innerHTML = '';
-				const inadimplentesSorts = [{ key: 'days-desc', label: 'Mais Antigas' }, { key: 'name-asc', label: 'Nome (A-Z)' }];
-				if (isUserAdmin) inadimplentesSorts.push({ key: 'value-desc', label: 'Maior Valor' });
-				inadimplentesSorts.forEach(sort => {
-					const button = document.createElement('button');
-					button.textContent = sort.label;
-					button.className = `sort-button ${currentInadimplentesSort === sort.key ? 'active' : ''}`;
-					button.onclick = () => { currentInadimplentesSort = sort.key; renderInadimplentesPage(getFilteredContracts(false)); renderSortButtons(); };
-					inadimplentesSortContainer.appendChild(button);
-				});
-			}
-			
-			const servicosSortContainer = document.getElementById('servicosSortButtons');
-			if(servicosSortContainer) {
-				servicosSortContainer.innerHTML = '';
-				const servicosSorts = [{ key: 'name-asc', label: 'Cliente (A-Z)' }, { key: 'adv-asc', label: 'Advogado (A-Z)' }];
-				servicosSorts.forEach(sort => {
-					const button = document.createElement('button');
-					button.textContent = sort.label;
-					button.className = `sort-button ${currentServicosSort === sort.key ? 'active' : ''}`;
-					button.onclick = () => { currentServicosSort = sort.key; renderServicosPage(getFilteredContracts(false)); renderSortButtons(); };
-					servicosSortContainer.appendChild(button);
-				});
-			}
-		}
 
 			// Botões de Inadimplentes
 			const inadimplentesSorts = [{ key: 'days-desc', label: 'Mais Antigas' }, { key: 'name-asc', label: 'Nome (A-Z)' }];
@@ -1199,32 +1570,13 @@
 			// Botões de Serviços
 			const servicosSorts = [{ key: 'name-asc', label: 'Cliente (A-Z)' }, { key: 'adv-asc', label: 'Advogado (A-Z)' }];
 			servicosSorts.forEach(sort => {
-		// === INÍCIO: NOVAS FUNÇÕES DE FILTRO DE STATUS ===
-		// NOVO: Renderiza os botões de filtro de status
-		function renderStatusFilterButtons() {
-			const container = document.getElementById('contractStatusFilterButtons');
-			if (!container) return;
-			container.innerHTML = '';
-			
-			const statuses = ['Todos', 'Ativo', 'Aguardando Êxito', 'Concluído'];
-			
-			statuses.forEach(status => {
 				const button = document.createElement('button');
 				button.textContent = sort.label;
 				button.className = `sort-button ${currentServicosSort === sort.key ? 'active' : ''}`;
 				button.onclick = () => { currentServicosSort = sort.key; renderServicosPage(getFilteredContracts(false)); renderSortButtons(); };
 				servicosSortContainer.appendChild(button);
-				button.textContent = status;
-				button.className = `status-filter-button ${currentContractStatusFilter === status ? 'active' : ''}`;
-				button.onclick = () => {
-					currentContractStatusFilter = status;
-					resetAndRenderContractList(); // Reseta para pág 1
-					renderStatusFilterButtons(); // Re-renderiza os botões para marcar o ativo
-				};
-				container.appendChild(button);
 			});
 		}
-		// === FIM: NOVAS FUNÇÕES DE FILTRO DE STATUS ===
 
 		// --- Ações (CRUD) ---
 
@@ -1239,8 +1591,6 @@
 				// O 'onSnapshot' vai pegar essa mudança e re-renderizar
 			}
 		};
-		// --- Ações (CRUD) --- (Inalteradas)
-		const updateServiceStatus = async function (contractId, serviceIndex, newStatus) { /* ... (inalterado) ... */ };
 		window.App.updateServiceStatus = updateServiceStatus;
 
 		// Move um contrato para a lixeira (soft delete)
@@ -1252,7 +1602,6 @@
 			await updateDoc(doc(contractsCollection, contractId), { isDeleted: true });
 			Utils.showToast('Contrato movido para a lixeira.', 'success');
 		};
-		const moveToLixeira = async function (contractId) { /* ... (inalterado) ... */ };
 		window.App.moveToLixeira = moveToLixeira;
 
 		// Restaura um contrato da lixeira
@@ -1262,7 +1611,6 @@
 			await updateDoc(doc(contractsCollection, contractId), { isDeleted: false });
 			Utils.showToast('Contrato restaurado.', 'success');
 		};
-		const restoreContract = async function (contractId) { /* ... (inalterado) ... */ };
 		window.App.restoreContract = restoreContract;
 
 		// (Admin) Exclui permanentemente um contrato da lixeira
@@ -1273,7 +1621,6 @@
 			await deleteDoc(doc(contractsCollection, contractId));
 			Utils.showToast('Contrato excluído permanentemente.', 'success');
 		};
-		const deleteContractPermanently = async function (contractId) { /* ... (inalterado) ... */ };
 		window.App.deleteContractPermanently = deleteContractPermanently;
 
 		// --- Funções de Modal ---
@@ -1294,6 +1641,7 @@
 			if (modal) modal.style.display = 'block';
 			if (backdrop) backdrop.style.display = 'block';
 			document.body.style.overflow = 'hidden'; // Trava o scroll do body
+			document.body.style.overflow = 'hidden'; 
 		}
 
 		function closeModal(modalId) {
@@ -1304,6 +1652,7 @@
 			if (backdrop && !anyOpen) backdrop.style.display = 'none';
 			if (!anyOpen) document.body.style.overflow = ''; // Libera o scroll
 			// Limpa gráficos ao fechar modal de relatório
+			if (!anyOpen) document.body.style.overflow = ''; 
 			if (modalId === 'modalRelatorio') {
 				if (actualIncomeChartInstance) { actualIncomeChartInstance.destroy(); actualIncomeChartInstance = null; }
 				if (projectedIncomeChartInstance) { projectedIncomeChartInstance.destroy(); projectedIncomeChartInstance = null; }
@@ -1311,10 +1660,6 @@
 		}
 
 		// Exporta funções de modal para o objeto global
-		// --- Funções de Modal --- (Inalteradas)
-		function closeAllModals() { /* ... (inalterado) ... */ }
-		function openModal(modalId) { /* ... (inalterado) ... */ }
-		function closeModal(modalId) { /* ... (inalterado) ... */ }
 		window.App.openModal = openModal;
 		window.App.closeModal = closeModal;
 
@@ -1366,13 +1711,13 @@
 					jaQuitadoCheckbox.disabled = false;
 				}
 				setupUIAccess(isUserAdmin); // Garante que os campos de admin estejam corretos
+				setupUIAccess(isUserAdmin); 
 				openModal('modalContrato');
 			} catch (e) {
 				console.error('Erro em openContractModal:', e);
 				Utils.showToast('Falha ao abrir o modal de contrato.', 'error');
 			}
 		};
-		const openContractModal = function (contractId = null) { /* ... (inalterado) ... */ };
 		window.App.openContractModal = openContractModal;
 
 		// Abre o modal para registrar pagamento de parcela
@@ -1401,11 +1746,11 @@
 			const valorInput = document.getElementById('pagamentoValor');
 			valorInput.value = (isUserAdmin ? valorCorrigido : parcel.value).toFixed(2);
 			valorInput.disabled = !isUserAdmin; // Só admin pode alterar o valor
+			valorInput.disabled = !isUserAdmin; 
 
 			document.getElementById('pagamentoData').value = new Date().toISOString().split('T')[0];
 			openModal('modalPagamento');
 		};
-		const openPaymentModal = async function (contractId, parcelIndex) { /* ... (inalterado) ... */ };
 		window.App.openPaymentModal = openPaymentModal;
 
 		// Abre o modal de Histórico do Cliente
@@ -1464,22 +1809,23 @@
 			content.innerHTML = summaryHtml + html;
 			openModal('modalCliente');
 		};
-		const openClientHistoryModal = function (clientName) { /* ... (inalterado) ... */ };
 		window.App.openClientHistoryModal = openClientHistoryModal;
 
 		// Abre o modal de Relatório (admin)
 		const openReportModal = function () {
 			if (!isUserAdmin) { Utils.showToast('Apenas admins podem abrir o relatório.', 'error'); return; }
 			openModal('modalRelatorio'); // <-- CORREÇÃO: Movido para cima
+			openModal('modalRelatorio'); 
 			try {
 				populateDateSelectors();
 				generateAndShowReport(); // Gera o relatório de texto por padrão
 			} catch(e) { // Adicionado 'e' para logar o erro
+				generateAndShowReport(); 
+			} catch(e) { 
 				console.error("Erro ao gerar relatório:", e);
 				Utils.showToast('Não foi possível gerar o relatório.', 'error');
 			}
 		};
-		const openReportModal = function () { /* ... (inalterado) ... */ };
 		window.App.openReportModal = openReportModal;
 
 		// Popula os seletores de Mês/Ano do relatório
@@ -1489,6 +1835,7 @@
 			const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 			const anoAtual = new Date().getFullYear();
 			if (monthSelect.options.length > 0) return; // Já populado
+			if (monthSelect.options.length > 0) return; 
 			meses.forEach((mes, index) => { monthSelect.add(new Option(mes, index)); });
 			for (let i = anoAtual; i >= anoAtual - 5; i--) { yearSelect.add(new Option(i, i)); }
 			monthSelect.value = new Date().getMonth(); yearSelect.value = anoAtual;
@@ -1520,6 +1867,7 @@
 				}
 			});
 			detailedPayments.sort((a, b) => { // Ordena por data
+			detailedPayments.sort((a, b) => { 
 				const da = new Date(a.date.split('/').reverse().join('-'));
 				const db = new Date(b.date.split('/').reverse().join('-'));
 				return da - db;
@@ -1557,9 +1905,6 @@
 				<div class="bg-gray-900 p-4 rounded-lg border border-gray-700 text-center"><p class="text-white font-bold">TOTAL GERAL RECEBIDO</p><p class="text-3xl font-extrabold text-green-400">${income.totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p></div>
 			` + detailsHtml;
 		};
-		function populateDateSelectors() { /* ... (inalterado) ... */ }
-		function calculateMonthlyIncome(year, month, contractsToRender) { /* ... (inalterado) ... */ }
-		const generateAndShowReport = function () { /* ... (inalterado) ... */ };
 		window.App.generateAndShowReport = generateAndShowReport;
 
 		// Mostra os gráficos no modal de relatório
@@ -1569,7 +1914,6 @@
 			document.getElementById('reportChartsContainer').classList.remove('hidden');
 			renderAnalyticsInModal(getFilteredContracts(true));
 		};
-		const showAnalyticsInModal = function () { /* ... (inalterado) ... */ };
 		window.App.showAnalyticsInModal = showAnalyticsInModal;
 
 		// Abre o modal de registro de Êxito
@@ -1587,7 +1931,6 @@
 
 			openModal('modalExito');
 		};
-		const openExitoModal = function (contractId) { /* ... (inalterado) ... */ };
 		window.App.openExitoModal = openExitoModal;
 
 		// Cria a tag visual de um serviço no modal de contrato
@@ -1602,23 +1945,20 @@
 			let deadlineHtml = '';
 			if (deadline) {
 				const prazo = new Date(deadline + "T12:00:00Z"); // Trata como UTC
+				const prazo = new Date(deadline + "T12:00:00Z"); 
 				deadlineHtml = `<span class="text-xs text-gray-400 ml-2">(${prazo.toLocaleDateString('pt-BR', { timeZone: 'UTC' })})</span>`;
 			}
 			tag.innerHTML = `<span>${serviceName}${deadlineHtml}</span><span class="remove-tag" onclick="this.parentElement.remove()">&times;</span>`;
 			container.appendChild(tag);
 		};
-		const createServiceTag = function (serviceName, deadline, status = 'Pendente') { /* ... (inalterado) ... */ };
 		window.App.createServiceTag = createServiceTag;
 
 		// --- Cálculo de Juros (IPCA + 1% a.m.) ---
 
 		// Cache para requisições da API do BCB
 		const ipcaWindowCache = new Map();
-		// === INÍCIO: MUDANÇA DRÁSTICA NO CÁLCULO DE JUROS (CACHE AUTOMÁTICO) ===
 
 		// Funções utilitárias de data (operando em UTC para evitar problemas de fuso)
-		const ipcaCache = new Map(); // Cache em memória para a sessão atual
-		
 		function toUTCDate(y, m, d) { const dt = new Date(Date.UTC(y, m, d)); dt.setUTCHours(0,0,0,0); return dt; }
 		function startOfMonthUTC(d) { return toUTCDate(d.getUTCFullYear(), d.getUTCMonth(), 1); }
 		function endOfMonthUTC(d) { return toUTCDate(d.getUTCFullYear(), d.getUTCMonth() + 1, 0); }
@@ -1626,23 +1966,21 @@
 		function diffMonths_30_360(fromDate, toDate) {
 			let y1 = fromDate.getUTCFullYear(), m1 = fromDate.getUTCMonth() + 1, d1 = fromDate.getUTCDate();
 			let y2 = toDate.getUTCFullYear(),   m2 = toDate.getUTCMonth() + 1,   d2 = toDate.getUTCDate();
-@@ -1807,143 +1432,151 @@ <h3 class="font-bold text-lg text-white">${(contract.serviceTypes || []).map(s =
+			if (d1 === 31) d1 = 30;
+			if (d2 === 31 && d1 === 30) d2 = 30;
 			return Math.max(0, (y2 - y1) * 12 + (m2 - m1) + (d2 - d1) / 30);
 		}
 
 		// Busca o fator acumulado do IPCA da API do Banco Central
 		async function fetchIPCAAccumulatedFactor(vencDate, refDate = new Date()) {
 			const start = startOfMonthUTC(vencDate); // Mês do vencimento
+			const start = startOfMonthUTC(vencDate); 
 			const refMonth = startOfMonthUTC(refDate);
 			const endPrevMonth = endOfMonthUTC(toUTCDate(refMonth.getUTCFullYear(), refMonth.getUTCMonth(), 1 - 1)); // Último dia do mês anterior ao de referência
+			const endPrevMonth = endOfMonthUTC(toUTCDate(refMonth.getUTCFullYear(), refMonth.getUTCMonth(), 1 - 1)); 
 
 			// Se o vencimento for no futuro ou no mês corrente, não há correção
 			if (start.getTime() > endPrevMonth.getTime()) return 1;
-		// NOVO: Busca o IPCA do cache (Firestore ou API)
-		async function fetchIPCAIndices(start, end) {
-			let current = new Date(start.getTime());
-			const monthsNeeded = []; // Formato 'YYYY-MM'
-			const indices = new Map();
 
 			const toApiDate = (d) => {
 				const dd = String(d.getUTCDate()).padStart(2,'0');
@@ -1650,55 +1988,14 @@
 				const yyyy = d.getUTCFullYear();
 				return `${dd}/${mm}/${yyyy}`;
 			};
-			while (current.getTime() <= end.getTime()) {
-				const monthKey = `${current.getUTCFullYear()}-${String(current.getUTCMonth() + 1).padStart(2, '0')}`;
-				if (ipcaCache.has(monthKey)) {
-					indices.set(monthKey, ipcaCache.get(monthKey));
-				} else {
-					monthsNeeded.push(monthKey);
-				}
-				current.setUTCMonth(current.getUTCMonth() + 1);
-			}
 
 			// Usa cache para evitar requisições repetidas
 			const cacheKey = `${start.getUTCFullYear()}-${String(start.getUTCMonth()+1).padStart(2,'0')}..${endPrevMonth.getUTCFullYear()}-${String(endPrevMonth.getUTCMonth()+1).padStart(2,'0')}`;
 			if (ipcaWindowCache.has(cacheKey)) return ipcaWindowCache.get(cacheKey);
-			if (monthsNeeded.length === 0) return indices;
-
-			// 1. Tenta buscar os meses faltantes do Firestore
-			const monthsFromFirestore = new Map();
-			if (monthsNeeded.length > 0) {
-				try {
-					const q = query(indicesCollection, where(documentId(), 'in', monthsNeeded));
-					const querySnapshot = await getDocs(q);
-					querySnapshot.forEach(doc => {
-						monthsFromFirestore.set(doc.id, doc.data().valor);
-						ipcaCache.set(doc.id, doc.data().valor); // Salva no cache da sessão
-						indices.set(doc.id, doc.data().valor);
-					});
-				} catch (e) {
-					console.error("Erro ao ler cache do Firestore:", e);
-				}
-			}
-			
-			// 2. Verifica quais meses *ainda* faltam (não estavam no Firestore)
-			const monthsToFetchFromAPI = monthsNeeded.filter(monthKey => !monthsFromFirestore.has(monthKey));
-			if (monthsToFetchFromAPI.length === 0) return indices;
-			
-			console.warn(`Cache do IPCA não encontrado para: ${monthsToFetchFromAPI.join(', ')}. Buscando na API do BCB...`);
-
-			// 3. Busca os meses restantes na API externa
-			const firstMonth = monthsToFetchFromAPI[0];
-			const lastMonth = monthsToFetchFromAPI[monthsToFetchFromAPI.length - 1];
-			const [y1, m1] = firstMonth.split('-');
-			const [y2, m2] = lastMonth.split('-');
-			const startDateAPI = `01/${m1}/${y1}`;
-			const endDateAPI = `01/${m2}/${y2}`; // A API pega pelo mês
 
 			const base = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados';
 			const url = `${base}?formato=json&dataInicial=${toApiDate(start)}&dataFinal=${toApiDate(endPrevMonth)}`;
 			const proxy = 'https://api.allorigins.win/get?url='; // Proxy CORS
-			const url = `${base}?formato=json&dataInicial=${startDateAPI}&dataFinal=${endDateAPI}`;
 			const proxy = 'https://api.allorigins.win/get?url='; 
 
 			try {
@@ -1706,83 +2003,42 @@
 				if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 				let data = await resp.json();
 				data = JSON.parse(data.contents); // allorigins aninha o JSON
+				data = JSON.parse(data.contents); 
 
 				// Calcula o fator multiplicador
 				const factor = (data || []).reduce((acc, item) => {
-				data = JSON.parse(data.contents);
-				
-				const batch = writeBatch(db); // Prepara para salvar no Firestore
-				
-				(data || []).forEach(item => {
 					const v = parseFloat(item?.valor);
 					return Number.isFinite(v) ? acc * (1 + v/100) : acc;
 				}, 1);
-					if (Number.isFinite(v)) {
-						const [d, m, y] = item.data.split('/');
-						const monthKey = `${y}-${m}`;
-						
-						indices.set(monthKey, v); // Adiciona ao resultado
-						ipcaCache.set(monthKey, v); // Salva no cache da sessão
-						
-						// Adiciona ao batch para salvar no Firestore
-						const docRef = doc(indicesCollection, monthKey);
-						batch.set(docRef, { valor: v });
-					}
-				});
-
-				await batch.commit(); // Salva os novos índices no Firestore
-				console.log(`Cache do IPCA atualizado para ${data.length} meses.`);
 
 				const finalFactor = factor || 1;
 				ipcaWindowCache.set(cacheKey, finalFactor); // Salva no cache
+				ipcaWindowCache.set(cacheKey, finalFactor); 
 				return finalFactor;
 			} catch (e) {
 				console.error('Falha ao buscar IPCA:', e);
 				return 1; // Retorna 1 (sem correção) em caso de falha
-				console.error('Falha CRÍTICA ao buscar IPCA na API:', e);
-				Utils.showToast('Erro ao buscar índice IPCA. Usando 0.', 'error');
+				return 1; 
 			}
-			
-			return indices;
 		}
 
 		// Função principal de cálculo de juros
-		
-		// NOVO: Função principal de cálculo de juros (usa o cache)
 		async function calcularValorCorrigido(valorOriginal, dataVencimento, dataReferencia = new Date()) {
 			const ref = toUTCDate(dataReferencia.getUTCFullYear(), dataReferencia.getUTCMonth(), dataReferencia.getUTCDate());
 			const vRaw = new Date(dataVencimento); // Data pode vir como string
 			const vRaw = new Date(dataVencimento); 
 			const venc = toUTCDate(vRaw.getUTCFullYear(), vRaw.getUTCMonth(), vRaw.getUTCDate());
 
-			
 			if (ref <= venc) return valorOriginal; // Não vencido
+			if (ref <= venc) return valorOriginal; 
 
 			// 1. Correção (IPCA)
 			const ipcaFactor = await fetchIPCAAccumulatedFactor(venc, ref);
 
-			const start = startOfMonthUTC(venc); // Mês do vencimento
-			const refMonth = startOfMonthUTC(ref);
-			const endPrevMonth = endOfMonthUTC(toUTCDate(refMonth.getUTCFullYear(), refMonth.getUTCMonth(), 1 - 1)); // Mês anterior ao de ref
-			
-			let ipcaFactor = 1;
-			if (start.getTime() <= endPrevMonth.getTime()) {
-				const indices = await fetchIPCAIndices(start, endPrevMonth);
-				
-				let current = new Date(start.getTime());
-				while (current.getTime() <= endPrevMonth.getTime()) {
-					const monthKey = `${current.getUTCFullYear()}-${String(current.getUTCMonth() + 1).padStart(2, '0')}`;
-					const v = indices.get(monthKey) || 0; // Pega o valor (ou 0 se falhou)
-					ipcaFactor *= (1 + v / 100);
-					current.setUTCMonth(current.getUTCMonth() + 1);
-				}
-			}
-			
 			// 2. Juros (1% a.m. simples)
 			const meses = diffMonths_30_360(venc, ref);
 			const jurosSimplesFactor = 1 + 0.01 * meses;
 
-			
 			return valorOriginal * ipcaFactor * jurosSimplesFactor;
 		}
 
@@ -1807,7 +2063,6 @@
 			downloadCSV(csvRows.join('\n'), 'contratos_export.csv');
 		};
 		window.App.exportContractsCSV = exportContractsCSV;
-		// === FIM: MUDANÇA DRÁSTICA NO CÁLCULO DE JUROS ===
 
 		const exportReportCSV = function () {
 			if (!isUserAdmin) return;
@@ -1824,12 +2079,6 @@
 			const monthName = document.getElementById('reportMonth').options[month].text;
 			downloadCSV(csvRows.join('\n'), `relatorio_${monthName}_${year}.csv`);
 		};
-		// --- Funções de Exportação (CSV) --- (Inalteradas)
-		function formatCSVCell(data) { /* ... (inalterado) ... */ }
-		function downloadCSV(csvContent, filename) { /* ... (inalterado) ... */ }
-		const exportContractsCSV = function () { /* ... (inalterado) ... */ };
-		window.App.exportContractsCSV = exportContractsCSV;
-		const exportReportCSV = function () { /* ... (inalterado) ... */ };
 		window.App.exportReportCSV = exportReportCSV;
 
 		// (Função de debug, pode ser chamada pelo console)
@@ -1848,7 +2097,6 @@
 			}
 			Utils.showToast('Recalculo concluído.', 'success');
 		}
-		async function recalculateAllDebts(referenceDate = new Date()) { /* ... (inalterado) ... */ }
 		window.App.recalculateAllDebts = recalculateAllDebts;
 
 		// --- Configuração dos Event Listeners ---
@@ -1865,15 +2113,19 @@
 			}
 
 			// Inicia a autenticação
-			
 			initializeAndAuth();
 
 			// Listener do formulário de Login
-			// Listeners dos formulários (Login, Logout, DisplayName) - Inalterados
 			const loginForm = document.getElementById('login-form');
 			const authError = document.getElementById('auth-error');
 			const showAuthError = (m) => { authError.textContent = m; authError.classList.remove('hidden'); };
-@@ -1957,11 +1590,7 @@ <h3 class="font-bold text-lg text-white">${(contract.serviceTypes || []).map(s =
+			loginForm.addEventListener('submit', async (e) => {
+				e.preventDefault();
+				const email = document.getElementById('login-email').value;
+				const password = document.getElementById('login-password').value;
+				try { await signInWithEmailAndPassword(auth, email, password); }
+				catch (error) {
+					if (['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found'].includes(error.code)) showAuthError('Email ou senha inválidos.');
 					else showAuthError('Erro ao tentar fazer login.');
 				}
 			});
@@ -1885,7 +2137,12 @@
 			const displayNameForm = document.getElementById('formDisplayName');
 			displayNameForm.addEventListener('submit', async (e) => {
 				e.preventDefault();
-@@ -1974,15 +1603,16 @@ <h3 class="font-bold text-lg text-white">${(contract.serviceTypes || []).map(s =
+				const name = document.getElementById('inputDisplayName').value;
+				if (name && auth.currentUser) {
+					try {
+						await updateProfile(auth.currentUser, { displayName: name });
+						currentUserDisplayName = name; isUserAdmin = ADMIN_USERS.includes(name);
+						document.body.classList.toggle('is-admin', isUserAdmin);
 						document.getElementById('user-display-name').textContent = name;
 						closeModal('modalDisplayName');
 						document.getElementById('app-container').style.display = 'block';
@@ -1893,28 +2150,24 @@
 						setupUIAccess(isUserAdmin);
 						contractsCollection = collection(db, `contracts`);
 						setupSnapshotListener();
-						clientsCollection = collection(db, `clients`); // NOVO
-						indicesCollection = collection(db, `indices`); // NOVO
-						setupSnapshotListeners(); // NOVO
 					} catch (error) { console.error("Erro ao salvar nome:", error); }
 				}
 			});
 
 			// Listener do formulário de Contrato (Salvar)
-			// Listener do formulário de Contrato (MODIFICADO para salvar cliente)
 			document.getElementById('formContrato').addEventListener('submit', async (e) => {
 				e.preventDefault();
 				const contractId = document.getElementById('contractId').value;
-@@ -1994,105 +1624,99 @@ <h3 class="font-bold text-lg text-white">${(contract.serviceTypes || []).map(s =
+				const serviceTags = document.querySelectorAll('#servicosContainer .service-tag');
+				const serviceTypes = Array.from(serviceTags).map(tag => ({
+					name: Utils.sanitizeText(tag.dataset.name),
+					status: tag.dataset.status || 'Pendente',
+					deadline: tag.dataset.deadline || null
 				}));
 				if (serviceTypes.length === 0) { Utils.showToast('Adicione pelo menos um serviço.', 'error'); return; }
 
-				const clientNameSanitized = Utils.sanitizeText(document.getElementById('clienteNome').value);
-				if (!clientNameSanitized) { Utils.showToast('O nome do cliente é obrigatório.', 'error'); return; }
-
 				const contractData = {
 					clientName: Utils.sanitizeText(document.getElementById('clienteNome').value),
-					clientName: clientNameSanitized, // Usa o nome sanitizado
 					advogadoResponsavel: Utils.sanitizeText(document.getElementById('advogadoResponsavel').value),
 					serviceTypes,
 					paymentType: Utils.sanitizeText(document.getElementById('contratoTipoPagamento').value),
@@ -1936,6 +2189,7 @@
 					if (isUserAdmin) {
 						// Pega o valor do novo checkbox
 						const jaQuitado = document.getElementById('contratoJaQuitado').checked;
+						
 
 						// Gera as parcelas
 						const totalValue = contractData.totalValue;
@@ -1944,6 +2198,7 @@
 
 						if (numParcels > 0 && totalValue > 0) {
 							if (!firstDueDate && !jaQuitado) { // Se não estiver quitado, a data é obrigatória
+							if (!firstDueDate && !jaQuitado) { 
 								Utils.showToast('Informe data da 1ª parcela.', 'error');
 								return; 
 							}
@@ -1968,57 +2223,8 @@
 								// === FIM DA LÓGICA ===
 
 								currentDueDate.setMonth(currentDueDate.getMonth() + 1);
-				try {
-					if (!contractId) {
-						// ... (lógica de criar novo contrato, inalterada) ...
-						contractData.parcels = [];
-						contractData.successFeeValueReceived = 0;
-						contractData.successFeePaymentDate = null;
-						contractData.isDeleted = false;
-						if (isUserAdmin) {
-							const jaQuitado = document.getElementById('contratoJaQuitado').checked;
-							const totalValue = contractData.totalValue;
-							const numParcels = parseInt(document.getElementById('numParcelas').value) || 1;
-							const firstDueDate = document.getElementById('vencimentoPrimeiraParcela').value;
-							if (numParcels > 0 && totalValue > 0) {
-								if (!firstDueDate && !jaQuitado) { 
-									Utils.showToast('Informe data da 1ª parcela.', 'error');
-									return; 
-								}
-								const parcelValue = totalValue / numParcels;
-								let currentDueDate = new Date((firstDueDate || new Date().toISOString().split('T')[0]) + 'T12:00:00Z'); 
-								for (let i = 0; i < numParcels; i++) {
-									const isPaid = jaQuitado && numParcels === 1;
-									contractData.parcels.push({
-										number: i + 1, 
-										value: parcelValue,
-										dueDate: new Date(currentDueDate).toISOString(),
-										status: isPaid ? 'Paga' : 'Pendente', 
-										valuePaid: isPaid ? parcelValue : 0, 
-										paymentDate: isPaid ? new Date().toISOString() : null 
-									});
-									currentDueDate.setMonth(currentDueDate.getMonth() + 1);
-								}
 							}
 						}
-						await addDoc(contractsCollection, contractData);
-					} else {
-						// ... (lógica de atualizar contrato, inalterada) ...
-						const existingContract = database.contracts.find(c => c.id === contractId);
-						if (!isUserAdmin && existingContract) {
-							contractData.totalValue = existingContract.totalValue;
-							contractData.successFee = existingContract.successFee;
-							contractData.parcels = existingContract.parcels;
-							contractData.successFeeValueReceived = existingContract.successFeeValueReceived;
-							contractData.successFeePaymentDate = existingContract.successFeePaymentDate;
-						} else if (isUserAdmin && existingContract) {
-							contractData.parcels = existingContract.parcels; 
-							contractData.successFeeValueReceived = existingContract.successFeeValueReceived;
-							contractData.successFeePaymentDate = existingContract.successFeePaymentDate;
-						}
-						contractData.isDeleted = existingContract?.isDeleted || false;
-						const contractRef = doc(contractsCollection, contractId);
-						await updateDoc(contractRef, contractData);
 					}
 					await addDoc(contractsCollection, contractData);
 				} else {
@@ -2043,25 +2249,12 @@
 					contractData.isDeleted = existingContract?.isDeleted || false;
 					const contractRef = doc(contractsCollection, contractId);
 					await updateDoc(contractRef, contractData);
-
-					// === NOVO: Salva o cliente na coleção 'clients' ===
-					// Usar setDoc com o nome como ID garante que não haja duplicatas
-					const clientDocRef = doc(clientsCollection, clientNameSanitized);
-					await setDoc(clientDocRef, { name: clientNameSanitized });
-					// === FIM ===
-
-					closeModal('modalContrato');
-					Utils.showToast('Contrato salvo.', 'success');
-				} catch (e) {
-					console.error("Erro ao salvar contrato:", e);
-					Utils.showToast('Erro ao salvar contrato.', 'error');
 				}
 				closeModal('modalContrato');
 				Utils.showToast('Contrato salvo.', 'success');
 			});
 
 			// Listener do formulário de Pagamento (Confirmar)
-			// Outros Listeners de Formulário (Pagamento, Êxito, Add Serviço) - Inalterados
 			document.getElementById('formPagamento').addEventListener('submit', async (e) => {
 				e.preventDefault();
 				const contractId = document.getElementById('pagamentoContractId').value;
@@ -2078,7 +2271,12 @@
 				if (contract && !isNaN(valuePaid)) {
 					const updatedParcels = [...(contract.parcels || [])];
 					updatedParcels[parcelIndex].status = 'Paga';
-@@ -2105,14 +1729,10 @@ <h3 class="font-bold text-lg text-white">${(contract.serviceTypes || []).map(s =
+					updatedParcels[parcelIndex].valuePaid = valuePaid;
+					updatedParcels[parcelIndex].paymentDate = new Date(paymentDate + 'T12:00:00Z').toISOString();
+					await updateDoc(contractRef, { parcels: updatedParcels });
+					closeModal('modalPagamento');
+					Utils.showToast('Pagamento registrado.', 'success');
+				} else {
 					Utils.showToast('Valor de pagamento inválido.', 'error');
 				}
 			});
@@ -2093,7 +2291,14 @@
 				const contract = database.contracts.find(c => c.id === contractId);
 				if (contract) {
 					if (isUserAdmin && (isNaN(valueReceived) || valueReceived <= 0)) {
-@@ -2127,18 +1747,13 @@ <h3 class="font-bold text-lg text-white">${(contract.serviceTypes || []).map(s =
+						Utils.showToast('Valor de êxito inválido.', 'error');
+						return;
+					}
+					await updateDoc(doc(contractsCollection, contractId), {
+						successFeeValueReceived: valueReceived,
+						successFeePaymentDate: new Date().toISOString()
+					});
+					closeModal('modalExito');
 					Utils.showToast('Êxito registrado.', 'success');
 				}
 			});
@@ -2104,8 +2309,8 @@
 				const deadlineInput = document.getElementById('contratoPrazoInput');
 				const serviceName = Utils.sanitizeText(nameInput.value);
 				const deadline = deadlineInput.value || null; // Pega a data ou null
-
 				const deadline = deadlineInput.value || null; 
+
 				if (serviceName) {
 					// Cria a tag visual
 					window.App.createServiceTag(serviceName, deadline, 'Pendente');
@@ -2113,7 +2318,16 @@
 					nameInput.value = '';
 					deadlineInput.value = '';
 					nameInput.focus();
-@@ -2155,23 +1770,6 @@ <h3 class="font-bold text-lg text-white">${(contract.serviceTypes || []).map(s =
+				} else {
+					Utils.showToast('Por favor, insira um nome para o serviço.', 'error');
+				}
+			});
+
+			// Listeners dos campos de busca (com debounce)
+			const debouncedContracts = Utils.debounce(() => window.App.resetAndRenderContractList(), 300);
+			const searchInput = document.getElementById('searchInput');
+			if (searchInput) searchInput.addEventListener('input', debouncedContracts);
+
 			const debouncedServicos = Utils.debounce(() => window.App.renderServicosPage(getFilteredContracts(false)), 300);
 			const servicosSearchInput = document.getElementById('servicosSearchInput');
 			if (servicosSearchInput) servicosSearchInput.addEventListener('input', debouncedServicos);
@@ -2123,6 +2337,7 @@
 			if (loadMoreBtn) {
 				// Adicionado listener de clique manual como fallback
 				loadMoreBtn.addEventListener('click', window.App.loadMoreContracts);
+				
 
 				// Manter o IntersectionObserver para auto-load ao rolar
 				if ('IntersectionObserver' in window) {
@@ -2134,6 +2349,9 @@
 					io.observe(loadMoreBtn);
 				}
 			}
+			
+			// O listener do 'loadMoreButton' e o IntersectionObserver foram removidos.
 		});
 	</script>
 </body>
+</html>
