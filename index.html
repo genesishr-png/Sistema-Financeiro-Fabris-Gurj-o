@@ -1351,7 +1351,7 @@
 				select.innerHTML = '<option value="Todos">Todos</option>';
 				select.add(new Option("Não Informado", "Não Informado"));
 
-				const fixedNames = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "Dr. Glaison", "Dr. Bruno D'Lucas", "Dra. Danielle Guimarães", "Dr. Joaquim Océlio", "Dra. Larissa Mendes"];
+				const fixedNames = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "Dr. Glaison", "Dr. Bruno D'Lucas", "Dra. Danielle Guimarães", "Dr. Joaquim Océlio", "Dra. Larissa Mendes", "Dr. Hermes"];
 				const allNames = new Set([...fixedNames, ...advogados]);
 
 				[...allNames].filter(adv => adv && adv !== "Não Informado" && adv !== "Todos").sort().forEach(adv => {
@@ -1373,7 +1373,7 @@
 			select.add(new Option("Não Informado", "Não Informado"));
 
 			const advogados = [...new Set(database.contracts.map(c => c.advogadoResponsavel))].sort();
-			const fixedNames = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "Dr. Glaison", "Dr. Bruno D'Lucas", "Dra. Danielle Guimarães", "Dr. Joaquim Océlio", "Dra. Larissa Mendes"];
+			const fixedNames = ["Dra. Renata Fabris", "Dr. Felipe Gurjão", "Dr. Glaison", "Dr. Bruno D'Lucas", "Dra. Danielle Guimarães", "Dr. Joaquim Océlio", "Dra. Larissa Mendes", "Dr. Hermes"];
 			const allNames = new Set([...fixedNames, ...advogados]);
 
 			[...allNames].filter(adv => adv && adv !== "Não Informado").sort().forEach(adv => {
