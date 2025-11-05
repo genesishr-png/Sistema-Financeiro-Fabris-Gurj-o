@@ -2126,6 +2126,14 @@
 			const debouncedServicos = Utils.debounce(() => window.App.renderServicosPage(getFilteredContracts(false)), 300);
 			const servicosSearchInput = document.getElementById('servicosSearchInput');
 			if (servicosSearchInput) servicosSearchInput.addEventListener('input', debouncedServicos);
+			// ==== INÍCIO DA ADIÇÃO (JS) ====
+			// Adiciona o listener para a nova busca de inadimplentes
+			const debouncedInadimplentes = Utils.debounce(() => {
+				window.App.renderInadimplentesPage(getFilteredContracts(false));
+			}, 300);
+			const inadimplentesSearchInput = document.getElementById('inadimplentesSearchInput');
+			if (inadimplentesSearchInput) inadimplentesSearchInput.addEventListener('input', debouncedInadimplentes);
+			// ==== FIM DA ADIÇÃO (JS) ====			
 			
 			// O listener do 'loadMoreButton' e o IntersectionObserver foram removidos.
 		});
