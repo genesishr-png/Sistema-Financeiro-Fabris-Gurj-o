@@ -257,6 +257,10 @@
 					<div id="inadimplentesSortButtons" class="flex gap-1"></div>
 				</div>
 			</div>
+
+			<div class="mb-4">
+				<input type="text" id="inadimplentesSearchInput" placeholder="🔎 Pesquisar por cliente ou tipo de serviço..." class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white">
+			</div>
 			<div id="inadimplentesListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 		</div>
 
@@ -1055,8 +1059,14 @@
 		}
 
 		// Renderiza a página de Inadimplentes
-		async function renderInadimplentesPage(contractsToRender) {
+		// Renderiza a página de Inadimplentes
+		// ==== INÍCIO DA MODIFICAÇÃO (JS) ====
+		// 1. Transformada em 'const' e anexada ao window.App
+		const renderInadimplentesPage = async function(contractsToRender) {
 			const container = document.getElementById('inadimplentesListContainer');
+			// 2. Lê o valor do novo campo de busca
+			const searchTerm = (document.getElementById('inadimplentesSearchInput')?.value || '').toLowerCase();
+			
 			container.innerHTML = `<div class="col-span-1 md:col-span-3 text-center py-10"><i class="fas fa-spinner fa-spin fa-2x text-indigo-400"></i><p class="mt-2 text-sm text-gray-400">Calculando...</p></div>`;
 			const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
 
@@ -1078,6 +1088,15 @@
 
 			inadimplentesList = results.flat();
 
+			// 3. Filtra a lista com base no termo de busca
+			if (searchTerm) {
+				inadimplentesList = inadimplentesList.filter(({ contract }) => {
+					const matchesClient = contract.clientName.toLowerCase().includes(searchTerm);
+					const matchesService = (contract.serviceTypes || []).some(s => s.name.toLowerCase().includes(searchTerm));
+					return matchesClient || matchesService;
+				});
+			}
+
 			if (currentInadimplentesSort === 'days-desc') {
 				inadimplentesList.sort((a, b) => b.diffDays - a.diffDays);
 			} else if (currentInadimplentesSort === 'value-desc' && isUserAdmin) {
@@ -1087,8 +1106,9 @@
 			}
 
 			if (inadimplentesList.length === 0) {
-				container.innerHTML = `<div class="col-span-1 md:col-span-3 text-center py-10"><div class="inline-block bg-gray-800 border border-gray-700 text-green-400 p-6 rounded-lg shadow-md"><i class="fas fa-check-circle fa-3x mb-3"></i><p class="font-bold text-xl">Nenhuma pendência encontrada!</p><p class="text-sm text-gray-400">Todos os pagamentos estão em dia.</p></div></div>`;
-			 return;
+				// 4. Mensagem de "nada encontrado" atualizada para busca
+				container.innerHTML = `<div class="col-span-1 md:col-span-3 text-center py-10"><div class="inline-block bg-gray-800 border border-gray-700 ${searchTerm ? 'text-yellow-400' : 'text-green-400'} p-6 rounded-lg shadow-md"><i class="fas ${searchTerm ? 'fa-search' : 'fa-check-circle'} fa-3x mb-3"></i><p class="font-bold text-xl">${searchTerm ? 'Nenhum resultado encontrado' : 'Nenhuma pendência encontrada!'}</p><p class="text-sm text-gray-400">${searchTerm ? 'Tente uma busca diferente.' : 'Todos os pagamentos estão em dia.'}</p></div></div>`;
+				return;
 			}
 
 			let inadimplentesHtml = '';
@@ -1125,8 +1145,9 @@
 					</div>`;
 			});
 			container.innerHTML = inadimplentesHtml;
-		}
-
+		};
+		window.App.renderInadimplentesPage = renderInadimplentesPage;
+		// ==== FIM DA MODIFICAÇÃO (JS) ====
 		// Renderiza a página de Serviços/Produção
 		const renderServicosPage = (contractsToRender) => {
 			const container = document.getElementById('servicosListContainer');
