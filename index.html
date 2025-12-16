@@ -778,6 +778,9 @@
 							<button onclick="window.App.generateAdvancedReport()" class="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-all duration-200 transform hover:shadow-xl hover:-translate-y-0.5 flex items-center gap-2">
 								<i class="fas fa-sync-alt"></i> Gerar Relatório
 							</button>
+							<button onclick="window.App.exportDefaultersPDF()" class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-all duration-200 transform hover:shadow-xl hover:-translate-y-0.5 flex items-center gap-2">
+    <i class="fas fa-file-invoice-dollar"></i> PDF Inadimplentes
+</button>
 							<button id="exportPdfButton" onclick="window.App.exportReportPDF()" class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-all duration-200 transform hover:shadow-xl hover:-translate-y-0.5 flex items-center gap-2" disabled>
 								<i class="fas fa-file-pdf"></i> Exportar PDF
 							</button>
@@ -4609,6 +4612,109 @@
 
 				doc.save(`Relatorio_FG_${startDate.toISOString().split('T')[0]}_a_${endDate.toISOString().split('T')[0]}.pdf`);
 			}
+			// ... (final do exportReportPDF existente) ...
+        doc.save(`Relatorio_FG_${startDate.toISOString().split('T')[0]}_a_${endDate.toISOString().split('T')[0]}.pdf`);
+    }
+
+    // ================== COLE O CÓDIGO NOVO AQUI ==================
+    exportDefaultersPDF() {
+        const startVal = document.getElementById('reportStartDate').value;
+        const endVal = document.getElementById('reportEndDate').value;
+        
+        if (!startVal || !endVal) {
+            Utils.showToast('Por favor, selecione as datas de início e fim.', 'error');
+            return;
+        }
+
+        const startDate = new Date(startVal + 'T00:00:00');
+        const endDate = new Date(endVal + 'T23:59:59');
+        const hoje = new Date();
+
+        const contracts = this.getFilteredContracts(true);
+        const defaulters = [];
+
+        contracts.forEach(c => {
+            if (!c.parcels) return;
+            c.parcels.forEach(p => {
+                const dueDate = new Date(p.dueDate);
+                if (p.status === 'Pendente' && dueDate < hoje && dueDate >= startDate && dueDate <= endDate) {
+                    const corrected = this.correctionCalculator.calcularValorCorrigido(p.value, p.dueDate);
+                    
+                    defaulters.push({
+                        client: c.clientName,
+                        adv: c.advogadoResponsavel || 'N/A',
+                        date: dueDate,
+                        valueOriginal: p.value,
+                        valueCorrected: corrected,
+                        parcelNum: `${p.number}/${c.parcels.length}`
+                    });
+                }
+            });
+        });
+
+        if (defaulters.length === 0) {
+            Utils.showToast('Nenhuma inadimplência encontrada neste período.', 'info');
+            return;
+        }
+
+        defaulters.sort((a, b) => a.date - b.date);
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.setFontSize(18);
+        doc.setTextColor(220, 38, 38);
+        doc.text("Relatório de Inadimplência", 14, 22);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 28);
+        doc.text(`Filtro: ${Utils.formatDate(startDate)} até ${Utils.formatDate(endDate)}`, 14, 33);
+
+        const tableBody = defaulters.map(d => [
+            d.client,
+            d.adv,
+            d.parcelNum,
+            Utils.formatDate(d.date),
+            Utils.formatCurrency(d.valueOriginal),
+            Utils.formatCurrency(d.valueCorrected)
+        ]);
+
+        const totalOriginal = defaulters.reduce((acc, cur) => acc + cur.valueOriginal, 0);
+        const totalCorrected = defaulters.reduce((acc, cur) => acc + cur.valueCorrected, 0);
+
+        doc.autoTable({
+            startY: 40,
+            head: [['Cliente', 'Advogado', 'Parc.', 'Vencimento', 'Valor Orig.', 'Valor Corr.']],
+            body: tableBody,
+            theme: 'striped',
+            headStyles: { fillColor: [185, 28, 28] },
+            styles: { fontSize: 9 },
+            columnStyles: {
+                4: { halign: 'right' },
+                5: { halign: 'right', fontStyle: 'bold' }
+            }
+        });
+
+        const finalY = doc.lastAutoTable.finalY + 10;
+        
+        doc.setFontSize(11);
+        doc.setTextColor(0);
+        doc.text(`Total Original: ${Utils.formatCurrency(totalOriginal)}`, 14, finalY);
+        
+        doc.setFontSize(12);
+        doc.setTextColor(220, 38, 38);
+        doc.setFont(undefined, 'bold');
+        doc.text(`Total Corrigido (Dívida Real): ${Utils.formatCurrency(totalCorrected)}`, 14, finalY + 7);
+
+        doc.save(`Inadimplentes_${startVal}_a_${endVal}.pdf`);
+        Utils.showToast('PDF de Inadimplentes gerado!', 'success');
+    }
+    // ================== FIM DO CÓDIGO NOVO ==================
+
+    _formatCSVCell(data) { // <--- A PRÓXIMA FUNÇÃO COMEÇA AQUI
+        if (data == null) return '';
+        // ...
 			// Fim Mudança v5
 		
 			_formatCSVCell(data) {
